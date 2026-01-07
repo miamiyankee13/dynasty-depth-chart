@@ -9,19 +9,18 @@ function Row({ player, group }) {
   
   const th = groupTheme[group] ?? { color: "#e5e7eb" };
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: 12,
-    border: "1px solid #eee",
-    borderRadius: 14,
-    marginBottom: 10,
-    background: "white",
-    border: "1px solid #eee",
-    borderLeft: `6px solid ${th.color}`,
-  };
+  transform: CSS.Transform.toString(transform),
+  transition,
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  padding: 12,
+  marginBottom: 10,
+  background: "white",
+  border: "1px solid #eee",
+  borderLeft: `6px solid ${th.color}`,
+  borderRadius: 14,
+};
 
   return (
     <div ref={setNodeRef} style={style}>

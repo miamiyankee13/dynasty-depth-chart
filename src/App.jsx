@@ -5,6 +5,8 @@ import { PicksView } from "./components/PicksView";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { loadAppState, saveAppState } from "./services/storage";
 import { parseDepthChartCsv } from "./services/parseCsv";
+import { getDepthChartTemplateCsv, downloadCsv } from "./services/templateCsv";
+
 
 const TAB_ORDER = ["QB", "RB", "WR", "TE", "DEF", "TAXI", "PICKS", "SETTINGS"];
 
@@ -72,6 +74,21 @@ export default function App() {
             onChange={(e) => e.target.files?.[0] && handleImportCsv(e.target.files[0])}
           />
         </label>
+        <button
+          onClick={() =>
+            downloadCsv("Dynasty Depth Charts - TEMPLATE.csv", getDepthChartTemplateCsv())
+          }
+          style={{
+            padding: "8px 12px",
+            borderRadius: 10,
+            border: "1px solid #ddd",
+            background: "white",
+            cursor: "pointer",
+            fontSize: 14,
+          }}
+        >
+          Download CSV template
+        </button>
       </div>
 
       <div style={{ marginTop: 12, opacity: 0.8 }}>
