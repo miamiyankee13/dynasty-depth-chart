@@ -1,90 +1,111 @@
 import Papa from "papaparse";
 
-function parsePosCell(posRaw) {
-  // Examples: "QB1", "RB8", "TE2", "DEF1", "TX (WR)"
-  const s = String(posRaw || "").trim().toUpperCase();
-  if (!s) return null;
+/**
+ * Final parser optimized for Anthony's Depth Chart CSV
+ *
+ * Expected columns:
+ * Pos, Name, Age, Team, 2026 Picks, 2027 Picks, 2028 Picks
+ */
 
-  if (s.startsWith("TX")) {
-    // "TX (WR)" or "TX (RB)" etc.
-    const match = s.match(/\((QB|RB|WR|TE)\)/);
-    return { group: "TAXI", position: match?.[1] ?? "FLEX", order: 999 };
+function norm(v) {
+  return String(v ?? "").trim();
+}
+
+function extractLeagueName(filename) {
+  if (!filename) return "Dynasty League";
+  return filename
+    .replace(/\.csv$/i, "")
+    .replace(/^Dynasty Depth Charts\s*-\s*/i, "")
+    .trim();
+}
+
+function parsePos(posRaw) {
+  const p = norm(posRaw).toUpperCase();
+
+  if (!p) return null;
+
+  if (p === "TX") {
+    return { group: "TAXI", order: 999 };
   }
 
-  const match = s.match(/^(QB|RB|WR|TE|DEF)(\d+)?$/);
+  const match = p.match(/^(QB|RB|WR|TE|DEF)(\d+)$/);
   if (!match) return null;
 
-  const position = match[1];
-  const order = match[2] ? Number(match[2]) : 999;
   return {
-    group: position === "DEF" ? "DEF" : position, // group tab
-    position,
-    order,
+    group: match[1],
+    order: Number(match[2]),
   };
 }
 
-function normalizePickCell(value) {
-  const v = String(value || "").trim();
-  return v ? v : null;
+function splitPicks(cell) {
+  if (!cell) return [];
+  return norm(cell)
+    .split(/[,;/|]/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 }
 
-export function parseDepthChartCsv(csvText) {
-  const { data } = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+export function parseDepthChartCsv(csvText, filename = "") {
+  const parsed = Papa.parse(csvText, {
+    header: true,
+    skipEmptyLines: true,
+  });
 
   const players = [];
-  const picksByYear = { "2026": [], "2027": [], "2028": [] };
-  let settingsText = "";
+  const picksByYear = {
+    "2026": [],
+    "2027": [],
+    "2028": [],
+  };
 
-  for (const row of data) {
-    const posInfo = parsePosCell(row.Pos);
+  let taxiCounter = 1;
 
-    // Settings lines often show up with text in Name column, etc.
-    // We’ll capture anything that looks like settings and isn’t a player row.
-    const name = String(row.Name || "").trim();
-    const nflTeam = String(row.Team || "").trim();
+  for (const row of parsed.data) {
+    // Picks (can appear on any row)
+    picksByYear["2026"].push(...splitPicks(row["2026 Picks"]));
+    picksByYear["2027"].push(...splitPicks(row["2027 Picks"]));
+    picksByYear["2028"].push(...splitPicks(row["2028 Picks"]));
 
-    // Picks are in dedicated columns in your sheet export
-    const p2026 = normalizePickCell(row["2026 Picks"]);
-    const p2027 = normalizePickCell(row["2027 Picks"]);
-    const p2028 = normalizePickCell(row["2028 Picks"]);
-    if (p2026) picksByYear["2026"].push(p2026);
-    if (p2027) picksByYear["2027"].push(p2027);
-    if (p2028) picksByYear["2028"].push(p2028);
-
-    // Detect settings rows (very lightweight v1)
-    if (!posInfo && name && !nflTeam && /settings|ppr|passing|team|start/i.test(name)) {
-      settingsText += (settingsText ? "\n" : "") + name;
-      continue;
-    }
-
+    // Player parsing
+    const posInfo = parsePos(row.Pos);
     if (!posInfo) continue;
-    if (!name) continue; // skip empty
 
-    // Build player record
+    const name = norm(row.Name);
+    if (!name) continue;
+
+    const order =
+      posInfo.group === "TAXI" ? taxiCounter++ : posInfo.order;
+
     players.push({
       id: crypto.randomUUID(),
       name,
-      age: row.Age ? String(row.Age).trim() : "",
-      nflTeam,
-      group: posInfo.group,     // QB/RB/WR/TE/DEF/TAXI
-      position: posInfo.position,
-      order: posInfo.order,
+      age: norm(row.Age),
+      nflTeam: norm(row.Team),
+      group: posInfo.group,
+      position: posInfo.group,
+      order,
+      note: "",
     });
   }
 
-  // Clean picks lists (remove duplicates/empties)
-  for (const y of Object.keys(picksByYear)) {
-    picksByYear[y] = picksByYear[y].filter(Boolean);
-  }
+  // Sort players by group + order
+  players.sort((a, b) => {
+    if (a.group !== b.group) {
+      return a.group.localeCompare(b.group);
+    }
+    return (a.order ?? 999) - (b.order ?? 999);
+  });
 
   return {
-    team: {
-      id: crypto.randomUUID(),
-      name: "Team 1",
-      leagueName: "Dynasty Depth Chart",
-      settingsText: settingsText || "",
-      players,
-      picksByYear,
-    },
+    teams: [
+      {
+        id: crypto.randomUUID(),
+        name: extractLeagueName(filename),
+        leagueName: extractLeagueName(filename),
+        players,
+        picksByYear,
+        settingsText: "",
+      },
+    ],
   };
 }

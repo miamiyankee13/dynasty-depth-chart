@@ -21,18 +21,19 @@ export default function App() {
   const team = teams[teamIndex];
 
   function handleImportCsv(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = String(reader.result || "");
-      const parsed = parseDepthChartCsv(text);
-
-      // v1: single team import into app state
-      setState({ teams: [parsed.team] });
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = parseDepthChartCsv(reader.result, file.name);
+      setState({ teams: parsed.teams });
       setTeamIndex(0);
       setActiveTab("QB");
-    };
-    reader.readAsText(file);
-  }
+    } catch (err) {
+      alert(err.message || "Failed to import CSV");
+    }
+  };
+  reader.readAsText(file);
+}
 
   const playersByGroup = useMemo(() => {
     const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
