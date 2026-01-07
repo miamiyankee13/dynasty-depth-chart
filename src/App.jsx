@@ -61,7 +61,7 @@ export default function App() {
   return (
     <main style={{ fontFamily: "system-ui", padding: 24, maxWidth: 900, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <h1 style={{ margin: 0, flex: 1 }}>Dynasty Depth Charts</h1>
+        <h1 style={{ margin: 0, flex: 1 }}>Dynasty Depth Chart</h1>
 
         <label style={{ fontSize: 14 }}>
           Import CSV{" "}
@@ -102,7 +102,17 @@ export default function App() {
       {!team ? null : activeTab === "PICKS" ? (
         <PicksView picksByYear={team.picksByYear} />
       ) : activeTab === "SETTINGS" ? (
-        <SettingsPanel settingsText={team.settingsText} />
+        <SettingsPanel
+          team={team}
+          onUpdateSettings={(nextText) => {
+            setState((prev) => {
+              const next = structuredClone(prev);
+              next.teams[teamIndex].settingsText = nextText;
+              return next;
+            });
+          }}
+        />
+
       ) : (
         <div style={{ marginTop: 16 }}>
           <PlayerList

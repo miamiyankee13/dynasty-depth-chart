@@ -1,11 +1,13 @@
+import { groupTheme } from "../theme";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-function Row({ player }) {
+function Row({ player, group }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: player.id });
-
+  
+  const th = groupTheme[group] ?? { color: "#e5e7eb" };
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -17,6 +19,8 @@ function Row({ player }) {
     borderRadius: 14,
     marginBottom: 10,
     background: "white",
+    border: "1px solid #eee",
+    borderLeft: `6px solid ${th.color}`,
   };
 
   return (
@@ -55,7 +59,7 @@ export function PlayerList({ players, onReorder }) {
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={players.map((p) => p.id)} strategy={verticalListSortingStrategy}>
         {players.map((p) => (
-          <Row key={p.id} player={p} />
+          <Row key={p.id} player={p} group={p.group} />
         ))}
       </SortableContext>
     </DndContext>
