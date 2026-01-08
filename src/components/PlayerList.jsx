@@ -5,7 +5,6 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 function Row({ player, group, index }) {
-
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: player.id,
   });
@@ -13,26 +12,40 @@ function Row({ player, group, index }) {
   const th = groupTheme[group] ?? { color: "#e5e7eb", bg: "#f3f4f6" };
   const slotLabel = group === "TAXI" ? `TX${index + 1}` : `${group}${index + 1}`;
 
+  // RowShell: final density + polish (hover handled by CSS via .ddc-row)
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     display: "flex",
     alignItems: "center",
-    gap: 10,
-    padding: 12,
-    marginBottom: 10,
+
+    // density (less wide)
+    gap: 8,
+    padding: "8px 10px",
+    marginBottom: 6,
+
     background: "white",
     border: "1px solid #eee",
-    borderLeft: `6px solid ${th.color}`,
-    borderRadius: 14,
+    borderLeft: `5px solid ${th.color}`,
+    borderRadius: 12,
 
-    // hover/drag polish
+    // drag polish (keep inline to avoid fighting CSS hover)
     boxShadow: isDragging ? "0 14px 30px rgba(0,0,0,0.12)" : "none",
     transformOrigin: "center",
+    willChange: "transform",
   };
 
-  const colMuted = { fontSize: 12, opacity: 0.7, fontWeight: 700 };
-  const colValue = { fontSize: 13, fontWeight: 800, color: "#111827" };
+  const colMuted = {
+    fontSize: 11,
+    opacity: 0.65,
+    fontWeight: 700,
+    letterSpacing: 0.2,
+  };
+  const colValue = {
+    fontSize: 14,
+    fontWeight: 800,
+    color: "#111827",
+  };
 
   return (
     <div
@@ -47,11 +60,11 @@ function Row({ player, group, index }) {
         {...listeners}
         title="Drag to reorder"
         style={{
-          cursor: "grab",
+          cursor: isDragging ? "grabbing" : "grab",
           userSelect: "none",
           fontSize: 18,
-          padding: "0 6px",
-          width: 22,
+          padding: "0 4px",
+          width: 20,
           textAlign: "center",
           opacity: isDragging ? 1 : 0.55,
           transition: "opacity 120ms ease",
@@ -63,16 +76,17 @@ function Row({ player, group, index }) {
       {/* Slot pill */}
       <div
         style={{
-          width: 70,
+          width: 60,
           textAlign: "center",
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: 900,
-          padding: "6px 8px",
+          padding: "5px 6px",
           borderRadius: 999,
           background: th.bg ?? "#f3f4f6",
           color: th.color,
           border: `1px solid ${th.color}`,
           userSelect: "none",
+          lineHeight: "14px",
         }}
       >
         {slotLabel}
@@ -94,13 +108,13 @@ function Row({ player, group, index }) {
       </div>
 
       {/* Age */}
-      <div style={{ width: 70, textAlign: "right" }}>
+      <div style={{ width: 60, textAlign: "right" }}>
         <div style={colMuted}>Age</div>
         <div style={colValue}>{player.age || "—"}</div>
       </div>
 
       {/* NFL Team */}
-      <div style={{ width: 90, textAlign: "right" }}>
+      <div style={{ width: 76, textAlign: "right" }}>
         <div style={colMuted}>Team</div>
         <div style={colValue}>{player.nflTeam || "—"}</div>
       </div>
