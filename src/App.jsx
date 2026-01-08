@@ -227,7 +227,18 @@ export default function App() {
       </div>
 
       {/* Tabs */}
-      <div style={{ marginTop: 16 }}>
+      <div
+        style={{
+          position: "sticky",
+          top: 12,
+          zIndex: 50,
+          background: "#fff",
+          paddingTop: 10,
+          paddingBottom: 10,
+          marginTop: 12,
+          borderBottom: "1px solid #eee",
+        }}
+      >
         <Tabs tabs={TAB_ORDER} active={activeTab} onChange={setActiveTab} />
       </div>
 
