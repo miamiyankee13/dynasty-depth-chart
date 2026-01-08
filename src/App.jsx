@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs } from "./components/Tabs";
 import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
@@ -7,13 +7,13 @@ import { loadAppState, saveAppState } from "./services/storage";
 import { parseDepthChartCsv } from "./services/parseCsv";
 import { getDepthChartTemplateCsv, downloadCsv } from "./services/templateCsv";
 
-
 const TAB_ORDER = ["QB", "RB", "WR", "TE", "DEF", "TAXI", "PICKS", "SETTINGS"];
 
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
   const [activeTab, setActiveTab] = useState("QB");
   const [teamIndex, setTeamIndex] = useState(0);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (state) saveAppState(state);
@@ -23,19 +23,19 @@ export default function App() {
   const team = teams[teamIndex];
 
   function handleImportCsv(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = parseDepthChartCsv(reader.result);
-      setState({ teams: parsed.teams });
-      setTeamIndex(0);
-      setActiveTab("QB");
-    } catch (err) {
-      alert(err.message || "Failed to import CSV");
-    }
-  };
-  reader.readAsText(file);
-}
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = parseDepthChartCsv(reader.result);
+        setState({ teams: parsed.teams });
+        setTeamIndex(0);
+        setActiveTab("QB");
+      } catch (err) {
+        alert(err.message || "Failed to import CSV");
+      }
+    };
+    reader.readAsText(file);
+  }
 
   const playersByGroup = useMemo(() => {
     const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
@@ -61,66 +61,182 @@ export default function App() {
     });
   }
 
-  return (
-    <main style={{ fontFamily: "system-ui", padding: 24, maxWidth: 900, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <h1 style={{ margin: 0, flex: 1 }}>Dynasty Depth Chart</h1>
+  const ui = {
+    card: {
+      background: "white",
+      border: "1px solid #eee",
+      borderRadius: 16,
+      padding: 14,
+    },
+    btn: {
+      padding: "10px 12px",
+      borderRadius: 12,
+      border: "1px solid #ddd",
+      background: "white",
+      cursor: "pointer",
+      fontSize: 14,
+      fontWeight: 700,
+    },
+    btnPrimary: {
+      padding: "10px 12px",
+      borderRadius: 12,
+      border: "1px solid #111827",
+      background: "#111827",
+      color: "white",
+      cursor: "pointer",
+      fontSize: 14,
+      fontWeight: 800,
+    },
+    select: {
+      padding: "10px 12px",
+      borderRadius: 12,
+      border: "1px solid #e5e7eb",
+      background: "white",
+      fontSize: 14,
+      fontWeight: 700,
+      minWidth: 280,
+    },
+    pill: {
+      padding: "8px 10px",
+      borderRadius: 999,
+      border: "1px solid #eee",
+      background: "#fafafa",
+      fontSize: 13,
+      fontWeight: 800,
+    },
+    muted: { opacity: 0.75 },
+  };
 
-        <label style={{ fontSize: 14 }}>
-          Import CSV{" "}
-          <input
-            type="file"
-            accept=".csv"
-            onChange={(e) => e.target.files?.[0] && handleImportCsv(e.target.files[0])}
-          />
-        </label>
-        <button
-          onClick={() =>
-            downloadCsv("Dynasty Depth Charts - TEMPLATE.csv", getDepthChartTemplateCsv())
-          }
-          style={{
-            padding: "8px 12px",
-            borderRadius: 10,
-            border: "1px solid #ddd",
-            background: "white",
-            cursor: "pointer",
-            fontSize: 14,
-          }}
-        >
-          Download CSV template
-        </button>
+  return (
+    <main
+      style={{
+        fontFamily: "system-ui",
+        padding: 24,
+        maxWidth: 900,
+        margin: "0 auto",
+      }}
+    >
+      {/* APP BAR */}
+      <div style={ui.card}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
+            <div style={{ fontSize: 22, fontWeight: 900 }}>Dynasty Depth Chart</div>
+            <div style={{ fontSize: 13, ...ui.muted }}>
+              Upload a CSV template to view your leagues as a clean depth chart.
+            </div>
+          </div>
+
+          {/* League dropdown (league name only) */}
+          {teams.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted }}>League</div>
+              <select
+                value={teamIndex}
+                onChange={(e) => setTeamIndex(Number(e.target.value))}
+                style={ui.select}
+              >
+                {teams.map((t, i) => (
+                  <option key={t.id} value={i}>
+                    {t.leagueName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              style={{ display: "none" }}
+              onChange={(e) => e.target.files?.[0] && handleImportCsv(e.target.files[0])}
+            />
+
+            <button style={ui.btnPrimary} onClick={() => fileInputRef.current?.click()}>
+              Import CSV
+            </button>
+
+            <button
+              style={ui.btn}
+              onClick={() =>
+                downloadCsv("Dynasty Depth Charts - TEMPLATE.csv", getDepthChartTemplateCsv())
+              }
+            >
+              Download template
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div style={{ marginTop: 12, opacity: 0.8 }}>
-        {team ? (
-          <>
-            <strong>{team.leagueName}</strong> — {team.name}
-          </>
+      {/* SUMMARY STRIP */}
+      <div style={{ marginTop: 12, ...ui.card }}>
+        {!team ? (
+          <div style={{ fontSize: 14, ...ui.muted }}>Import a CSV to begin.</div>
         ) : (
-          "Import a CSV to begin."
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 240 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted }}>League — Team</div>
+              <div style={{ fontSize: 16, fontWeight: 900 }}>
+                {team.leagueName} — {team.name}
+              </div>
+            </div>
+
+            {/* Position counts */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {["QB", "RB", "WR", "TE", "DEF", "TAXI"].map((g) => (
+                <div key={g} style={ui.pill}>
+                  {g}: {playersByGroup[g]?.length ?? 0}
+                </div>
+              ))}
+            </div>
+
+            {/* Picks counts */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {["2026", "2027", "2028"].map((y) => (
+                <div key={y} style={ui.pill}>
+                  {y} picks: {team.picksByYear?.[y]?.length ?? 0}
+                </div>
+              ))}
+            </div>
+
+            {/* Settings preview */}
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted, marginBottom: 4 }}>
+                League settings (optional)
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  border: "1px solid #eee",
+                  borderRadius: 12,
+                  padding: 10,
+                  background: "#fafafa",
+                  ...ui.muted,
+                }}
+              >
+                {team.settingsText?.trim()
+                  ? team.settingsText.trim().slice(0, 140) +
+                    (team.settingsText.trim().length > 140 ? "…" : "")
+                  : "Add settings on the Settings tab (format/notes are flexible)."}
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
-      {teams.length > 1 && (
-        <div style={{ marginTop: 10 }}>
-          <select value={teamIndex} onChange={(e) => setTeamIndex(Number(e.target.value))}>
-            {teams.map((t, i) => (
-              <option key={t.id} value={i}>
-                {t.leagueName}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
+      {/* Tabs */}
       <div style={{ marginTop: 16 }}>
         <Tabs tabs={TAB_ORDER} active={activeTab} onChange={setActiveTab} />
       </div>
 
+      {/* Content */}
       {!team ? null : activeTab === "PICKS" ? (
         <PicksView picksByYear={team.picksByYear} />
       ) : activeTab === "SETTINGS" ? (
         <SettingsPanel
+          key={team.id} // IMPORTANT: remount per team so settings don't appear "global"
           team={team}
           onUpdateSettings={(nextText) => {
             setState((prev) => {
@@ -130,7 +246,6 @@ export default function App() {
             });
           }}
         />
-
       ) : (
         <div style={{ marginTop: 16 }}>
           <PlayerList
