@@ -48,6 +48,25 @@ export default function App() {
     return groups;
   }, [team]);
 
+  const visibleTabs = useMemo(() => {
+  const base = ["QB", "RB", "WR", "TE"];
+
+  // Only show DEF if this team has any DEF players
+  if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
+
+  // Always show TAXI if you want it always available;
+  // or make it conditional like DEF if you prefer.
+  base.push("TAXI", "PICKS", "SETTINGS");
+
+  return base;
+}, [playersByGroup]);
+
+useEffect(() => {
+  if (!visibleTabs.includes(activeTab)) {
+    setActiveTab("QB");
+  }
+}, [visibleTabs, activeTab]);
+
   function updateGroupOrder(group, nextList) {
     // when you reorder in a group, we renumber order 1..n
     const renumbered = nextList.map((p, idx) => ({ ...p, order: idx + 1 }));
@@ -240,7 +259,7 @@ export default function App() {
           borderBottom: "1px solid #eee",
         }}
       >
-        <Tabs tabs={TAB_ORDER} active={activeTab} onChange={setActiveTab} />
+        <Tabs tabs={visibleTabs} active={activeTab} onChange={setActiveTab} />
       </div>
 
       {/* Content */}
