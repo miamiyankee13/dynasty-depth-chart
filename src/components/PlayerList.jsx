@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { groupTheme } from "../theme";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -6,7 +5,6 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 function Row({ player, group, index }) {
-  const [isHover, setIsHover] = useState(false);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: player.id,
@@ -29,11 +27,7 @@ function Row({ player, group, index }) {
     borderRadius: 14,
 
     // hover/drag polish
-    boxShadow: isDragging
-      ? "0 14px 30px rgba(0,0,0,0.12)"
-      : isHover
-      ? "0 10px 22px rgba(0,0,0,0.07)"
-      : "none",
+    boxShadow: isDragging ? "0 14px 30px rgba(0,0,0,0.12)" : "none",
     transformOrigin: "center",
   };
 
@@ -44,8 +38,8 @@ function Row({ player, group, index }) {
     <div
       ref={setNodeRef}
       style={style}
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => setIsHover(false)}
+      className="ddc-row"
+      data-dragging={isDragging ? "true" : "false"}
     >
       {/* Drag handle */}
       <span
@@ -59,7 +53,7 @@ function Row({ player, group, index }) {
           padding: "0 6px",
           width: 22,
           textAlign: "center",
-          opacity: isDragging ? 1 : isHover ? 0.9 : 0.45,
+          opacity: isDragging ? 1 : 0.55,
           transition: "opacity 120ms ease",
         }}
       >

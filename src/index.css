@@ -66,3 +66,41 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* ================================
+   Dynasty Depth Chart – UI Polish
+   ================================ */
+
+/* Shared row shell (players, picks, etc) */
+.ddc-row {
+  transition:
+    box-shadow 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.ddc-row:hover {
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.07);
+  border-color: rgba(17, 24, 39, 0.14);
+  background-color: rgba(243, 244, 246, 0.55);
+}
+
+/* Disable hover polish while dragging */
+.ddc-row[data-dragging="true"]:hover {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+  background-color: white;
+}
+
+/* Compact tab buttons (future-proofing) */
+.ddc-tab {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.ddc-tab:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
