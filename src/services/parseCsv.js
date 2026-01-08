@@ -11,14 +11,6 @@ function norm(v) {
   return String(v ?? "").trim();
 }
 
-function extractLeagueName(filename) {
-  if (!filename) return "Dynasty League";
-  return filename
-    .replace(/\.csv$/i, "")
-    .replace(/^Dynasty Depth Charts\s*-\s*/i, "")
-    .trim();
-}
-
 function parsePos(posRaw) {
   const p = norm(posRaw).toUpperCase();
 
@@ -45,7 +37,7 @@ function splitPicks(cell) {
     .filter(Boolean);
 }
 
-export function parseDepthChartCsv(csvText, filename = "") {
+export function parseDepthChartCsv(csvText) {
   const parsed = Papa.parse(csvText, {
     header: true,
     skipEmptyLines: true,
@@ -100,8 +92,8 @@ export function parseDepthChartCsv(csvText, filename = "") {
     teams: [
       {
         id: crypto.randomUUID(),
-        name: extractLeagueName(filename),
-        leagueName: extractLeagueName(filename),
+        name: "Team Name",
+        leagueName: "League Name",
         players,
         picksByYear,
         settingsText: "",

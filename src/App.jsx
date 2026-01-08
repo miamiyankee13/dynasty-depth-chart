@@ -26,7 +26,7 @@ export default function App() {
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const parsed = parseDepthChartCsv(reader.result, file.name);
+      const parsed = parseDepthChartCsv(reader.result);
       setState({ teams: parsed.teams });
       setTeamIndex(0);
       setActiveTab("QB");
