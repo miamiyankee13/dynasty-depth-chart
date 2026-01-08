@@ -94,7 +94,7 @@ export default function App() {
       <div style={{ marginTop: 12, opacity: 0.8 }}>
         {team ? (
           <>
-            <strong>{team.name}</strong> — {team.leagueName}
+            <strong>{team.leagueName}</strong> — {team.name}
           </>
         ) : (
           "Import a CSV to begin."

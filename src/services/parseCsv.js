@@ -1,32 +1,24 @@
 import Papa from "papaparse";
 
-/**
- * Final parser optimized for Anthony's Depth Chart CSV
- *
- * Expected columns:
- * Pos, Name, Age, Team, 2026 Picks, 2027 Picks, 2028 Picks
- */
-
 function norm(v) {
   return String(v ?? "").trim();
 }
 
 function parsePos(posRaw) {
   const p = norm(posRaw).toUpperCase();
-
   if (!p) return null;
 
-  if (p === "TX") {
-    return { group: "TAXI", order: 999 };
+  // Taxi: allow TX or TX1, TX2, etc.
+  const txMatch = p.match(/^TX(\d+)?$/);
+  if (txMatch) {
+    const n = txMatch[1] ? Number(txMatch[1]) : 999;
+    return { group: "TAXI", order: n };
   }
 
   const match = p.match(/^(QB|RB|WR|TE|DEF)(\d+)$/);
   if (!match) return null;
 
-  return {
-    group: match[1],
-    order: Number(match[2]),
-  };
+  return { group: match[1], order: Number(match[2]) };
 }
 
 function splitPicks(cell) {
@@ -43,60 +35,75 @@ export function parseDepthChartCsv(csvText) {
     skipEmptyLines: true,
   });
 
-  const players = [];
-  const picksByYear = { "2026": [], "2027": [], "2028": [] };
+  let currentLeagueName = "";
+  let currentTeamName = "";
 
-  let leagueName = "";
-  let teamName = "";
+  const teamMap = new Map();
 
-  let taxiCounter = 1;
+  const getOrCreateTeam = (teamName, leagueNameForTeam) => {
+    if (!teamMap.has(teamName)) {
+      teamMap.set(teamName, {
+        id: crypto.randomUUID(),
+        leagueName: leagueNameForTeam || "League Name",
+        name: teamName || "Team Name",
+        players: [],
+        picksByYear: { "2026": [], "2027": [], "2028": [] },
+        settingsText: "",
+      });
+    }
+    return teamMap.get(teamName);
+  };
 
   for (const row of parsed.data) {
-    // Grab League/Team name (first non-empty wins)
-    if (!leagueName) leagueName = norm(row["League Name"]);
-    if (!teamName) teamName = norm(row["Team Name"]);
+    // Carry-forward league name (block behavior)
+    const rowLeague = norm(row["League Name"]);
+    if (rowLeague) currentLeagueName = rowLeague;
 
-    // Picks (can appear on any row)
-    picksByYear["2026"].push(...splitPicks(row["2026 Picks"]));
-    picksByYear["2027"].push(...splitPicks(row["2027 Picks"]));
-    picksByYear["2028"].push(...splitPicks(row["2028 Picks"]));
+    // Carry-forward team name (block behavior)
+    const rowTeam = norm(row["Team Name"]);
+    if (rowTeam) currentTeamName = rowTeam;
 
-    // Players
+    // If we don't have a team yet, skip row
+    if (!currentTeamName) continue;
+
+    const team = getOrCreateTeam(currentTeamName, currentLeagueName);
+
+    // If league name shows up later, update the team (safe + expected)
+    if (currentLeagueName) team.leagueName = currentLeagueName;
+
+    // Picks belong to the current team block
+    team.picksByYear["2026"].push(...splitPicks(row["2026 Picks"]));
+    team.picksByYear["2027"].push(...splitPicks(row["2027 Picks"]));
+    team.picksByYear["2028"].push(...splitPicks(row["2028 Picks"]));
+
+    // Players (only parse rows with valid Pos AND non-empty Name)
     const posInfo = parsePos(row.Pos);
     if (!posInfo) continue;
 
     const name = norm(row.Name);
     if (!name) continue;
 
-    const order = posInfo.group === "TAXI" ? taxiCounter++ : posInfo.order;
-
-    players.push({
+    team.players.push({
       id: crypto.randomUUID(),
       name,
       age: norm(row.Age),
       nflTeam: norm(row.Team),
       group: posInfo.group,
       position: posInfo.group,
-      order,
+      order: posInfo.order,
       note: "",
     });
   }
 
-  players.sort((a, b) => {
-    if (a.group !== b.group) return a.group.localeCompare(b.group);
-    return (a.order ?? 999) - (b.order ?? 999);
-  });
+  const teams = Array.from(teamMap.values());
 
-  return {
-    teams: [
-      {
-        id: crypto.randomUUID(),
-        leagueName: leagueName || "League Name",
-        name: teamName || "Team Name",
-        players,
-        picksByYear,
-        settingsText: "",
-      },
-    ],
-  };
+  // Sort each team’s players for consistent display
+  for (const t of teams) {
+    t.players.sort((a, b) => {
+      if (a.group !== b.group) return a.group.localeCompare(b.group);
+      return (a.order ?? 999) - (b.order ?? 999);
+    });
+  }
+
+  return { teams };
 }
