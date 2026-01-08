@@ -21,12 +21,50 @@ function parsePos(posRaw) {
   return { group: match[1], order: Number(match[2]) };
 }
 
+function normalizePickToken(token) {
+  const t = norm(token);
+
+  // Already properly formatted (e.g., 1.01, 2.03, 4.10, 3.12)
+  if (/^\d{1,2}\.\d{2}$/.test(t)) return t;
+
+  // One decimal digit (e.g., 4.1) often comes from 4.10 in Sheets/Excel
+  // We'll interpret:
+  //   R.1  -> R.10
+  //   R.2  -> R.02  (shorthand)
+  //   R.9  -> R.09
+  const m1 = t.match(/^(\d{1,2})\.(\d)$/);
+  if (m1) {
+    const round = m1[1];
+    const d = m1[2];
+    if (d === "1") return `${round}.10`;     // fix the common trailing-zero loss case
+    return `${round}.0${d}`;                 // treat as shorthand for 01–09
+  }
+
+  // Two or more digits after decimal but not zero-padded (e.g., 2.3 as 2.03 is handled above; 3.12 stays)
+  const m2 = t.match(/^(\d{1,2})\.(\d{1,2})$/);
+  if (m2) {
+    const round = m2[1];
+    const pick = m2[2];
+    if (pick.length === 1) {
+      // would have matched m1, but just in case
+      if (pick === "1") return `${round}.10`;
+      return `${round}.0${pick}`;
+    }
+    // if it's already 2 digits, keep it
+    return `${round}.${pick}`;
+  }
+
+  // Anything else (e.g., "2026 1st", "Early 2nd", notes) leave untouched
+  return t;
+}
+
 function splitPicks(cell) {
   if (!cell) return [];
   return norm(cell)
     .split(/[,;/|]/)
     .map((p) => p.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(normalizePickToken);
 }
 
 export function parseDepthChartCsv(csvText) {

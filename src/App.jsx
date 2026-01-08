@@ -106,7 +106,7 @@ export default function App() {
           <select value={teamIndex} onChange={(e) => setTeamIndex(Number(e.target.value))}>
             {teams.map((t, i) => (
               <option key={t.id} value={i}>
-                {t.name}
+                {t.leagueName}
               </option>
             ))}
           </select>
