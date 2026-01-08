@@ -171,60 +171,61 @@ export default function App() {
       </div>
 
       {/* SUMMARY STRIP */}
-      <div style={{ marginTop: 12, ...ui.card }}>
-        {!team ? (
-          <div style={{ fontSize: 14, ...ui.muted }}>Import a CSV to begin.</div>
-        ) : (
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 240 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted }}>League — Team</div>
-              <div style={{ fontSize: 16, fontWeight: 900 }}>
-                {team.leagueName} — {team.name}
-              </div>
-            </div>
-
-            {/* Position counts */}
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {["QB", "RB", "WR", "TE", "DEF", "TAXI"].map((g) => (
-                <div key={g} style={ui.pill}>
-                  {g}: {playersByGroup[g]?.length ?? 0}
-                </div>
-              ))}
-            </div>
-
-            {/* Picks counts */}
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {["2026", "2027", "2028"].map((y) => (
-                <div key={y} style={ui.pill}>
-                  {y} picks: {team.picksByYear?.[y]?.length ?? 0}
-                </div>
-              ))}
-            </div>
-
-            {/* Settings preview */}
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted, marginBottom: 4 }}>
-                League settings (optional)
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  border: "1px solid #eee",
-                  borderRadius: 12,
-                  padding: 10,
-                  background: "#fafafa",
-                  ...ui.muted,
-                }}
-              >
-                {team.settingsText?.trim()
-                  ? team.settingsText.trim().slice(0, 140) +
-                    (team.settingsText.trim().length > 140 ? "…" : "")
-                  : "Add settings on the Settings tab (format/notes are flexible)."}
-              </div>
-            </div>
-          </div>
-        )}
+<div style={{ marginTop: 12, ...ui.card }}>
+  {!team ? (
+    <div style={{ fontSize: 14, ...ui.muted }}>Import a CSV to begin.</div>
+  ) : (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* League / Team */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted }}>League — Team</div>
+        <div style={{ fontSize: 16, fontWeight: 900 }}>
+          {team.leagueName} — {team.name}
+        </div>
       </div>
+
+      {/* Position counts */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        {["QB", "RB", "WR", "TE", "DEF", "TAXI"].map((g) => (
+          <div key={g} style={ui.pill}>
+            {g}: {playersByGroup[g]?.length ?? 0}
+          </div>
+        ))}
+      </div>
+
+      {/* Picks counts */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        {["2026", "2027", "2028"].map((y) => (
+          <div key={y} style={ui.pill}>
+            {y} picks: {team.picksByYear?.[y]?.length ?? 0}
+          </div>
+        ))}
+      </div>
+
+      {/* Settings preview */}
+      <div>
+        <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted, marginBottom: 6 }}>
+          League settings (optional)
+        </div>
+        <div
+          style={{
+            fontSize: 13,
+            border: "1px solid #eee",
+            borderRadius: 12,
+            padding: 10,
+            background: "#fafafa",
+            ...ui.muted,
+          }}
+        >
+          {team.settingsText?.trim()
+            ? team.settingsText.trim().slice(0, 220) +
+              (team.settingsText.trim().length > 220 ? "…" : "")
+            : "Add settings on the Settings tab (format/notes are flexible)."}
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
       {/* Tabs */}
       <div
