@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { groupTheme } from "../theme";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -5,7 +6,9 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 function Row({ player, group, index }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+  const [isHover, setIsHover] = useState(false);
+
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: player.id,
   });
 
@@ -24,13 +27,26 @@ function Row({ player, group, index }) {
     border: "1px solid #eee",
     borderLeft: `6px solid ${th.color}`,
     borderRadius: 14,
+
+    // hover/drag polish
+    boxShadow: isDragging
+      ? "0 14px 30px rgba(0,0,0,0.12)"
+      : isHover
+      ? "0 10px 22px rgba(0,0,0,0.07)"
+      : "none",
+    transformOrigin: "center",
   };
 
   const colMuted = { fontSize: 12, opacity: 0.7, fontWeight: 700 };
   const colValue = { fontSize: 13, fontWeight: 800, color: "#111827" };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      onMouseEnter={() => setIsHover(true)}
+      onMouseLeave={() => setIsHover(false)}
+    >
       {/* Drag handle */}
       <span
         {...attributes}
@@ -43,7 +59,8 @@ function Row({ player, group, index }) {
           padding: "0 6px",
           width: 22,
           textAlign: "center",
-          opacity: 0.75,
+          opacity: isDragging ? 1 : isHover ? 0.9 : 0.45,
+          transition: "opacity 120ms ease",
         }}
       >
         ☰
@@ -69,7 +86,15 @@ function Row({ player, group, index }) {
 
       {/* Name (flex) */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: 14,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
           {player.name}
         </div>
       </div>
