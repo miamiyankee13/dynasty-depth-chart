@@ -134,6 +134,7 @@ export default function App() {
       ) : (
         <div style={{ marginTop: 16 }}>
           <PlayerList
+            group={activeTab}
             players={playersByGroup[activeTab] ?? []}
             onReorder={(next) => updateGroupOrder(activeTab, next)}
           />

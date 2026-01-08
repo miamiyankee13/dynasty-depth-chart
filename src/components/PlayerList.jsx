@@ -4,10 +4,11 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-function Row({ player, group }) {
+function Row({ player, group, index }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: player.id });
   
   const th = groupTheme[group] ?? { color: "#e5e7eb" };
+  const slotLabel = group === "TAXI" ? `TX${index + 1}` : `${group}${index + 1}`;
   const style = {
   transform: CSS.Transform.toString(transform),
   transition,
@@ -32,6 +33,22 @@ function Row({ player, group }) {
       >
         ☰
       </span>
+      <div
+        style={{
+          minWidth: 58,
+          textAlign: "center",
+          fontSize: 12,
+          fontWeight: 800,
+          padding: "6px 8px",
+          borderRadius: 999,
+          background: th.bg ?? "#f3f4f6",
+          color: th.color,
+          border: `1px solid ${th.color}`,
+          userSelect: "none",
+        }}
+      >
+        {slotLabel}
+      </div>
 
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 600 }}>{player.name}</div>
@@ -43,7 +60,7 @@ function Row({ player, group }) {
   );
 }
 
-export function PlayerList({ players, onReorder }) {
+export function PlayerList({group, players, onReorder }) {
   function handleDragEnd(event) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -57,8 +74,8 @@ export function PlayerList({ players, onReorder }) {
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={players.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-        {players.map((p) => (
-          <Row key={p.id} player={p} group={p.group} />
+        {players.map((p, idx) => (
+          <Row key={p.id} player={p} group={group} index={idx} />
         ))}
       </SortableContext>
     </DndContext>
