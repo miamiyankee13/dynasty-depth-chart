@@ -44,29 +44,31 @@ export function parseDepthChartCsv(csvText) {
   });
 
   const players = [];
-  const picksByYear = {
-    "2026": [],
-    "2027": [],
-    "2028": [],
-  };
+  const picksByYear = { "2026": [], "2027": [], "2028": [] };
+
+  let leagueName = "";
+  let teamName = "";
 
   let taxiCounter = 1;
 
   for (const row of parsed.data) {
+    // Grab League/Team name (first non-empty wins)
+    if (!leagueName) leagueName = norm(row["League Name"]);
+    if (!teamName) teamName = norm(row["Team Name"]);
+
     // Picks (can appear on any row)
     picksByYear["2026"].push(...splitPicks(row["2026 Picks"]));
     picksByYear["2027"].push(...splitPicks(row["2027 Picks"]));
     picksByYear["2028"].push(...splitPicks(row["2028 Picks"]));
 
-    // Player parsing
+    // Players
     const posInfo = parsePos(row.Pos);
     if (!posInfo) continue;
 
     const name = norm(row.Name);
     if (!name) continue;
 
-    const order =
-      posInfo.group === "TAXI" ? taxiCounter++ : posInfo.order;
+    const order = posInfo.group === "TAXI" ? taxiCounter++ : posInfo.order;
 
     players.push({
       id: crypto.randomUUID(),
@@ -80,11 +82,8 @@ export function parseDepthChartCsv(csvText) {
     });
   }
 
-  // Sort players by group + order
   players.sort((a, b) => {
-    if (a.group !== b.group) {
-      return a.group.localeCompare(b.group);
-    }
+    if (a.group !== b.group) return a.group.localeCompare(b.group);
     return (a.order ?? 999) - (b.order ?? 999);
   });
 
@@ -92,8 +91,8 @@ export function parseDepthChartCsv(csvText) {
     teams: [
       {
         id: crypto.randomUUID(),
-        name: "Team Name",
-        leagueName: "League Name",
+        leagueName: leagueName || "League Name",
+        name: teamName || "Team Name",
         players,
         picksByYear,
         settingsText: "",
