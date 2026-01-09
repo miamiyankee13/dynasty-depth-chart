@@ -7,13 +7,12 @@ import { loadAppState, saveAppState } from "./services/storage";
 import { parseDepthChartCsv } from "./services/parseCsv";
 import { getDepthChartTemplateCsv, downloadCsv } from "./services/templateCsv";
 
-const TAB_ORDER = ["QB", "RB", "WR", "TE", "DEF", "TAXI", "PICKS", "SETTINGS"];
-
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
   const [activeTab, setActiveTab] = useState("QB");
   const [teamIndex, setTeamIndex] = useState(0);
   const fileInputRef = useRef(null);
+  const didMountTeamSwitchRef = useRef(false);
 
   useEffect(() => {
     if (state) saveAppState(state);
@@ -21,6 +20,16 @@ export default function App() {
 
   const teams = state?.teams ?? (state?.team ? [state.team] : []);
   const team = teams[teamIndex];
+
+  useEffect(() => {
+  // Avoid forcing QB on first mount/initial load
+  if (!didMountTeamSwitchRef.current) {
+    didMountTeamSwitchRef.current = true;
+    return;
+  }
+  setActiveTab("QB");
+}, [teamIndex]);
+
 
   function handleImportCsv(file) {
     const reader = new FileReader();
