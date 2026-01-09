@@ -19,6 +19,28 @@ export default function App() {
     if (state) saveAppState(state);
   }, [state]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const teams = await loadAllTeams({ csvTeams: [] });
+        if (!cancelled) {
+          setState({ teams });
+          setTeamIndex(0);
+          setActiveTab("QB");
+        }
+      } catch (e) {
+        console.warn("Failed to load teams:", e);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const teams = state?.teams ?? (state?.team ? [state.team] : []);
   const team = teams[teamIndex];
 

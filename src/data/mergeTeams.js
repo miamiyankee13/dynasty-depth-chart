@@ -2,11 +2,20 @@
 export function mergeTeams(...teamLists) {
   const flat = teamLists.flat().filter(Boolean);
 
-  // Ensure fields exist so UI never breaks
-  return flat.map((t) => ({
-    picksByYear: { "2026": [], "2027": [], "2028": [], ...(t.picksByYear || {}) },
-    settingsText: t.settingsText ?? "",
-    players: Array.isArray(t.players) ? t.players : [],
-    ...t,
-  }));
+  const byId = new Map();
+  for (const t of flat) {
+    if (!t?.id) continue;
+
+    // last-write-wins merge (fine for now)
+    const prev = byId.get(t.id) || {};
+    byId.set(t.id, {
+      picksByYear: { "2026": [], "2027": [], "2028": [], ...(prev.picksByYear || {}), ...(t.picksByYear || {}) },
+      settingsText: t.settingsText ?? prev.settingsText ?? "",
+      players: Array.isArray(t.players) ? t.players : (prev.players ?? []),
+      ...prev,
+      ...t,
+    });
+  }
+
+  return Array.from(byId.values());
 }
