@@ -82,23 +82,24 @@ export default function App() {
   }, [team]);
 
   const visibleTabs = useMemo(() => {
-  const base = ["QB", "RB", "WR", "TE"];
+    // When no team exists, only allow Settings so user can connect Sleeper
+    if (!team) return ["SETTINGS"];
 
-  // Only show DEF if this team has any DEF players
-  if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
+    const base = ["QB", "RB", "WR", "TE"];
 
-  // Always show TAXI if you want it always available;
-  // or make it conditional like DEF if you prefer.
-  base.push("TAXI", "PICKS", "SETTINGS");
+    // Only show DEF if this team has any DEF players
+    if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
 
-  return base;
-}, [playersByGroup]);
+    base.push("TAXI", "PICKS", "SETTINGS");
 
-useEffect(() => {
-  if (!visibleTabs.includes(activeTab)) {
-    setActiveTab("QB");
-  }
-}, [visibleTabs, activeTab]);
+    return base;
+  }, [team, playersByGroup]);
+
+  useEffect(() => {
+    if (!visibleTabs.includes(activeTab)) {
+      setActiveTab("QB");
+    }
+  }, [visibleTabs, activeTab]);
 
   function updateGroupOrder(group, nextList) {
     // when you reorder in a group, we renumber order 1..n
@@ -296,13 +297,12 @@ useEffect(() => {
       </div>
 
       {/* Content */}
-      {!team ? null : activeTab === "PICKS" ? (
-        <PicksView picksByYear={team.picksByYear} />
-      ) : activeTab === "SETTINGS" ? (
+      {activeTab === "SETTINGS" ? (
         <SettingsPanel
-          key={team.id} // IMPORTANT: remount per team so settings don't appear "global"
+          key={team?.id || "no-team"} // keep remount behavior
           team={team}
           onUpdateSettings={(nextText) => {
+            if (!team) return;
             setState((prev) => {
               const next = structuredClone(prev);
               next.teams[teamIndex].settingsText = nextText;
@@ -310,6 +310,8 @@ useEffect(() => {
             });
           }}
         />
+      ) : !team ? null : activeTab === "PICKS" ? (
+        <PicksView picksByYear={team.picksByYear} />
       ) : (
         <div style={{ marginTop: 18 }}>
           <PlayerList

@@ -17,10 +17,8 @@ export function getSleeperUsername() {
   return (localStorage.getItem(USERNAME_KEY) || "").trim();
 }
 
-function dedupeById(list) {
-  const m = new Map();
-  for (const x of list) m.set(x.id, x);
-  return Array.from(m.values());
+export function clearSleeperUsername() {
+  localStorage.removeItem("ddc.sleeper.username");
 }
 
 function toGroupFromPosition(pos) {
