@@ -4,7 +4,8 @@ import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { loadAppState, saveAppState } from "./services/storage";
-import { parseDepthChartCsv } from "./services/parseCsv";
+import { loadTeamsFromCsvText } from "./data/sources/csv/csvAdapter";
+import { loadAllTeams } from "./data/loadTeams";
 import { getDepthChartTemplateCsv, downloadCsv } from "./services/templateCsv";
 
 export default function App() {
@@ -30,21 +31,22 @@ export default function App() {
   setActiveTab("QB");
 }, [teamIndex]);
 
-
   function handleImportCsv(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = parseDepthChartCsv(reader.result);
-        setState({ teams: parsed.teams });
-        setTeamIndex(0);
-        setActiveTab("QB");
-      } catch (err) {
-        alert(err.message || "Failed to import CSV");
-      }
-    };
-    reader.readAsText(file);
-  }
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const csvTeams = loadTeamsFromCsvText(reader.result);
+      const mergedTeams = await loadAllTeams({ csvTeams });
+
+      setState({ teams: mergedTeams });
+      setTeamIndex(0);
+      setActiveTab("QB");
+    } catch (err) {
+      alert(err.message || "Failed to import CSV");
+    }
+  };
+  reader.readAsText(file);
+}
 
   const playersByGroup = useMemo(() => {
     const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
