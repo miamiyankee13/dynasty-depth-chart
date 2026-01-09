@@ -259,7 +259,7 @@ useEffect(() => {
       <div
         style={{
           position: "sticky",
-          top: 12,
+          top: 0,
           zIndex: 50,
           background: "#fff",
           paddingTop: 10,
@@ -287,7 +287,7 @@ useEffect(() => {
           }}
         />
       ) : (
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: 18 }}>
           <PlayerList
             group={activeTab}
             players={playersByGroup[activeTab] ?? []}
