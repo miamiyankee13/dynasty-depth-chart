@@ -73,6 +73,9 @@ button:focus-visible {
 
 /* Shared row shell (players, picks, etc) */
 .ddc-row {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
   transition:
     box-shadow 150ms ease,
     border-color 150ms ease,
@@ -85,8 +88,8 @@ button:focus-visible {
   background-color: rgba(243, 244, 246, 0.55);
 }
 
-/* Disable hover polish while dragging */
-.ddc-row[data-dragging="true"]:hover {
+/* Drag shadow handled by attribute */
+.ddc-row[data-dragging="true"] {
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
   background-color: white;
 }

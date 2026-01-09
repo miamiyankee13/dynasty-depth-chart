@@ -18,19 +18,10 @@ function Row({ player, group, index }) {
     transition,
     display: "flex",
     alignItems: "center",
-
-    // density (less wide)
     gap: 8,
     padding: "8px 10px",
     marginBottom: 6,
-
-    background: "white",
-    border: "1px solid #eee",
     borderLeft: `5px solid ${th.color}`,
-    borderRadius: 12,
-
-    // drag polish (keep inline to avoid fighting CSS hover)
-    boxShadow: isDragging ? "0 14px 30px rgba(0,0,0,0.12)" : "none",
     transformOrigin: "center",
     willChange: "transform",
   };
