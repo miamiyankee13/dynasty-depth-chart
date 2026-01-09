@@ -127,9 +127,22 @@ export function PlayerList({ group, players, onReorder }) {
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={players.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-        {players.map((p, idx) => (
+        {players.length === 0 ? (
+        <div
+          style={{
+            padding: "14px 10px",
+            fontSize: 13,
+            opacity: 0.7,
+            fontStyle: "italic"
+          }}
+        >
+          No players in this group.
+        </div>
+      ) : (
+        players.map((p, idx) => (
           <Row key={p.id} player={p} group={group} index={idx} />
-        ))}
+        ))
+      )}
       </SortableContext>
     </DndContext>
   );

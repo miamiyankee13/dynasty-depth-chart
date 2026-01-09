@@ -11,15 +11,14 @@ export function Tabs({ tabs, active, onChange }) {
           <button
             key={t}
             onClick={() => onChange(t)}
+            className="ddc-tab"
+            data-active={isActive ? "true" : "false"}
             style={{
-              padding: "8px 12px",
-              borderRadius: 999,
               border: `1px solid ${isActive ? th.color : "#e5e7eb"}`,
               background: isActive ? th.bg : "white",
               color: isActive ? th.color : "#111827",
               cursor: "pointer",
-              fontSize: 14,
-              fontWeight: isActive ? 700 : 600,
+              fontWeight: isActive ? 800 : 600,
             }}
           >
             {th.label}

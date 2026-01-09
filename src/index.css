@@ -98,12 +98,33 @@ button:focus-visible {
 .ddc-tab {
   height: 32px;
   padding: 0 12px;
-  border-radius: 8px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
+  outline: none;
   transition: background-color 120ms ease, color 120ms ease;
 }
 
-.ddc-tab:hover {
+.ddc-tab[data-active="false"]:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Mouse clicks: no focus ring */
+.ddc-tab:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Keyboard navigation: show focus ring */
+.ddc-tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.12);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .ddc-row:hover {
+    box-shadow: none;
+    background-color: white;
+    border-color: #eee;
+  }
 }
