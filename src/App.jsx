@@ -1,12 +1,14 @@
+// src/App.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs } from "./components/Tabs";
 import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
-import { SettingsPanel } from "./components/SettingsPanel";
-import { loadAppState, saveAppState } from "./services/storage";
+import { loadAppState, saveAppState, clearAppState } from "./services/storage";
 import {
   loadTeamsFromSleeper,
   getSleeperUsername,
+  setSleeperUsername,
+  clearSleeperUsername,
 } from "./data/sources/sleeper/sleeperAdapter";
 
 // ---- UI prefs helpers (team/tab persistence) ----
@@ -36,13 +38,13 @@ function computeInitialUiFromSavedState(savedState) {
     if (idx >= 0) teamIndex = idx;
   }
 
-  // Default tab: restore preference if present, else QB if a team exists, else SETTINGS
-  const teamExists = teams.length > 0;
-  const activeTab = prefs.activeTab || (teamExists ? "QB" : "SETTINGS");
+  // Default tab: restore preference if present, else QB
+  const activeTab = prefs.activeTab || "QB";
 
   return { teamIndex, activeTab };
 }
 
+// ---- merge local edits (order) back onto fresh Sleeper data ----
 function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
   const savedById = new Map((savedTeams || []).map((t) => [t.id, t]));
 
@@ -76,6 +78,24 @@ export default function App() {
   // Prevent UI prefs from being overwritten by defaults before we restore them
   const didHydrateRef = useRef(false);
 
+  // Header Sleeper connect state
+  const [sleeperInput, setSleeperInput] = useState(getSleeperUsername() || "");
+
+  function connectSleeper() {
+    const u = sleeperInput.trim();
+    if (!u) return;
+    setSleeperUsername(u);
+    location.reload(); // simple + reliable
+  }
+
+  function disconnectSleeper() {
+    clearSleeperUsername();
+    clearAppState(); // clears saved teams/order/etc
+    location.reload(); // starts clean
+  }
+
+  const connectedAs = getSleeperUsername();
+
   // Bootstrap Sleeper + restore UI prefs
   useEffect(() => {
     (async () => {
@@ -102,9 +122,7 @@ export default function App() {
           if (idx >= 0) nextIndex = idx;
         }
 
-        const nextTeam = mergedTeams[nextIndex];
-        const fallbackTab = nextTeam ? "QB" : "SETTINGS";
-        const nextTab = prefs.activeTab || fallbackTab;
+        const nextTab = prefs.activeTab || "QB";
 
         setState({ teams: mergedTeams });
         setTeamIndex((prev) => (prev === nextIndex ? prev : nextIndex));
@@ -118,7 +136,7 @@ export default function App() {
     })();
   }, []);
 
-  // Persist state locally (teams + settingsText + order)
+  // Persist state locally (teams + order)
   useEffect(() => {
     if (state) saveAppState(state);
   }, [state]);
@@ -153,17 +171,18 @@ export default function App() {
   }, [team]);
 
   const visibleTabs = useMemo(() => {
-    if (!team) return ["SETTINGS"];
+    if (!team) return [];
 
     const base = ["QB", "RB", "WR", "TE"];
     if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
-    base.push("TAXI", "PICKS", "SETTINGS");
+    base.push("TAXI", "PICKS");
     return base;
   }, [team, playersByGroup]);
 
   useEffect(() => {
+    if (visibleTabs.length === 0) return;
     if (!visibleTabs.includes(activeTab)) {
-      setActiveTab(visibleTabs[0] ?? "SETTINGS");
+      setActiveTab(visibleTabs[0] ?? "QB");
     }
   }, [visibleTabs, activeTab]);
 
@@ -217,30 +236,97 @@ export default function App() {
     >
       {/* APP BAR */}
       <div style={ui.card}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
-            <div style={{ fontSize: 22, fontWeight: 900 }}>Dynasty Depth Chart</div>
-          </div>
-
-          {/* League dropdown */}
-          {teams.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <select
-                value={teamIndex}
-                onChange={(e) => {
-                  setTeamIndex(Number(e.target.value));
-                  setActiveTab("QB");
-                }}
-                style={ui.select}
-              >
-                {teams.map((t, i) => (
-                  <option key={t.id} value={i}>
-                    {t.leagueName}
-                  </option>
-                ))}
-              </select>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {/* Title */}
+            <div style={{ fontSize: 22, fontWeight: 900 }}>
+              Dynasty Depth Chart
             </div>
-          )}
+
+            {/* Controls row under title */}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              {/* Sleeper connect (always visible) */}
+              <div>
+                {connectedAs ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800 }}>
+                      Sleeper: <span style={{ fontWeight: 900 }}>{connectedAs}</span>
+                    </div>
+                    <button
+                      onClick={disconnectSleeper}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        border: "1px solid #ddd",
+                        background: "white",
+                        cursor: "pointer",
+                        fontWeight: 800,
+                      }}
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <input
+                      value={sleeperInput}
+                      onChange={(e) => setSleeperInput(e.target.value)}
+                      placeholder="Sleeper username"
+                      style={{
+                        minWidth: 220,
+                        padding: "8px 10px",
+                        borderRadius: 10,
+                        border: "1px solid #e5e7eb",
+                        fontSize: 14,
+                        fontWeight: 700,
+                      }}
+                    />
+                    <button
+                      onClick={connectSleeper}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        border: "1px solid #111827",
+                        background: "#111827",
+                        color: "white",
+                        cursor: "pointer",
+                        fontWeight: 900,
+                      }}
+                    >
+                      Connect
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* League dropdown */}
+              {teams.length > 0 && (
+                <div>
+                  <select
+                    value={teamIndex}
+                    onChange={(e) => {
+                      setTeamIndex(Number(e.target.value));
+                      setActiveTab("QB");
+                    }}
+                    style={ui.select}
+                  >
+                    {teams.map((t, i) => (
+                      <option key={t.id} value={i}>
+                        {t.leagueName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -248,12 +334,21 @@ export default function App() {
       <div style={{ marginTop: 12, ...ui.card }}>
         {!team ? (
           <div style={{ fontSize: 14, ...ui.muted }}>
-            Connect Sleeper in Settings to load your leagues.
+            Connect Sleeper above to load your leagues.
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ fontSize: 16, fontWeight: 900 }}>
               {team.leagueName} — {team.name}
+            </div>
+
+            {/* Settings pills (ABOVE counts, as requested) */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {(team.settingsPills ?? []).map((s) => (
+                <div key={s} style={ui.pill}>
+                  {s}
+                </div>
+              ))}
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -271,40 +366,30 @@ export default function App() {
                 </div>
               ))}
             </div>
-
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {(team.settingsPills ?? []).map((s) => (
-                <div key={s} style={ui.pill}>
-                  {s}
-                </div>
-              ))}
-            </div>
-
           </div>
         )}
       </div>
 
       {/* Tabs */}
-      <div
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
-          background: "#fff",
-          paddingTop: 10,
-          paddingBottom: 10,
-          marginTop: 12,
-          borderBottom: "1px solid #eee",
-        }}
-      >
-        <Tabs tabs={visibleTabs} active={activeTab} onChange={setActiveTab} />
-      </div>
+      {visibleTabs.length > 0 && (
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 50,
+            background: "#fff",
+            paddingTop: 10,
+            paddingBottom: 10,
+            marginTop: 12,
+            borderBottom: "1px solid #eee",
+          }}
+        >
+          <Tabs tabs={visibleTabs} active={activeTab} onChange={setActiveTab} />
+        </div>
+      )}
 
       {/* Content */}
-      {activeTab === "SETTINGS" ? (
-        <SettingsPanel />
-      )
-      : !team ? null : activeTab === "PICKS" ? (
+      {!team ? null : activeTab === "PICKS" ? (
         <PicksView picksByYear={team.picksByYear} />
       ) : (
         <div style={{ marginTop: 18 }}>
