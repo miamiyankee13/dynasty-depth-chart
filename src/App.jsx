@@ -9,6 +9,35 @@ import {
   getSleeperUsername,
 } from "./data/sources/sleeper/sleeperAdapter";
 
+function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
+  const savedById = new Map((savedTeams || []).map((t) => [t.id, t]));
+
+  return (sleeperTeams || []).map((t) => {
+    const saved = savedById.get(t.id);
+    if (!saved) return t;
+
+    // Preserve per-league notes/settings
+    const settingsText = saved.settingsText ?? t.settingsText ?? "";
+
+    // Preserve drag/drop order per player id (and group)
+    const savedOrderByPlayerId = new Map(
+      (saved.players || []).map((p) => [p.id, { order: p.order, group: p.group }])
+    );
+
+    const players = (t.players || []).map((p) => {
+      const o = savedOrderByPlayerId.get(p.id);
+      if (!o) return p;
+
+      // Only apply order if player is still in the same group
+      if (o.group !== p.group) return p;
+
+      return { ...p, order: o.order };
+    });
+
+    return { ...t, settingsText, players };
+  });
+}
+
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
   const [activeTab, setActiveTab] = useState("QB");
@@ -17,20 +46,28 @@ export default function App() {
 
   // Bootstrap from Sleeper if connected
   useEffect(() => {
-    (async () => {
-      try {
-        const username = getSleeperUsername();
-        if (!username) return;
+  (async () => {
+    try {
+      const username = getSleeperUsername();
+      if (!username) return;
 
-        const sleeperTeams = await loadTeamsFromSleeper();
-        setState({ teams: sleeperTeams });
-        setTeamIndex(0);
-        setActiveTab("QB");
-      } catch (e) {
-        console.warn("Failed to load Sleeper teams:", e);
-      }
-    })();
-  }, []);
+      const sleeperTeams = await loadTeamsFromSleeper();
+
+      // Merge locally saved settings/order back onto the fresh Sleeper data
+      const saved = loadAppState();
+      const mergedTeams = mergeLocalEditsIntoSleeperTeams(
+        sleeperTeams,
+        saved?.teams ?? []
+      );
+
+      setState({ teams: mergedTeams });
+      setTeamIndex(0);
+      setActiveTab("QB");
+    } catch (e) {
+      console.warn("Failed to load Sleeper teams:", e);
+    }
+  })();
+}, []);
 
   // Persist state locally
   useEffect(() => {
