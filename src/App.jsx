@@ -352,11 +352,14 @@ export default function App() {
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {["QB", "RB", "WR", "TE", "DEF", "TAXI"].map((g) => (
-                <div key={g} style={ui.pill}>
-                  {g}: {playersByGroup[g]?.length ?? 0}
-                </div>
-              ))}
+              {["QB", "RB", "WR", "TE"]
+                .concat((playersByGroup.DEF?.length ?? 0) > 0 ? ["DEF"] : [])
+                .concat(["TAXI"])
+                .map((g) => (
+                  <div key={g} style={ui.pill}>
+                    {g}: {playersByGroup[g]?.length ?? 0}
+                  </div>
+                ))}
             </div>
 
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
