@@ -23,3 +23,23 @@ export function getLeagueUsers(leagueId) {
 export function getLeagueRosters(leagueId) {
   return fetchJson(`https://api.sleeper.app/v1/league/${leagueId}/rosters`);
 }
+
+export function getLeague(leagueId) {
+  return fetchJson(`https://api.sleeper.app/v1/league/${leagueId}`);
+}
+
+export function getLeagueTradedPicks(leagueId) {
+  return fetchJson(`https://api.sleeper.app/v1/league/${leagueId}/traded_picks`);
+}
+
+export function getLeagueDrafts(leagueId) {
+  return fetchJson(`https://api.sleeper.app/v1/league/${leagueId}/drafts`);
+}
+
+export function getDraft(draftId) {
+  return fetchJson(`https://api.sleeper.app/v1/draft/${draftId}`);
+}
+
+export function getDraftPicks(draftId) {
+  return fetchJson(`https://api.sleeper.app/v1/draft/${draftId}/picks`);
+}

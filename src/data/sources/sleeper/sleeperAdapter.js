@@ -4,7 +4,12 @@ import {
   getUserLeagues,
   getLeagueUsers,
   getLeagueRosters,
+  getLeague,
+  getLeagueTradedPicks,
+  getLeagueDrafts,   
+  getDraft       
 } from "./sleeperClient";
+
 import { getSleeperPlayersDict } from "./playersCache";
 
 const USERNAME_KEY = "ddc.sleeper.username";
@@ -52,6 +57,124 @@ function buildOwnerName(roster, usersById) {
   return u?.display_name || u?.username || "Sleeper Team";
 }
 
+function roundToText(round) {
+  const r = Number(round);
+  if (r === 1) return "1st";
+  if (r === 2) return "2nd";
+  if (r === 3) return "3rd";
+  return `${r}th`;
+}
+
+// draft_rounds in Sleeper can refer to startup draft (like 18+ rounds).
+// We only want rookie rounds. If it’s huge, fall back to 5.
+function getRookieRoundsFromLeague(league) {
+  const a = Number(league?.settings?.rookie_draft_rounds);
+  if (Number.isFinite(a) && a > 0 && a <= 10) return a;
+
+  const b = Number(league?.settings?.draft_rounds);
+  if (Number.isFinite(b) && b > 0 && b <= 10) return b;
+
+  return 5; // common default for dynasty rookie drafts
+}
+
+function formatSlotPick(round, slot) {
+  const rr = String(round);
+  const ss = String(slot).padStart(2, "0");
+  return `${rr}.${ss}`;
+}
+
+function formatFuturePick(round, originalRosterId, myRosterId, rosterIdToName) {
+  const base = roundToText(round);
+
+  // If it's originally your pick, no "via"
+  if (String(originalRosterId) === String(myRosterId)) return base;
+
+  const via =
+    rosterIdToName?.get(String(originalRosterId)) || `Roster ${originalRosterId}`;
+
+  return `${base} via ${via}`;
+}
+
+/**
+ * @param {Object} args
+ * @param {string[]} args.years - ["2026","2027","2028"]
+ * @param {number} args.rounds - rookie rounds
+ * @param {Array} args.tradedPicks - Sleeper /traded_picks response
+ * @param {number|string} args.myRosterId - your roster_id number
+ * @param {Map<string,string>} args.rosterIdToName - roster_id -> display_name (for "via")
+ * @param {Map<string,number>|null} args.slotByRosterId2026 - roster_id -> draft slot (1..N) for 2026, or null if unavailable
+ */
+function buildPicksByYearUsingOwnership({
+  years,
+  rounds,
+  tradedPicks,
+  myRosterId,
+  rosterIdToName,
+  slotByRosterId2026,
+}) {
+  const myId = String(myRosterId);
+
+  // pickKey -> currentOwnerRosterId
+  // pickKey is stable: season-round-originalRoster
+  const ownerByPickKey = new Map();
+
+  // 1) Baseline: my own original picks exist even if never traded.
+  for (const y of years) {
+    for (let r = 1; r <= rounds; r++) {
+      const key = `${y}-${r}-${myId}`;
+      ownerByPickKey.set(key, myId);
+    }
+  }
+
+  // 2) Overlay traded picks: set current owner for that pick identity
+  for (const p of tradedPicks || []) {
+    const year = String(p.season);
+    if (!years.includes(year)) continue;
+
+    const round = Number(p.round);
+    if (!Number.isFinite(round) || round < 1 || round > rounds) continue;
+
+    const original = String(p.roster_id); // ORIGINAL roster
+    const owner = String(p.owner_id);     // CURRENT owner
+
+    if (!original || !owner) continue;
+
+    const key = `${year}-${round}-${original}`;
+    ownerByPickKey.set(key, owner);
+  }
+
+  // 3) Collect picks I currently own, with formatting rules
+  const out = Object.fromEntries(years.map((y) => [y, []]));
+
+  for (const [key, owner] of ownerByPickKey.entries()) {
+    if (owner !== myId) continue;
+
+    const parts = key.split("-");
+    const year = parts[0];
+    const round = Number(parts[1]);
+    const originalRosterId = parts[2];
+
+    if (!out[year]) continue;
+
+    // 2026: show 1.01 style if we have slot mapping
+    if (year === "2026" && slotByRosterId2026) {
+      const slot = slotByRosterId2026.get(String(originalRosterId));
+      if (slot != null) {
+        out[year].push(formatSlotPick(round, slot));
+        continue;
+      }
+      // fallback if slot unknown
+      out[year].push(formatFuturePick(round, originalRosterId, myId, rosterIdToName));
+      continue;
+    }
+
+    // Future years: "Nth" or "Nth via Owner"
+    out[year].push(formatFuturePick(round, originalRosterId, myId, rosterIdToName));
+  }
+
+  return out;
+}
+
 // Keep it simple for Phase 1: use current year
 const DEFAULT_SEASON = new Date().getFullYear();
 
@@ -62,20 +185,91 @@ export async function loadTeamsFromSleeper() {
   const user = await getUserByUsername(username);
   const leagues = await getUserLeagues(user.user_id, DEFAULT_SEASON);
 
-  // ✅ load player dict once (cached)
+  // load player dict once (cached)
   const playersDict = await getSleeperPlayersDict();
 
   const teams = [];
 
   for (const lg of leagues) {
-    const [users, rosters] = await Promise.all([
+    
+    const [league, users, rosters, tradedPicks] = await Promise.all([
+      getLeague(lg.league_id),
       getLeagueUsers(lg.league_id),
       getLeagueRosters(lg.league_id),
+      getLeagueTradedPicks(lg.league_id),
     ]);
 
     const usersById = Object.fromEntries(users.map((u) => [u.user_id, u]));
+    const rosterIdToName = new Map(
+      (rosters || []).map((r) => {
+        const u = usersById[r.owner_id];
+        const name = u?.display_name || u?.username || `Roster ${r.roster_id}`;
+        return [String(r.roster_id), name];
+      })
+    );
+
     const myRoster = rosters.find((r) => r.owner_id === user.user_id);
     if (!myRoster) continue;
+
+    let slotByRosterId2026 = null;
+
+    try {
+      const drafts = await getLeagueDrafts(lg.league_id);
+
+      const d2026 =
+        (drafts || []).find((d) => String(d.season) === "2026") ||
+        (drafts || []).find((d) => String(d.status).toLowerCase() === "pre_draft") ||
+        (drafts || []).find((d) => String(d.status).toLowerCase() === "drafting") ||
+        (drafts || [])[0] ||
+        null;
+
+      if (d2026?.draft_id) {
+        const draft = await getDraft(d2026.draft_id);
+        const slotToRoster = draft?.slot_to_roster_id;
+
+        // Preferred: slot_to_roster_id (slot -> roster_id)
+        if (slotToRoster) {
+          const entries = Array.isArray(slotToRoster)
+            ? slotToRoster.map((v, i) => [String(i + 1), v])
+            : Object.entries(slotToRoster);
+
+          const map = new Map(); // roster_id -> slot
+          for (const [slotStr, rosterId] of entries) {
+            const slot = Number(slotStr);
+            if (!Number.isFinite(slot)) continue;
+            if (rosterId == null) continue;
+            map.set(String(rosterId), slot);
+          }
+
+          if (map.size > 0) slotByRosterId2026 = map;
+        } else {
+          // Fallback: draft_order (user_id -> slot)
+          const userIdToSlot = draft?.draft_order || {};
+          const map = new Map(); // roster_id -> slot
+
+          for (const r of rosters || []) {
+            const slot = userIdToSlot[r.owner_id];
+            if (slot != null) map.set(String(r.roster_id), Number(slot));
+          }
+
+          if (map.size > 0) slotByRosterId2026 = map;
+        }
+      }
+    } catch {
+      // Draft order not available — fall back to round-only display for 2026.
+    }
+
+    const years = ["2026", "2027", "2028"];
+    const rounds = getRookieRoundsFromLeague(league);
+
+    const picksByYear = buildPicksByYearUsingOwnership({
+      years,
+      rounds,
+      tradedPicks,
+      myRosterId: myRoster.roster_id,
+      rosterIdToName,
+      slotByRosterId2026, // can be null if no draft/order found
+    });
 
     const taxiSet = new Set(myRoster.taxi || []);
     const startersSet = new Set(myRoster.starters || []);
@@ -129,13 +323,12 @@ export async function loadTeamsFromSleeper() {
       name: buildOwnerName(myRoster, usersById),
 
       players: rows,
-      picksByYear: { "2026": [], "2027": [], "2028": [] },
+      picksByYear,
       settingsText: "",
 
       source: "sleeper",
       external: { platform: "sleeper", leagueId: lg.league_id, userId: user.user_id },
     });
   }
-
   return teams;
 }
