@@ -26,6 +26,132 @@ export function clearSleeperUsername() {
   localStorage.removeItem("ddc.sleeper.username");
 }
 
+function countStartersFromRosterPositions(league) {
+  const rp = league?.roster_positions;
+  if (!Array.isArray(rp)) return null;
+
+  // Bench/reserve-ish slots that should NOT count as starters.
+  // "BN" is the big one; others appear depending on league settings.
+  const NON_STARTER = new Set(["BN", "IR", "RES", "TAXI"]);
+
+  return rp.filter((slot) => !NON_STARTER.has(String(slot || "").toUpperCase())).length;
+}
+
+function isSuperflex(league) {
+  const rp = league?.roster_positions;
+  if (!Array.isArray(rp)) return false;
+  return rp.includes("SUPER_FLEX");
+}
+
+function isTwoQB(league) {
+  const rp = league?.roster_positions;
+  if (!Array.isArray(rp)) return false;
+  const qbCount = rp.filter((x) => x === "QB").length;
+  return qbCount >= 2;
+}
+
+function pprLabel(league) {
+  const rec = league?.scoring_settings?.rec;
+  if (rec === 1) return "PPR";
+  if (rec === 0.5) return "0.5 PPR";
+  if (rec === 0) return "No PPR";
+  return null;
+}
+
+function num(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function tePremiumAmount(league) {
+  const scoring = league?.scoring_settings || {};
+
+  // Base reception points (PPR / Half / etc.)
+  const baseRec = num(scoring.rec);
+  if (baseRec == null) return null;
+
+  // Case 1: TE has its own reception value (e.g. rec_te = 1.5 while rec = 1)
+  const recTe = num(scoring.rec_te);
+  if (recTe != null && recTe > baseRec) {
+    return recTe - baseRec;
+  }
+
+  // Case 2: Explicit TE bonus per reception (e.g. bonus_rec_te = 0.5)
+  const bonusTe = num(scoring.bonus_rec_te);
+  if (bonusTe != null && bonusTe > 0) {
+    return bonusTe;
+  }
+
+  return null;
+}
+
+function firstDownAmount(league) {
+  const scoring = league?.scoring_settings || {};
+
+  // Sleeper commonly uses: rush_fd, rec_fd (and pass_fd)
+  // Some people refer to them as first_down_rush/first_down_rec, so we support both.
+  const rush = num(scoring.rush_fd ?? scoring.first_down_rush);
+  const rec = num(scoring.rec_fd ?? scoring.first_down_rec);
+
+  const rushValid = rush != null && rush > 0;
+  const recValid = rec != null && rec > 0;
+
+  if (!rushValid && !recValid) return null;
+
+  // If both exist and match (most common)
+  if (rushValid && recValid && rush === rec) return rush;
+
+  // If only one exists, or they differ, return an object for clarity
+  return {
+    rush: rushValid ? rush : null,
+    rec: recValid ? rec : null,
+  };
+}
+
+function buildSettingsPillsFromLeague(league) {
+  const pills = [];
+
+  // Teams
+  if (typeof league?.total_rosters === "number") {
+    pills.push(`${league.total_rosters}T`);
+  }
+
+  // QB format
+  if (isSuperflex(league)) pills.push("SF");
+  else if (isTwoQB(league)) pills.push("2QB");
+  else pills.push("1QB");
+
+  // PPR
+  const ppr = pprLabel(league);
+  if (ppr) pills.push(ppr);
+
+  // TE Premium
+  const tep = tePremiumAmount(league);
+  if (tep != null && tep > 0) {
+    pills.push(`${tep} TEP`);
+  }
+
+  // Points per First Down (rush / rec)
+  const ppfd = firstDownAmount(league);
+  if (typeof ppfd === "number") {
+    pills.push(`${ppfd} PPFD`);
+  } else if (ppfd && (ppfd.rush || ppfd.rec)) {
+    // Rare edge case: different values for rush vs rec
+    const parts = [];
+    if (ppfd.rush) parts.push(`R ${ppfd.rush}`);
+    if (ppfd.rec) parts.push(`REC ${ppfd.rec}`);
+    pills.push(`PPFD (${parts.join(", ")})`);
+  }
+
+  // Starters
+  const starters = countStartersFromRosterPositions(league);
+  if (typeof starters === "number") {
+    pills.push(`Start ${starters}`);
+  }
+
+  return pills;
+}
+
 function toGroupFromPosition(pos) {
   const p = String(pos || "").toUpperCase();
   if (p === "QB" || p === "RB" || p === "WR" || p === "TE" || p === "DEF") return p;
@@ -337,6 +463,7 @@ export async function loadTeamsFromSleeper() {
       name: buildTeamName(myRoster, usersById),
       players: rows,
       picksByYear,
+      settingsPills: buildSettingsPillsFromLeague(league),
       source: "sleeper",
       external: { platform: "sleeper", leagueId: lg.league_id, userId: user.user_id },
     });

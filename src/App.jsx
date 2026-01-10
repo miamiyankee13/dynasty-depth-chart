@@ -271,6 +271,15 @@ export default function App() {
                 </div>
               ))}
             </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {(team.settingsPills ?? []).map((s) => (
+                <div key={s} style={ui.pill}>
+                  {s}
+                </div>
+              ))}
+            </div>
+
           </div>
         )}
       </div>
