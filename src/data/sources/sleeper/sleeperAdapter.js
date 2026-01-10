@@ -337,7 +337,6 @@ export async function loadTeamsFromSleeper() {
       name: buildTeamName(myRoster, usersById),
       players: rows,
       picksByYear,
-      settingsText: "",
       source: "sleeper",
       external: { platform: "sleeper", leagueId: lg.league_id, userId: user.user_id },
     });

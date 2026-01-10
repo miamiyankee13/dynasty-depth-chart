@@ -10,7 +10,6 @@ export function mergeTeams(...teamLists) {
     const prev = byId.get(t.id) || {};
     byId.set(t.id, {
       picksByYear: { "2026": [], "2027": [], "2028": [], ...(prev.picksByYear || {}), ...(t.picksByYear || {}) },
-      settingsText: t.settingsText ?? prev.settingsText ?? "",
       players: Array.isArray(t.players) ? t.players : (prev.players ?? []),
       ...prev,
       ...t,

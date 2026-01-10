@@ -43,15 +43,12 @@ function computeInitialUiFromSavedState(savedState) {
   return { teamIndex, activeTab };
 }
 
-// ---- merge local edits (settingsText + order) back onto fresh Sleeper data ----
 function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
   const savedById = new Map((savedTeams || []).map((t) => [t.id, t]));
 
   return (sleeperTeams || []).map((t) => {
     const saved = savedById.get(t.id);
     if (!saved) return t;
-
-    const settingsText = saved.settingsText ?? t.settingsText ?? "";
 
     const savedOrderByPlayerId = new Map(
       (saved.players || []).map((p) => [p.id, { order: p.order, group: p.group }])
@@ -64,7 +61,7 @@ function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
       return { ...p, order: o.order };
     });
 
-    return { ...t, settingsText, players };
+    return { ...t, players };
   });
 }
 
@@ -274,27 +271,6 @@ export default function App() {
                 </div>
               ))}
             </div>
-
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted, marginBottom: 6 }}>
-                League settings (optional)
-              </div>
-              <div
-                style={{
-                  fontSize: 13,
-                  border: "1px solid #eee",
-                  borderRadius: 12,
-                  padding: 10,
-                  background: "#fafafa",
-                  ...ui.muted,
-                }}
-              >
-                {team.settingsText?.trim()
-                  ? team.settingsText.trim().slice(0, 220) +
-                    (team.settingsText.trim().length > 220 ? "…" : "")
-                  : "Add settings on the Settings tab (format/notes are flexible)."}
-              </div>
-            </div>
           </div>
         )}
       </div>
@@ -317,19 +293,9 @@ export default function App() {
 
       {/* Content */}
       {activeTab === "SETTINGS" ? (
-        <SettingsPanel
-          key={team?.id || "no-team"}
-          team={team}
-          onUpdateSettings={(nextText) => {
-            if (!team) return;
-            setState((prev) => {
-              const next = structuredClone(prev);
-              next.teams[teamIndex].settingsText = nextText;
-              return next;
-            });
-          }}
-        />
-      ) : !team ? null : activeTab === "PICKS" ? (
+        <SettingsPanel />
+      )
+      : !team ? null : activeTab === "PICKS" ? (
         <PicksView picksByYear={team.picksByYear} />
       ) : (
         <div style={{ marginTop: 18 }}>
