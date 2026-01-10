@@ -12,3 +12,7 @@ export function loadAppState() {
 export function saveAppState(state) {
   localStorage.setItem(KEY, JSON.stringify(state));
 }
+
+export function clearAppState() {
+  localStorage.removeItem(KEY);
+}

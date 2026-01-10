@@ -52,9 +52,23 @@ function buildPlayerRow(player, group, order) {
   };
 }
 
-function buildOwnerName(roster, usersById) {
-  const u = usersById[roster.owner_id];
-  return u?.display_name || u?.username || "Sleeper Team";
+function buildTeamName(roster, usersById) {
+  const u = usersById?.[roster.owner_id];
+
+  //Preferred: Sleeper team name is commonly stored on the USER object metadata
+  const userTeamName = u?.metadata?.team_name;
+  if (userTeamName && String(userTeamName).trim()) {
+    return String(userTeamName).trim();
+  }
+
+  // Fallback: sometimes rosters include it (not guaranteed)
+  const rosterTeamName = roster?.metadata?.team_name;
+  if (rosterTeamName && String(rosterTeamName).trim()) {
+    return String(rosterTeamName).trim();
+  }
+
+  // Final fallback: display name / username
+  return u?.display_name || u?.username || "Team";
 }
 
 function roundToText(round) {
@@ -320,12 +334,10 @@ export async function loadTeamsFromSleeper() {
     teams.push({
       id: `sleeper:${lg.league_id}`,
       leagueName: lg.name || "Sleeper League",
-      name: buildOwnerName(myRoster, usersById),
-
+      name: buildTeamName(myRoster, usersById),
       players: rows,
       picksByYear,
       settingsText: "",
-
       source: "sleeper",
       external: { platform: "sleeper", leagueId: lg.league_id, userId: user.user_id },
     });

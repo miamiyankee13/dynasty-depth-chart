@@ -1,5 +1,6 @@
 // SettingsPanel.jsx
 import { useEffect, useState } from "react";
+import { clearAppState } from "../services/storage";
 import {
   getSleeperUsername,
   setSleeperUsername,
@@ -28,7 +29,8 @@ export function SettingsPanel({ team, onUpdateSettings }) {
 
   function disconnectSleeper() {
     clearSleeperUsername();
-    location.reload();
+    clearAppState();      //clears saved teams/settings
+    location.reload();    //starts clean
   }
 
   const connectedAs = getSleeperUsername();

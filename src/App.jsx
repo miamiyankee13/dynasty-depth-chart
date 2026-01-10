@@ -4,71 +4,50 @@ import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { loadAppState, saveAppState } from "./services/storage";
-import { loadTeamsFromCsvText } from "./data/sources/csv/csvAdapter";
-import { loadAllTeams } from "./data/loadTeams";
-import { getDepthChartTemplateCsv, downloadCsv } from "./services/templateCsv";
+import {
+  loadTeamsFromSleeper,
+  getSleeperUsername,
+} from "./data/sources/sleeper/sleeperAdapter";
 
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
   const [activeTab, setActiveTab] = useState("QB");
   const [teamIndex, setTeamIndex] = useState(0);
-  const fileInputRef = useRef(null);
   const didMountTeamSwitchRef = useRef(false);
 
+  // Bootstrap from Sleeper if connected
+  useEffect(() => {
+    (async () => {
+      try {
+        const username = getSleeperUsername();
+        if (!username) return;
+
+        const sleeperTeams = await loadTeamsFromSleeper();
+        setState({ teams: sleeperTeams });
+        setTeamIndex(0);
+        setActiveTab("QB");
+      } catch (e) {
+        console.warn("Failed to load Sleeper teams:", e);
+      }
+    })();
+  }, []);
+
+  // Persist state locally
   useEffect(() => {
     if (state) saveAppState(state);
   }, [state]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const teams = await loadAllTeams({ csvTeams: [] });
-        if (!cancelled) {
-          setState({ teams });
-          setTeamIndex(0);
-          setActiveTab("QB");
-        }
-      } catch (e) {
-        console.warn("Failed to load teams:", e);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const teams = state?.teams ?? (state?.team ? [state.team] : []);
+  const teams = state?.teams ?? [];
   const team = teams[teamIndex];
 
+  // On team switch, reset tab to QB (but not on initial mount)
   useEffect(() => {
-  // Avoid forcing QB on first mount/initial load
-  if (!didMountTeamSwitchRef.current) {
-    didMountTeamSwitchRef.current = true;
-    return;
-  }
-  setActiveTab("QB");
-}, [teamIndex]);
-
-  function handleImportCsv(file) {
-  const reader = new FileReader();
-  reader.onload = async () => {
-    try {
-      const csvTeams = loadTeamsFromCsvText(reader.result);
-      const mergedTeams = await loadAllTeams({ csvTeams });
-
-      setState({ teams: mergedTeams });
-      setTeamIndex(0);
-      setActiveTab("QB");
-    } catch (err) {
-      alert(err.message || "Failed to import CSV");
+    if (!didMountTeamSwitchRef.current) {
+      didMountTeamSwitchRef.current = true;
+      return;
     }
-  };
-  reader.readAsText(file);
-}
+    setActiveTab("QB");
+  }, [teamIndex]);
 
   const playersByGroup = useMemo(() => {
     const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
@@ -82,27 +61,21 @@ export default function App() {
   }, [team]);
 
   const visibleTabs = useMemo(() => {
-    // When no team exists, only allow Settings so user can connect Sleeper
     if (!team) return ["SETTINGS"];
 
     const base = ["QB", "RB", "WR", "TE"];
-
-    // Only show DEF if this team has any DEF players
     if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
-
     base.push("TAXI", "PICKS", "SETTINGS");
-
     return base;
   }, [team, playersByGroup]);
 
   useEffect(() => {
     if (!visibleTabs.includes(activeTab)) {
-      setActiveTab("QB");
+      setActiveTab(visibleTabs[0] ?? "SETTINGS");
     }
   }, [visibleTabs, activeTab]);
 
   function updateGroupOrder(group, nextList) {
-    // when you reorder in a group, we renumber order 1..n
     const renumbered = nextList.map((p, idx) => ({ ...p, order: idx + 1 }));
 
     setState((prev) => {
@@ -120,25 +93,6 @@ export default function App() {
       border: "1px solid #eee",
       borderRadius: 16,
       padding: 14,
-    },
-    btn: {
-      padding: "10px 12px",
-      borderRadius: 12,
-      border: "1px solid #ddd",
-      background: "white",
-      cursor: "pointer",
-      fontSize: 14,
-      fontWeight: 700,
-    },
-    btnPrimary: {
-      padding: "10px 12px",
-      borderRadius: 12,
-      border: "1px solid #111827",
-      background: "#111827",
-      color: "white",
-      cursor: "pointer",
-      fontSize: 14,
-      fontWeight: 800,
     },
     select: {
       padding: "10px 12px",
@@ -174,15 +128,11 @@ export default function App() {
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1 }}>
             <div style={{ fontSize: 22, fontWeight: 900 }}>Dynasty Depth Chart</div>
-            <div style={{ fontSize: 13, ...ui.muted }}>
-              Upload a CSV template to view your leagues as a clean depth chart.
-            </div>
           </div>
 
-          {/* League dropdown (league name only) */}
+          {/* League dropdown */}
           {teams.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted }}>League</div>
               <select
                 value={teamIndex}
                 onChange={(e) => setTeamIndex(Number(e.target.value))}
@@ -196,89 +146,60 @@ export default function App() {
               </select>
             </div>
           )}
-
-          {/* Actions */}
-          <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              style={{ display: "none" }}
-              onChange={(e) => e.target.files?.[0] && handleImportCsv(e.target.files[0])}
-            />
-
-            <button style={ui.btnPrimary} onClick={() => fileInputRef.current?.click()}>
-              Import CSV
-            </button>
-
-            <button
-              style={ui.btn}
-              onClick={() =>
-                downloadCsv("Dynasty Depth Charts - TEMPLATE.csv", getDepthChartTemplateCsv())
-              }
-            >
-              Download template
-            </button>
-          </div>
         </div>
       </div>
 
       {/* SUMMARY STRIP */}
-<div style={{ marginTop: 12, ...ui.card }}>
-  {!team ? (
-    <div style={{ fontSize: 14, ...ui.muted }}>Import a CSV to begin.</div>
-  ) : (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      {/* League / Team */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted }}>League — Team</div>
-        <div style={{ fontSize: 16, fontWeight: 900 }}>
-          {team.leagueName} — {team.name}
-        </div>
-      </div>
-
-      {/* Position counts */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        {["QB", "RB", "WR", "TE", "DEF", "TAXI"].map((g) => (
-          <div key={g} style={ui.pill}>
-            {g}: {playersByGroup[g]?.length ?? 0}
+      <div style={{ marginTop: 12, ...ui.card }}>
+        {!team ? (
+          <div style={{ fontSize: 14, ...ui.muted }}>
+            Connect Sleeper in Settings to load your leagues.
           </div>
-        ))}
-      </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ fontSize: 16, fontWeight: 900 }}>
+              {team.leagueName} — {team.name}
+            </div>
 
-      {/* Picks counts */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        {["2026", "2027", "2028"].map((y) => (
-          <div key={y} style={ui.pill}>
-            {y} picks: {team.picksByYear?.[y]?.length ?? 0}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {["QB", "RB", "WR", "TE", "DEF", "TAXI"].map((g) => (
+                <div key={g} style={ui.pill}>
+                  {g}: {playersByGroup[g]?.length ?? 0}
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {["2026", "2027", "2028"].map((y) => (
+                <div key={y} style={ui.pill}>
+                  {y} picks: {team.picksByYear?.[y]?.length ?? 0}
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted, marginBottom: 6 }}>
+                League settings (optional)
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  border: "1px solid #eee",
+                  borderRadius: 12,
+                  padding: 10,
+                  background: "#fafafa",
+                  ...ui.muted,
+                }}
+              >
+                {team.settingsText?.trim()
+                  ? team.settingsText.trim().slice(0, 220) +
+                    (team.settingsText.trim().length > 220 ? "…" : "")
+                  : "Add settings on the Settings tab (format/notes are flexible)."}
+              </div>
+            </div>
           </div>
-        ))}
+        )}
       </div>
-
-      {/* Settings preview */}
-      <div>
-        <div style={{ fontSize: 12, fontWeight: 800, ...ui.muted, marginBottom: 6 }}>
-          League settings (optional)
-        </div>
-        <div
-          style={{
-            fontSize: 13,
-            border: "1px solid #eee",
-            borderRadius: 12,
-            padding: 10,
-            background: "#fafafa",
-            ...ui.muted,
-          }}
-        >
-          {team.settingsText?.trim()
-            ? team.settingsText.trim().slice(0, 220) +
-              (team.settingsText.trim().length > 220 ? "…" : "")
-            : "Add settings on the Settings tab (format/notes are flexible)."}
-        </div>
-      </div>
-    </div>
-  )}
-</div>
 
       {/* Tabs */}
       <div
@@ -299,7 +220,7 @@ export default function App() {
       {/* Content */}
       {activeTab === "SETTINGS" ? (
         <SettingsPanel
-          key={team?.id || "no-team"} // keep remount behavior
+          key={team?.id || "no-team"}
           team={team}
           onUpdateSettings={(nextText) => {
             if (!team) return;
