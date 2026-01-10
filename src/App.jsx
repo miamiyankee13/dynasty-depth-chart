@@ -9,6 +9,41 @@ import {
   getSleeperUsername,
 } from "./data/sources/sleeper/sleeperAdapter";
 
+// ---- UI prefs helpers (team/tab persistence) ----
+const UI_KEY = "ddc.ui";
+
+function loadUiPrefs() {
+  try {
+    return JSON.parse(localStorage.getItem(UI_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveUiPrefs(next) {
+  const prev = loadUiPrefs();
+  localStorage.setItem(UI_KEY, JSON.stringify({ ...prev, ...next }));
+}
+
+function computeInitialUiFromSavedState(savedState) {
+  const prefs = loadUiPrefs();
+
+  const teams = savedState?.teams ?? [];
+  let teamIndex = 0;
+
+  if (prefs.activeTeamId && teams.length) {
+    const idx = teams.findIndex((t) => t.id === prefs.activeTeamId);
+    if (idx >= 0) teamIndex = idx;
+  }
+
+  // Default tab: restore preference if present, else QB if a team exists, else SETTINGS
+  const teamExists = teams.length > 0;
+  const activeTab = prefs.activeTab || (teamExists ? "QB" : "SETTINGS");
+
+  return { teamIndex, activeTab };
+}
+
+// ---- merge local edits (settingsText + order) back onto fresh Sleeper data ----
 function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
   const savedById = new Map((savedTeams || []).map((t) => [t.id, t]));
 
@@ -16,10 +51,8 @@ function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
     const saved = savedById.get(t.id);
     if (!saved) return t;
 
-    // Preserve per-league notes/settings
     const settingsText = saved.settingsText ?? t.settingsText ?? "";
 
-    // Preserve drag/drop order per player id (and group)
     const savedOrderByPlayerId = new Map(
       (saved.players || []).map((p) => [p.id, { order: p.order, group: p.group }])
     );
@@ -27,10 +60,7 @@ function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
     const players = (t.players || []).map((p) => {
       const o = savedOrderByPlayerId.get(p.id);
       if (!o) return p;
-
-      // Only apply order if player is still in the same group
       if (o.group !== p.group) return p;
-
       return { ...p, order: o.order };
     });
 
@@ -40,36 +70,58 @@ function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
 
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
-  const [activeTab, setActiveTab] = useState("QB");
-  const [teamIndex, setTeamIndex] = useState(0);
-  const didMountTeamSwitchRef = useRef(false);
 
-  // Bootstrap from Sleeper if connected
+  const initialUi = computeInitialUiFromSavedState(state);
+
+  const [teamIndex, setTeamIndex] = useState(initialUi.teamIndex);
+  const [activeTab, setActiveTab] = useState(initialUi.activeTab);
+
+  // Prevent UI prefs from being overwritten by defaults before we restore them
+  const didHydrateRef = useRef(false);
+
+  // Bootstrap Sleeper + restore UI prefs
   useEffect(() => {
-  (async () => {
-    try {
-      const username = getSleeperUsername();
-      if (!username) return;
+    (async () => {
+      try {
+        const username = getSleeperUsername();
+        if (!username) {
+          didHydrateRef.current = true;
+          return;
+        }
 
-      const sleeperTeams = await loadTeamsFromSleeper();
+        const sleeperTeams = await loadTeamsFromSleeper();
 
-      // Merge locally saved settings/order back onto the fresh Sleeper data
-      const saved = loadAppState();
-      const mergedTeams = mergeLocalEditsIntoSleeperTeams(
-        sleeperTeams,
-        saved?.teams ?? []
-      );
+        const saved = loadAppState();
+        const mergedTeams = mergeLocalEditsIntoSleeperTeams(
+          sleeperTeams,
+          saved?.teams ?? []
+        );
 
-      setState({ teams: mergedTeams });
-      setTeamIndex(0);
-      setActiveTab("QB");
-    } catch (e) {
-      console.warn("Failed to load Sleeper teams:", e);
-    }
-  })();
-}, []);
+        const prefs = loadUiPrefs();
 
-  // Persist state locally
+        let nextIndex = 0;
+        if (prefs.activeTeamId) {
+          const idx = mergedTeams.findIndex((t) => t.id === prefs.activeTeamId);
+          if (idx >= 0) nextIndex = idx;
+        }
+
+        const nextTeam = mergedTeams[nextIndex];
+        const fallbackTab = nextTeam ? "QB" : "SETTINGS";
+        const nextTab = prefs.activeTab || fallbackTab;
+
+        setState({ teams: mergedTeams });
+        setTeamIndex((prev) => (prev === nextIndex ? prev : nextIndex));
+        setActiveTab((prev) => (prev === nextTab ? prev : nextTab));
+
+        didHydrateRef.current = true;
+      } catch (e) {
+        console.warn("Failed to load Sleeper teams:", e);
+        didHydrateRef.current = true;
+      }
+    })();
+  }, []);
+
+  // Persist state locally (teams + settingsText + order)
   useEffect(() => {
     if (state) saveAppState(state);
   }, [state]);
@@ -77,14 +129,20 @@ export default function App() {
   const teams = state?.teams ?? [];
   const team = teams[teamIndex];
 
-  // On team switch, reset tab to QB (but not on initial mount)
+  // Persist active tab (AFTER hydrate)
   useEffect(() => {
-    if (!didMountTeamSwitchRef.current) {
-      didMountTeamSwitchRef.current = true;
-      return;
-    }
-    setActiveTab("QB");
-  }, [teamIndex]);
+    if (!didHydrateRef.current) return;
+    if (!activeTab) return;
+    saveUiPrefs({ activeTab });
+  }, [activeTab]);
+
+  // Persist active team id (AFTER hydrate)
+  useEffect(() => {
+    if (!didHydrateRef.current) return;
+    const t = teams?.[teamIndex];
+    if (!t?.id) return;
+    saveUiPrefs({ activeTeamId: t.id });
+  }, [teams, teamIndex]);
 
   const playersByGroup = useMemo(() => {
     const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
@@ -172,7 +230,10 @@ export default function App() {
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <select
                 value={teamIndex}
-                onChange={(e) => setTeamIndex(Number(e.target.value))}
+                onChange={(e) => {
+                  setTeamIndex(Number(e.target.value));
+                  setActiveTab("QB");
+                }}
                 style={ui.select}
               >
                 {teams.map((t, i) => (
