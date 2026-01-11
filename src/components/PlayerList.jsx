@@ -63,6 +63,8 @@ function Row({ player, group, index, onToggleInjured }) {
         style={{
           cursor: isDragging ? "grabbing" : "grab",
           userSelect: "none",
+          WebkitUserSelect: "none",
+          WebkitTouchCallout: "none",
           fontSize: 18,
           padding: "0",
           width: 40,

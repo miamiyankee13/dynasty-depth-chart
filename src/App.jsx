@@ -375,6 +375,7 @@ export default function App() {
                 ) : (
                   <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                     <input
+                      className="ddc-sleeper-input"
                       value={sleeperInput}
                       onChange={(e) => setSleeperInput(e.target.value)}
                       placeholder="Sleeper username"
