@@ -1,5 +1,5 @@
 /* ================================
-   Dynasty Depth Chart – Theme
+   Dynasty Depth Chart – Theme & Tokens
    ================================ */
 
 :root {
@@ -34,7 +34,7 @@
 
   --ddc-danger: #dc2626;
 
-    /* Typography scale */
+  /* Typography scale */
   --ddc-text-xs: 12px;
   --ddc-text-sm: 13px;
   --ddc-text-md: 14px;
@@ -52,6 +52,11 @@
   --ddc-space-4: 16px;
   --ddc-space-5: 20px;
   --ddc-space-6: 24px;
+
+  /* Focus / Accent */
+  --ddc-accent: #6aa7ff;
+  --ddc-focus-ring: 0 0 0 3px
+    color-mix(in oklab, var(--ddc-accent) 30%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -73,8 +78,16 @@
     --ddc-row-hover-border: rgba(255, 255, 255, 0.18);
 
     --ddc-danger: #fb7185;
+
+    /* Stronger focus ring in dark mode */
+    --ddc-focus-ring: 0 0 0 3px
+      color-mix(in oklab, var(--ddc-accent) 55%, transparent);
   }
 }
+
+/* ================================
+   Document defaults
+   ================================ */
 
 html,
 body {
@@ -96,7 +109,20 @@ option {
 }
 
 /* ================================
-   Dynasty Depth Chart – UI Polish
+   Focus & Interaction Affordances
+   ================================ */
+
+.ddc-focusable:focus-visible {
+  outline: none;
+  box-shadow: var(--ddc-focus-ring);
+}
+
+.ddc-pressable:active {
+  transform: translateY(1px);
+}
+
+/* ================================
+   UI Polish
    ================================ */
 
 /* Shared row shell (players, picks, etc) */
@@ -145,45 +171,9 @@ option {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.ddc-tab:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-.ddc-tab:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.12);
-}
-
-/* =========================================
-   Focus & Interaction Affordances
-   ========================================= */
-
-:root {
-  --ddc-accent: #6aa7ff;
-  --ddc-focus-ring: 0 0 0 3px
-    color-mix(in oklab, var(--ddc-accent) 30%, transparent);
-}
-
-.ddc-focusable:focus-visible {
-  outline: none;
-  box-shadow: var(--ddc-focus-ring);
-}
-
-.ddc-pressable:active {
-  transform: translateY(1px);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ddc-focus-ring: 0 0 0 3px
-      color-mix(in oklab, var(--ddc-accent) 55%, transparent);
-  }
-}
-
-/* ==================================================
+/* ================================
    Mobile ergonomics (phones only)
-================================================== */
+   ================================ */
 
 /* Meta line hidden by default (desktop) */
 .ddc-meta {
