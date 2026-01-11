@@ -1,5 +1,12 @@
 import { groupTheme } from "../theme";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  DndContext,
+  closestCenter,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  TouchSensor,
+} from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -52,12 +59,13 @@ function Row({ player, group, index, onToggleInjured }) {
         {...attributes}
         {...listeners}
         title="Drag to reorder"
+        className="ddc-drag-handle"
         style={{
           cursor: isDragging ? "grabbing" : "grab",
           userSelect: "none",
           fontSize: 18,
-          padding: "0 4px",
-          width: 20,
+          padding: "0",
+          width: 40,
           textAlign: "center",
           opacity: isDragging ? 1 : 0.55,
           transition: "opacity 120ms ease",
@@ -69,6 +77,7 @@ function Row({ player, group, index, onToggleInjured }) {
 
       {/* Slot pill */}
       <div
+        className="ddc-col-slot"
         style={{
           width: 60,
           textAlign: "center",
@@ -87,7 +96,7 @@ function Row({ player, group, index, onToggleInjured }) {
       </div>
 
       {/* Name (flex) */}
-<div style={{ flex: 1, minWidth: 0 }}>
+<div className="ddc-col-name" style={{ flex: 1, minWidth: 0 }}>
   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
     <div
       style={{
@@ -104,7 +113,12 @@ function Row({ player, group, index, onToggleInjured }) {
       {player.name}
     </div>
 
+    <div className="ddc-meta">
+      {player.nflTeam || "—"} • {player.age || "—"}
+    </div>
+
     <button
+      className="ddc-injury-btn"
       onClick={() => onToggleInjured?.(player.id)}
       title={player.injured ? "Mark healthy" : "Mark injured"}
       style={{
@@ -129,13 +143,13 @@ function Row({ player, group, index, onToggleInjured }) {
 </div>
 
       {/* Age */}
-      <div style={{ width: 60, textAlign: "right" }}>
+      <div className="ddc-col-age" style={{ width: 60, textAlign: "right" }}>
         <div style={colMuted}>Age</div>
         <div style={colValue}>{player.age || "—"}</div>
       </div>
 
       {/* NFL Team */}
-      <div style={{ width: 76, textAlign: "right" }}>
+      <div className="ddc-col-team" style={{ width: 76, textAlign: "right" }}>
         <div style={colMuted}>Team</div>
         <div style={colValue}>{player.nflTeam || "—"}</div>
       </div>
@@ -145,6 +159,15 @@ function Row({ player, group, index, onToggleInjured }) {
 }
 
 export function PlayerList({ group, players, onReorder, onToggleInjured }) {
+    const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 150, tolerance: 8 },
+    })
+  );
+
   function handleDragEnd(event) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -156,7 +179,11 @@ export function PlayerList({ group, players, onReorder, onToggleInjured }) {
   }
 
   return (
-    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
       <SortableContext items={players.map((p) => p.id)} strategy={verticalListSortingStrategy}>
         {players.length === 0 ? (
         <div

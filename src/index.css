@@ -37,7 +37,6 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Dark theme */
     --ddc-bg: #0b1220;
     --ddc-text: #e5e7eb;
     --ddc-muted: rgba(229, 231, 235, 0.75);
@@ -74,14 +73,6 @@ option {
   background: var(--ddc-card-bg);
 }
 
-@media (prefers-color-scheme: dark) {
-  select,
-  option {
-    color: var(--ddc-text);
-    background: var(--ddc-card-bg);
-  }
-}
-
 /* ================================
    Dynasty Depth Chart – UI Polish
    ================================ */
@@ -97,6 +88,7 @@ option {
     background-color 150ms ease;
 }
 
+/* Always allow hover lift (desktop/laptop will work regardless of media query quirks) */
 .ddc-row:hover {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.07);
   border-color: var(--ddc-row-hover-border);
@@ -109,7 +101,16 @@ option {
   background-color: var(--ddc-card-bg);
 }
 
-/* Compact tab buttons (future-proofing) */
+/* Only disable hover on small screens (prevents sticky “hover” on iPhone) */
+@media (max-width: 520px) {
+  .ddc-row:hover {
+    box-shadow: none;
+    background-color: var(--ddc-card-bg);
+    border-color: var(--ddc-border);
+  }
+}
+
+/* Compact tab buttons */
 .ddc-tab {
   height: 32px;
   padding: 0 12px;
@@ -124,22 +125,81 @@ option {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Mouse clicks: no focus ring */
 .ddc-tab:focus {
   outline: none;
   box-shadow: none;
 }
 
-/* Keyboard navigation: show focus ring */
 .ddc-tab:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.12);
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .ddc-row:hover {
-    box-shadow: none;
-    background-color: var(--ddc-card-bg);
-    border-color: var(--ddc-border);
+/* ==================================================
+   Mobile ergonomics (phones only)
+================================================== */
+
+/* Meta line hidden by default (desktop) */
+.ddc-meta {
+  display: none;
+}
+
+@media (max-width: 520px) {
+  /* Reduce outer padding */
+  main {
+    padding: 12px !important;
+  }
+
+  /* Slightly softer cards */
+  .ddc-row {
+    border-radius: 14px;
+  }
+
+  /* Tabs scroll horizontally */
+  .ddc-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+
+  .ddc-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ddc-tab {
+    flex: 0 0 auto;
+    height: 30px;
+    font-size: 12px;
+    padding: 0 10px;
+  }
+
+  /* Larger touch targets */
+  .ddc-drag-handle,
+  .ddc-injury-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* Hide low-value columns */
+  .ddc-col-age,
+  .ddc-col-team {
+    display: none !important;
+  }
+
+  /* Smaller slot pill */
+  .ddc-col-slot {
+    width: 44px !important;
+    font-size: 10px !important;
+  }
+
+  /* Show stacked meta under name */
+  .ddc-meta {
+    display: block;
+    font-size: 12px;
+    opacity: 0.75;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
