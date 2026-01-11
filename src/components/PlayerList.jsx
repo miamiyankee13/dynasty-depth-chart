@@ -24,18 +24,20 @@ function Row({ player, group, index, onToggleInjured }) {
     borderLeft: `5px solid ${th.color}`,
     transformOrigin: "center",
     willChange: "transform",
+    color: "var(--ddc-text)",
   };
 
   const colMuted = {
     fontSize: 11,
-    opacity: 0.65,
+    color: "var(--ddc-muted)",
     fontWeight: 700,
     letterSpacing: 0.2,
   };
+
   const colValue = {
     fontSize: 14,
     fontWeight: 800,
-    color: "#111827",
+    color: "var(--ddc-text)",
   };
 
   return (
@@ -59,6 +61,7 @@ function Row({ player, group, index, onToggleInjured }) {
           textAlign: "center",
           opacity: isDragging ? 1 : 0.55,
           transition: "opacity 120ms ease",
+          color: "var(--ddc-text)",
         }}
       >
         ☰
@@ -94,7 +97,7 @@ function Row({ player, group, index, onToggleInjured }) {
         overflow: "hidden",
         textOverflow: "ellipsis",
         fontStyle: player.injured ? "italic" : "normal",
-        color: player.injured ? "#dc2626" : "#111827",
+        color: player.injured ? "var(--ddc-danger)" : "var(--ddc-text)",
       }}
       title={player.name}
     >
@@ -106,8 +109,8 @@ function Row({ player, group, index, onToggleInjured }) {
       title={player.injured ? "Mark healthy" : "Mark injured"}
       style={{
         background: "transparent",
-        color: player.injured ? "#dc2626" : "#9ca3af",
-        border: player.injured ? "1px solid #dc2626" : "none",
+        color: player.injured ? "var(--ddc-danger)" : "var(--ddc-muted)",
+        border: player.injured ? "1px solid var(--ddc-danger)" : "none",
         borderRadius: 8,
         padding: "2px 6px",
         cursor: "pointer",
@@ -136,7 +139,7 @@ function Row({ player, group, index, onToggleInjured }) {
         <div style={colMuted}>Team</div>
         <div style={colValue}>{player.nflTeam || "—"}</div>
       </div>
-      
+
     </div>
   );
 }

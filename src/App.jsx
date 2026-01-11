@@ -292,29 +292,34 @@ export default function App() {
 
   const ui = {
     card: {
-      background: "white",
-      border: "1px solid #eee",
+      background: "var(--ddc-card-bg)",
+      border: "1px solid var(--ddc-border)",
       borderRadius: 16,
       padding: 14,
+      color: "var(--ddc-text)",
     },
     select: {
       padding: "10px 12px",
       borderRadius: 12,
-      border: "1px solid #e5e7eb",
-      background: "white",
+      border: "1px solid var(--ddc-input-border)",
+      background: "var(--ddc-input-bg)",
+      color: "var(--ddc-text)",
       fontSize: 14,
       fontWeight: 700,
       minWidth: 280,
+      appearance: "auto",
+      WebkitAppearance: "auto",
     },
     pill: {
       padding: "8px 10px",
       borderRadius: 999,
-      border: "1px solid #eee",
-      background: "#fafafa",
+      border: "1px solid var(--ddc-pill-border)",
+      background: "var(--ddc-pill-bg)",
+      color: "var(--ddc-text)",
       fontSize: 13,
       fontWeight: 800,
     },
-    muted: { opacity: 0.75 },
+    muted: { color: "var(--ddc-muted)" },
   };
 
   return (
@@ -324,6 +329,7 @@ export default function App() {
         padding: 24,
         maxWidth: 900,
         margin: "0 auto",
+        color: "var(--ddc-text)",
       }}
     >
       {/* APP BAR */}
@@ -356,8 +362,9 @@ export default function App() {
                       style={{
                         padding: "8px 12px",
                         borderRadius: 10,
-                        border: "1px solid #ddd",
-                        background: "white",
+                        border: "1px solid var(--ddc-input-border)",
+                        background: "var(--ddc-input-bg)",
+                        color: "var(--ddc-text)",
                         cursor: "pointer",
                         fontWeight: 800,
                       }}
@@ -375,7 +382,9 @@ export default function App() {
                         minWidth: 220,
                         padding: "8px 10px",
                         borderRadius: 10,
-                        border: "1px solid #e5e7eb",
+                        border: "1px solid var(--ddc-input-border)",
+                        background: "var(--ddc-input-bg)",
+                        color: "var(--ddc-text)",
                         fontSize: 14,
                         fontWeight: 700,
                       }}
@@ -385,9 +394,9 @@ export default function App() {
                       style={{
                         padding: "8px 12px",
                         borderRadius: 10,
-                        border: "1px solid #111827",
-                        background: "#111827",
-                        color: "white",
+                        border: "1px solid var(--ddc-border)",
+                        background: "var(--ddc-text)",
+                        color: "var(--ddc-card-bg)",
                         cursor: "pointer",
                         fontWeight: 900,
                       }}
@@ -472,11 +481,11 @@ export default function App() {
             position: "sticky",
             top: 0,
             zIndex: 50,
-            background: "#fff",
+            background: "var(--ddc-card-bg)",
             paddingTop: 10,
             paddingBottom: 10,
             marginTop: 12,
-            borderBottom: "1px solid #eee",
+            borderBottom: "1px solid var(--ddc-border)",
           }}
         >
           <Tabs tabs={visibleTabs} active={activeTab} onChange={setActiveTab} />

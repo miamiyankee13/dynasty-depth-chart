@@ -59,10 +59,10 @@ function PickChip({ text }) {
         alignItems: "center",
         padding: "8px 10px",
         borderRadius: 999,
-        border: `1px solid ${theme ? theme.color : "#e5e7eb"}`,
-        background: theme ? theme.bg : "white",
-        color: theme ? theme.color : "#111827",
-        fontSize: 13,
+        border: `1px solid ${theme ? theme.color : "var(--ddc-pill-border)"}`,
+        background: theme ? theme.bg : "var(--ddc-pill-bg)",
+        color: theme ? theme.color : "var(--ddc-text)",
+                fontSize: 13,
         fontWeight: 800,
         lineHeight: 1,
         whiteSpace: "nowrap",
@@ -86,22 +86,25 @@ export function PicksView({ picksByYear }) {
           <div
             key={y}
             style={{
-              background: "white",
-              border: "1px solid #eee",
+              background: "var(--ddc-card-bg)",
+              border: "1px solid var(--ddc-border)",
               borderRadius: 16,
               padding: 14,
               marginBottom: 12,
+              color: "var(--ddc-text)",
             }}
           >
             <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 10 }}>
-              <div style={{ fontSize: 16, fontWeight: 900 }}>{y} Picks</div>
-              <div style={{ fontSize: 12, opacity: 0.7, fontWeight: 700 }}>
+              <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ddc-text)" }}>
+                {y} Picks
+              </div>
+              <div style={{ fontSize: 12, color: "var(--ddc-muted)", fontWeight: 700 }}>
                 {hasAny ? `${picks.length} total` : "None"}
               </div>
             </div>
 
             {!hasAny ? (
-              <div style={{ fontSize: 13, opacity: 0.75 }}>
+              <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
                 No picks listed for {y}.
               </div>
             ) : (

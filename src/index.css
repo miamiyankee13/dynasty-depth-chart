@@ -1,69 +1,84 @@
+/* ================================
+   Dynasty Depth Chart – Theme
+   ================================ */
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
+  /* Tell the browser we support both */
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Light theme defaults */
+  --ddc-bg: #f3f4f6;
+  --ddc-text: #111827;
+  --ddc-muted: rgba(17, 24, 39, 0.75);
+
+  --ddc-card-bg: #ffffff;
+  --ddc-border: #e5e7eb;
+
+  --ddc-pill-bg: #fafafa;
+  --ddc-pill-border: #e5e7eb;
+
+  --ddc-input-bg: #ffffff;
+  --ddc-input-border: #e5e7eb;
+
+  --ddc-row-hover-bg: rgba(243, 244, 246, 0.55);
+  --ddc-row-hover-border: rgba(17, 24, 39, 0.14);
+
+  --ddc-danger: #dc2626;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark theme */
+    --ddc-bg: #0b1220;
+    --ddc-text: #e5e7eb;
+    --ddc-muted: rgba(229, 231, 235, 0.75);
+
+    --ddc-card-bg: #0f172a;
+    --ddc-border: rgba(255, 255, 255, 0.12);
+
+    --ddc-pill-bg: rgba(255, 255, 255, 0.06);
+    --ddc-pill-border: rgba(255, 255, 255, 0.14);
+
+    --ddc-input-bg: rgba(255, 255, 255, 0.06);
+    --ddc-input-border: rgba(255, 255, 255, 0.16);
+
+    --ddc-row-hover-bg: rgba(255, 255, 255, 0.04);
+    --ddc-row-hover-border: rgba(255, 255, 255, 0.18);
+
+    --ddc-danger: #fb7185;
+  }
 }
 
+html,
 body {
+  background: var(--ddc-bg);
+  color: var(--ddc-text);
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Make native selects/options readable in dark mode */
+select,
+option {
+  color: var(--ddc-text);
+  background: var(--ddc-card-bg);
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+@media (prefers-color-scheme: dark) {
+  select,
+  option {
+    color: var(--ddc-text);
+    background: var(--ddc-card-bg);
   }
 }
 
@@ -73,8 +88,8 @@ button:focus-visible {
 
 /* Shared row shell (players, picks, etc) */
 .ddc-row {
-  background: white;
-  border: 1px solid #eee;
+  background: var(--ddc-card-bg);
+  border: 1px solid var(--ddc-border);
   border-radius: 12px;
   transition:
     box-shadow 150ms ease,
@@ -84,14 +99,14 @@ button:focus-visible {
 
 .ddc-row:hover {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.07);
-  border-color: rgba(17, 24, 39, 0.14);
-  background-color: rgba(243, 244, 246, 0.55);
+  border-color: var(--ddc-row-hover-border);
+  background-color: var(--ddc-row-hover-bg);
 }
 
 /* Drag shadow handled by attribute */
 .ddc-row[data-dragging="true"] {
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
-  background-color: white;
+  background-color: var(--ddc-card-bg);
 }
 
 /* Compact tab buttons (future-proofing) */
@@ -124,7 +139,7 @@ button:focus-visible {
 @media (hover: none) and (pointer: coarse) {
   .ddc-row:hover {
     box-shadow: none;
-    background-color: white;
-    border-color: #eee;
+    background-color: var(--ddc-card-bg);
+    border-color: var(--ddc-border);
   }
 }
