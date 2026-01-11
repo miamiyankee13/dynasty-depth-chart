@@ -35,15 +35,16 @@ function Row({ player, group, index, onToggleInjured }) {
   };
 
   const colMuted = {
-    fontSize: 11,
+    fontSize: "var(--ddc-text-xs)",
     color: "var(--ddc-muted)",
-    fontWeight: 700,
-    letterSpacing: 0.2,
+    fontWeight: "var(--ddc-weight-medium)",
+    letterSpacing: "0.02em",
+    textTransform: "uppercase",
   };
 
   const colValue = {
-    fontSize: 14,
-    fontWeight: 800,
+    fontSize: "var(--ddc-text-md)",
+    fontWeight: "var(--ddc-weight-bold)",
     color: "var(--ddc-text)",
   };
 
@@ -83,15 +84,16 @@ function Row({ player, group, index, onToggleInjured }) {
         style={{
           width: 60,
           textAlign: "center",
-          fontSize: 11,
-          fontWeight: 900,
+          fontSize: "var(--ddc-text-xs)",
+          fontWeight: "var(--ddc-weight-bold)",
           padding: "5px 6px",
           borderRadius: 999,
           background: th.bg ?? "#f3f4f6",
           color: th.color,
           border: `1px solid ${th.color}`,
           userSelect: "none",
-          lineHeight: "14px",
+          letterSpacing: "0.02em",
+          lineHeight: 1,
         }}
       >
         {slotLabel}
@@ -102,8 +104,8 @@ function Row({ player, group, index, onToggleInjured }) {
   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
     <div
       style={{
-        fontWeight: 800,
-        fontSize: 14,
+        fontSize: "var(--ddc-text-md)",
+        fontWeight: "var(--ddc-weight-bold)",
         whiteSpace: "nowrap",
         overflow: "hidden",
         textOverflow: "ellipsis",

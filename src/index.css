@@ -33,6 +33,25 @@
   --ddc-row-hover-border: rgba(17, 24, 39, 0.14);
 
   --ddc-danger: #dc2626;
+
+    /* Typography scale */
+  --ddc-text-xs: 12px;
+  --ddc-text-sm: 13px;
+  --ddc-text-md: 14px;
+  --ddc-text-lg: 16px;
+  --ddc-text-xl: 18px;
+
+  --ddc-weight-regular: 450;
+  --ddc-weight-medium: 600;
+  --ddc-weight-bold: 800;
+
+  /* Spacing scale */
+  --ddc-space-1: 4px;
+  --ddc-space-2: 8px;
+  --ddc-space-3: 12px;
+  --ddc-space-4: 16px;
+  --ddc-space-5: 20px;
+  --ddc-space-6: 24px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -64,6 +83,9 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+
+  font-size: var(--ddc-text-md);
+  line-height: 1.45;
 }
 
 /* Make native selects/options readable in dark mode */

@@ -62,8 +62,9 @@ function PickChip({ text }) {
         border: `1px solid ${theme ? theme.color : "var(--ddc-pill-border)"}`,
         background: theme ? theme.bg : "var(--ddc-pill-bg)",
         color: theme ? theme.color : "var(--ddc-text)",
-                fontSize: 13,
-        fontWeight: 800,
+        fontSize: "var(--ddc-text-sm)",
+        fontWeight: "var(--ddc-weight-bold)",
+        letterSpacing: "0.01em",
         lineHeight: 1,
         whiteSpace: "nowrap",
       }}
@@ -98,7 +99,15 @@ export function PicksView({ picksByYear }) {
               <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ddc-text)" }}>
                 {y} Picks
               </div>
-              <div style={{ fontSize: 12, color: "var(--ddc-muted)", fontWeight: 700 }}>
+              <div
+                style={{
+                  fontSize: "var(--ddc-text-xs)",
+                  color: "var(--ddc-muted)",
+                  fontWeight: "var(--ddc-weight-medium)",
+                  letterSpacing: "0.02em",
+                  textTransform: "uppercase",
+                }}
+              >
                 {hasAny ? `${picks.length} total` : "None"}
               </div>
             </div>

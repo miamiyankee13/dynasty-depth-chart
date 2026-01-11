@@ -381,7 +381,14 @@ export default function App() {
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {/* Title */}
-            <div style={{ fontSize: 22, fontWeight: 900 }}>
+            <div
+              style={{
+                fontSize: "var(--ddc-text-xl)",
+                fontWeight: "var(--ddc-weight-bold)",
+                lineHeight: 1.25,
+                letterSpacing: "-0.01em",
+              }}
+            >
               Dynasty Depth Chart
             </div>
 
@@ -478,7 +485,13 @@ export default function App() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ fontSize: 16, fontWeight: 900 }}>
+            <div
+              style={{
+                fontSize: "var(--ddc-text-lg)",
+                fontWeight: "var(--ddc-weight-bold)",
+                letterSpacing: "-0.01em",
+              }}
+            >
               {team.leagueName} — {team.name}
             </div>
 
