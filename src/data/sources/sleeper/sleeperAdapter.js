@@ -179,6 +179,21 @@ function buildPlayerRow(player, group, order) {
   };
 }
 
+function rosterHasUser(roster, userId) {
+  const uid = String(userId);
+
+  // Primary owner
+  if (String(roster?.owner_id) === uid) return true;
+
+  // Co-owners (can be missing, null, or an array)
+  const co = roster?.co_owners;
+  if (Array.isArray(co)) {
+    return co.map(String).includes(uid);
+  }
+
+  return false;
+}
+
 function buildTeamName(roster, usersById) {
   const u = usersById?.[roster.owner_id];
 
@@ -349,7 +364,7 @@ export async function loadTeamsFromSleeper() {
       })
     );
 
-    const myRoster = rosters.find((r) => r.owner_id === user.user_id);
+    const myRoster = (rosters || []).find((r) => rosterHasUser(r, user.user_id));
     if (!myRoster) continue;
 
     let slotByRosterId2026 = null;
