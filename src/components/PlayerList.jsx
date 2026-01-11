@@ -84,21 +84,46 @@ function Row({ player, group, index, onToggleInjured }) {
       </div>
 
       {/* Name (flex) */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontWeight: 800,
-            fontSize: 14,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            fontStyle: player.injured ? "italic" : "normal",
-            color: player.injured ? "#dc2626" : "#111827",
-          }}
-        >
-          {player.name}
-        </div>
-      </div>
+<div style={{ flex: 1, minWidth: 0 }}>
+  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+    <div
+      style={{
+        fontWeight: 800,
+        fontSize: 14,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        fontStyle: player.injured ? "italic" : "normal",
+        color: player.injured ? "#dc2626" : "#111827",
+      }}
+      title={player.name}
+    >
+      {player.name}
+    </div>
+
+    <button
+      onClick={() => onToggleInjured?.(player.id)}
+      title={player.injured ? "Mark healthy" : "Mark injured"}
+      style={{
+        background: "transparent",
+        color: player.injured ? "#dc2626" : "#9ca3af",
+        border: player.injured ? "1px solid #dc2626" : "none",
+        borderRadius: 8,
+        padding: "2px 6px",
+        cursor: "pointer",
+        fontWeight: 900,
+        fontSize: 12,
+        lineHeight: 1,
+        opacity: player.injured ? 1 : 0.6,
+        outline: "none",
+        boxShadow: "none",
+        flex: "0 0 auto",
+      }}
+    >
+      ✚
+    </button>
+  </div>
+</div>
 
       {/* Age */}
       <div style={{ width: 60, textAlign: "right" }}>
@@ -111,28 +136,7 @@ function Row({ player, group, index, onToggleInjured }) {
         <div style={colMuted}>Team</div>
         <div style={colValue}>{player.nflTeam || "—"}</div>
       </div>
-
-      <button
-        onClick={() => onToggleInjured?.(player.id)}
-        title={player.injured ? "Mark healthy" : "Mark injured"}
-        style={{
-          marginLeft: 8,
-          background: "transparent",
-          color: player.injured ? "#dc2626" : "#9ca3af",
-          border: player.injured ? "1px solid #dc2626" : "none",
-          borderRadius: 8,
-          padding: "4px 6px",
-          cursor: "pointer",
-          fontWeight: 900,
-          fontSize: 12,
-          lineHeight: 1,
-          opacity: player.injured ? 1 : 0.6,
-          outline: "none",
-          boxShadow: "none",
-        }}
-      >
-        ✚
-      </button>
+      
     </div>
   );
 }
