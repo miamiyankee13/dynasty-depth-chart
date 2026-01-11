@@ -27,6 +27,34 @@ function saveUiPrefs(next) {
   localStorage.setItem(UI_KEY, JSON.stringify({ ...prev, ...next }));
 }
 
+const EDITS_KEY = "ddc.edits.v1";
+
+function loadEdits() {
+  try {
+    return JSON.parse(localStorage.getItem(EDITS_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveEdits(next) {
+  localStorage.setItem(EDITS_KEY, JSON.stringify(next));
+}
+
+function getTeamEdits(teamId) {
+  const all = loadEdits();
+  return all?.[teamId] || {};
+}
+
+function setTeamEdit(teamId, playerId, patch) {
+  const all = loadEdits();
+  const teamEdits = all[teamId] || {};
+  const prev = teamEdits[playerId] || {};
+  teamEdits[playerId] = { ...prev, ...patch };
+  all[teamId] = teamEdits;
+  saveEdits(all);
+}
+
 function computeInitialUiFromSavedState(savedState) {
   const prefs = loadUiPrefs();
 
@@ -50,23 +78,60 @@ function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
 
   return (sleeperTeams || []).map((t) => {
     const saved = savedById.get(t.id);
-    if (!saved) return t;
 
+    // 1) From saved app state (covers normal browser refresh)
     const savedByPlayerId = new Map(
-      (saved.players || []).map((p) => [
+      (saved?.players || []).map((p) => [
         p.id,
-        { order: p.order, group: p.group, injured: !!p.injured },
+        { group: p.group, order: p.order, injured: !!p.injured },
       ])
     );
 
+    // 2) From persistent edits (covers disconnect/reconnect)
+    const persistentEdits = getTeamEdits(t.id); // playerId -> {group, order, injured}
+
+    // Track max order per group so new players can be appended
+    const maxOrderByGroup = new Map();
+    for (const p of t.players || []) {
+      const o = Number(p.order);
+      if (!Number.isFinite(o)) continue;
+      const g = p.group;
+      maxOrderByGroup.set(g, Math.max(maxOrderByGroup.get(g) || 0, o));
+    }
+
     const players = (t.players || []).map((p) => {
-      const o = savedByPlayerId.get(p.id);
-      if (!o) return p;
-      if (o.group !== p.group) return p;
-      return { ...p, order: o.order, injured: o.injured };
+      const e1 = savedByPlayerId.get(p.id);
+      const e2 = persistentEdits?.[p.id];
+
+      // Prefer persistent edits over saved state
+      const e = e2 || e1;
+      if (!e) return p;
+
+      const sameGroup = e.group === p.group;
+
+      const injured =
+        typeof e.injured === "boolean" ? e.injured : !!p.injured;
+
+      // Only apply order if group matches (prevents weirdness if your grouping rules change)
+      if (sameGroup && e.order != null) {
+        return { ...p, order: e.order, injured };
+      }
+
+      return { ...p, injured };
     });
 
-    return { ...t, players };
+    // Append any players that still don't have an order (new players, etc.)
+    const normalized = players.map((p) => {
+      const o = Number(p.order);
+      if (Number.isFinite(o)) return p;
+
+      const g = p.group;
+      const nextOrder = (maxOrderByGroup.get(g) || 0) + 1;
+      maxOrderByGroup.set(g, nextOrder);
+      return { ...p, order: nextOrder };
+    });
+
+    return { ...t, players: normalized };
   });
 }
 
@@ -93,8 +158,9 @@ export default function App() {
 
   function disconnectSleeper() {
     clearSleeperUsername();
-    clearAppState(); // clears saved teams/order/etc
-    location.reload(); // starts clean
+    clearAppState();      // clears teams from saved app state
+    setState({ teams: [] }); // makes teams disappear immediately in UI
+    location.reload();
   }
 
   const connectedAs = getSleeperUsername();
@@ -192,6 +258,11 @@ export default function App() {
   function updateGroupOrder(group, nextList) {
     const renumbered = nextList.map((p, idx) => ({ ...p, order: idx + 1 }));
 
+    // Persist order so disconnect/reconnect won't wipe it
+    for (const p of renumbered) {
+      setTeamEdit(team.id, p.id, { group, order: p.order });
+    }
+
     setState((prev) => {
       const next = structuredClone(prev);
       const t = next.teams[teamIndex];
@@ -209,7 +280,12 @@ export default function App() {
       const t = next.teams[teamIndex];
       const p = t.players.find((x) => x.id === playerId);
       if (!p) return prev;
+
       p.injured = !p.injured;
+
+      // Persist injured flag so disconnect/reconnect won't wipe it
+      setTeamEdit(t.id, p.id, { group: p.group, injured: !!p.injured });
+
       return next;
     });
   }
