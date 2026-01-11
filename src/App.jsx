@@ -205,6 +205,42 @@ export default function App() {
     })();
   }, []);
 
+  // iPadOS Safari fix:
+  // When returning to the app (after app switching or tabbing),
+  // Safari may auto-focus a <select> or input and leave the page
+  // in a broken interaction state (clicks / drag stop working).
+  // Blurring the active element on visibility restore clears it.
+  useEffect(() => {
+    function blurActiveElementSoon() {
+      // Use rAF so Safari finishes restoring the page first
+      requestAnimationFrame(() => {
+        const el = document.activeElement;
+        if (el && typeof el.blur === "function") {
+          el.blur();
+        }
+      });
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") {
+        blurActiveElementSoon();
+      }
+    }
+
+    function handlePageShow() {
+      // Covers Safari BFCache restores (very common on iPadOS)
+      blurActiveElementSoon();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("pageshow", handlePageShow);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
+
   // Persist state locally (teams + order)
   useEffect(() => {
     if (state) saveAppState(state);
@@ -416,6 +452,7 @@ export default function App() {
                     onChange={(e) => {
                       setTeamIndex(Number(e.target.value));
                       setActiveTab("QB");
+                      e.target.blur(); // iPadOS: don’t leave native select focused
                     }}
                     style={ui.select}
                   >
