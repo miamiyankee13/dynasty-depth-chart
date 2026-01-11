@@ -1,19 +1,39 @@
 // src/data/sources/sleeper/sleeperClient.js
+
+function withCacheBust(url) {
+  const sep = url.includes("?") ? "&" : "?";
+  return `${url}${sep}t=${Date.now()}`;
+}
+
 async function fetchJson(url) {
-  const res = await fetch(url);
+  const finalUrl = withCacheBust(url);
+
+  const res = await fetch(finalUrl, {
+    cache: "no-store",
+    headers: {
+      "cache-control": "no-cache",
+      pragma: "no-cache",
+    },
+  });
+
   if (!res.ok) {
     const msg = await res.text().catch(() => "");
-    throw new Error(`Sleeper request failed (${res.status}): ${msg || url}`);
+    throw new Error(`Sleeper request failed (${res.status}): ${msg || finalUrl}`);
   }
+
   return res.json();
 }
 
 export function getUserByUsername(username) {
-  return fetchJson(`https://api.sleeper.app/v1/user/${encodeURIComponent(username)}`);
+  return fetchJson(
+    `https://api.sleeper.app/v1/user/${encodeURIComponent(username)}`
+  );
 }
 
 export function getUserLeagues(userId, season) {
-  return fetchJson(`https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`);
+  return fetchJson(
+    `https://api.sleeper.app/v1/user/${userId}/leagues/nfl/${season}`
+  );
 }
 
 export function getLeagueUsers(leagueId) {
