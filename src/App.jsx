@@ -153,6 +153,7 @@ export default function App() {
     const u = sleeperInput.trim();
     if (!u) return;
     setSleeperUsername(u);
+    clearAppState(); // clears only dynasty-depthchart.v1 (NOT ddc.edits.v1)
     location.reload(); // simple + reliable
   }
 
