@@ -11,7 +11,7 @@ export function Tabs({ tabs, active, onChange }) {
           <button
             key={t}
             onClick={() => onChange(t)}
-            className="ddc-tab"
+            className="ddc-tab ddc-focusable ddc-pressable"
             data-active={isActive ? "true" : "false"}
             style={{
               border: `1px solid ${isActive ? th.color : "#e5e7eb"}`,

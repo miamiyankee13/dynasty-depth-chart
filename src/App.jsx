@@ -402,6 +402,7 @@ export default function App() {
                       Sleeper: <span style={{ fontWeight: 900 }}>{connectedAs}</span>
                     </div>
                     <button
+                      className="ddc-focusable ddc-pressable"
                       onClick={disconnectSleeper}
                       style={{
                         padding: "8px 12px",
@@ -419,7 +420,7 @@ export default function App() {
                 ) : (
                   <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                     <input
-                      className="ddc-sleeper-input"
+                      className="ddc-sleeper-input ddc-focusable"
                       value={sleeperInput}
                       onChange={(e) => setSleeperInput(e.target.value)}
                       placeholder="Sleeper username"
@@ -435,6 +436,7 @@ export default function App() {
                       }}
                     />
                     <button
+                      className="ddc-focusable ddc-pressable"
                       onClick={connectSleeper}
                       style={{
                         padding: "8px 12px",
@@ -456,6 +458,7 @@ export default function App() {
               {teams.length > 0 && (
                 <div>
                   <select
+                    className="ddc-focusable"
                     value={teamIndex}
                     onChange={(e) => {
                       setTeamIndex(Number(e.target.value));

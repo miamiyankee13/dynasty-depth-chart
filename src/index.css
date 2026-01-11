@@ -155,6 +155,32 @@ option {
   box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.12);
 }
 
+/* =========================================
+   Focus & Interaction Affordances
+   ========================================= */
+
+:root {
+  --ddc-accent: #6aa7ff;
+  --ddc-focus-ring: 0 0 0 3px
+    color-mix(in oklab, var(--ddc-accent) 30%, transparent);
+}
+
+.ddc-focusable:focus-visible {
+  outline: none;
+  box-shadow: var(--ddc-focus-ring);
+}
+
+.ddc-pressable:active {
+  transform: translateY(1px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ddc-focus-ring: 0 0 0 3px
+      color-mix(in oklab, var(--ddc-accent) 55%, transparent);
+  }
+}
+
 /* ==================================================
    Mobile ergonomics (phones only)
 ================================================== */
