@@ -10,10 +10,7 @@ async function fetchJson(url) {
 
   const res = await fetch(finalUrl, {
     cache: "no-store",
-    headers: {
-      "cache-control": "no-cache",
-      pragma: "no-cache",
-    },
+    // IMPORTANT: no custom headers (avoids CORS preflight issues with Sleeper)
   });
 
   if (!res.ok) {
