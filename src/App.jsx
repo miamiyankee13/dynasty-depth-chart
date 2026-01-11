@@ -52,15 +52,18 @@ function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
     const saved = savedById.get(t.id);
     if (!saved) return t;
 
-    const savedOrderByPlayerId = new Map(
-      (saved.players || []).map((p) => [p.id, { order: p.order, group: p.group }])
+    const savedByPlayerId = new Map(
+      (saved.players || []).map((p) => [
+        p.id,
+        { order: p.order, group: p.group, injured: !!p.injured },
+      ])
     );
 
     const players = (t.players || []).map((p) => {
-      const o = savedOrderByPlayerId.get(p.id);
+      const o = savedByPlayerId.get(p.id);
       if (!o) return p;
       if (o.group !== p.group) return p;
-      return { ...p, order: o.order };
+      return { ...p, order: o.order, injured: o.injured };
     });
 
     return { ...t, players };
@@ -194,6 +197,19 @@ export default function App() {
       const t = next.teams[teamIndex];
       const others = t.players.filter((p) => p.group !== group);
       t.players = [...others, ...renumbered];
+      return next;
+    });
+  }
+
+  function togglePlayerInjured(playerId) {
+    if (!team) return;
+
+    setState((prev) => {
+      const next = structuredClone(prev);
+      const t = next.teams[teamIndex];
+      const p = t.players.find((x) => x.id === playerId);
+      if (!p) return prev;
+      p.injured = !p.injured;
       return next;
     });
   }
@@ -400,6 +416,7 @@ export default function App() {
             group={activeTab}
             players={playersByGroup[activeTab] ?? []}
             onReorder={(next) => updateGroupOrder(activeTab, next)}
+            onToggleInjured={togglePlayerInjured}
           />
         </div>
       )}

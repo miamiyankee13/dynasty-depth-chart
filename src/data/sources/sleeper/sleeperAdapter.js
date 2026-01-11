@@ -175,6 +175,7 @@ function buildPlayerRow(player, group, order) {
     position: group,
     order,
     note: "",
+    injured: false,
   };
 }
 

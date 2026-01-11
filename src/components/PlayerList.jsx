@@ -4,7 +4,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-function Row({ player, group, index }) {
+function Row({ player, group, index, onToggleInjured }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: player.id,
   });
@@ -92,6 +92,8 @@ function Row({ player, group, index }) {
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
+            fontStyle: player.injured ? "italic" : "normal",
+            color: player.injured ? "#dc2626" : "#111827",
           }}
         >
           {player.name}
@@ -109,11 +111,33 @@ function Row({ player, group, index }) {
         <div style={colMuted}>Team</div>
         <div style={colValue}>{player.nflTeam || "—"}</div>
       </div>
+
+      <button
+        onClick={() => onToggleInjured?.(player.id)}
+        title={player.injured ? "Mark healthy" : "Mark injured"}
+        style={{
+          marginLeft: 8,
+          background: "transparent",
+          color: player.injured ? "#dc2626" : "#9ca3af",
+          border: player.injured ? "1px solid #dc2626" : "none",
+          borderRadius: 8,
+          padding: "4px 6px",
+          cursor: "pointer",
+          fontWeight: 900,
+          fontSize: 12,
+          lineHeight: 1,
+          opacity: player.injured ? 1 : 0.6,
+          outline: "none",
+          boxShadow: "none",
+        }}
+      >
+        ✚
+      </button>
     </div>
   );
 }
 
-export function PlayerList({ group, players, onReorder }) {
+export function PlayerList({ group, players, onReorder, onToggleInjured }) {
   function handleDragEnd(event) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -140,7 +164,13 @@ export function PlayerList({ group, players, onReorder }) {
         </div>
       ) : (
         players.map((p, idx) => (
-          <Row key={p.id} player={p} group={group} index={idx} />
+          <Row
+            key={p.id}
+            player={p}
+            group={group}
+            index={idx}
+            onToggleInjured={onToggleInjured}
+          />
         ))
       )}
       </SortableContext>
