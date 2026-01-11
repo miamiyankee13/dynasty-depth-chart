@@ -527,7 +527,12 @@ export default function App() {
             borderBottom: "1px solid var(--ddc-border)",
           }}
         >
-          <Tabs tabs={visibleTabs} active={activeTab} onChange={setActiveTab} />
+          <Tabs
+            key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
+            tabs={visibleTabs}
+            active={activeTab}
+            onChange={setActiveTab}
+          />
         </div>
       )}
 

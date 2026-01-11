@@ -2,7 +2,7 @@ import { groupTheme } from "../theme";
 
 export function Tabs({ tabs, active, onChange }) {
   return (
-    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+    <div className="ddc-tabs" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
       {tabs.map((t) => {
         const th = groupTheme[t] ?? { color: "#111827", bg: "#f3f4f6", label: t };
         const isActive = active === t;
