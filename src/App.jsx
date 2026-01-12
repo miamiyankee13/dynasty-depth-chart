@@ -212,6 +212,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(initialUi.activeTab);
   const { toast, showToast, clearToast } = useToast(1800);
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
+  const [loadError, setLoadError] = useState("");
 
   // Prevent UI prefs from being overwritten by defaults before we restore them
   const didHydrateRef = useRef(false);
@@ -248,6 +249,7 @@ export default function App() {
           return;
         }
 
+        setLoadError("");
         setIsLoadingTeams(true);
 
         const sleeperTeams = await loadTeamsFromSleeper();
@@ -275,6 +277,8 @@ export default function App() {
         didHydrateRef.current = true;
       } catch (e) {
         console.warn("Failed to load Sleeper teams:", e);
+        setLoadError("Couldn’t load Sleeper leagues. Check username and try again.");
+        showToast("Couldn’t load Sleeper leagues. Check username and try again.");
         didHydrateRef.current = true;
       } finally {
         setIsLoadingTeams(false);
@@ -566,12 +570,16 @@ export default function App() {
 
       {/* SUMMARY STRIP */}
       <div style={{ marginTop: 12, ...ui.card }}>
-        {connectedAs && isLoadingTeams ? (
-          <div style={{ fontSize: 14, ...ui.muted }}>Loading leagues…</div>
-        ) : !team ? (
-          <div style={{ fontSize: 14, ...ui.muted }}>
-            Connect Sleeper above to load your leagues.
-          </div>
+        {connectedAs && loadError ? (
+        <div style={{ fontSize: 14, ...ui.muted }}>
+          {loadError}
+        </div>
+      ) : connectedAs && isLoadingTeams ? (
+        <div style={{ fontSize: 14, ...ui.muted }}>Loading leagues…</div>
+      ) : !team ? (
+        <div style={{ fontSize: 14, ...ui.muted }}>
+          Connect Sleeper above to load your leagues.
+        </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <div
