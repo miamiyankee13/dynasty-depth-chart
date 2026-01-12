@@ -215,6 +215,64 @@ option {
 }
 
 /* ================================
+   Skeleton / Shimmer
+   ================================ */
+
+.ddc-skel {
+  background: var(--ddc-card-bg);
+  border: 1px solid var(--ddc-border);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.ddc-skel-line {
+  height: 12px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--ddc-text) 10%, transparent);
+}
+
+.ddc-skel-line.sm { height: 10px; }
+.ddc-skel-line.md { height: 12px; }
+.ddc-skel-line.lg { height: 16px; }
+
+.ddc-skel-row {
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid var(--ddc-border);
+  background: color-mix(in oklab, var(--ddc-card-bg) 92%, var(--ddc-text));
+}
+
+/* Shimmer effect */
+.ddc-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.ddc-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--ddc-text) 12%, transparent),
+    transparent
+  );
+  animation: ddc-shimmer 1.1s infinite;
+}
+
+@keyframes ddc-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ddc-shimmer::after {
+    animation: none;
+  }
+}
+
+/* ================================
    Mobile ergonomics (phones only)
    ================================ */
 

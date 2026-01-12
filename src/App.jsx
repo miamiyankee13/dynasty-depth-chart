@@ -168,6 +168,41 @@ function useToast(timeoutMs = 1800) {
   return { toast, showToast: setToast, clearToast: () => setToast(null) };
 }
 
+function SkeletonHome() {
+  return (
+    <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 12 }}>
+      {/* Summary strip skeleton */}
+      <div className="ddc-skel ddc-shimmer">
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="ddc-skel-line lg" style={{ width: "70%" }} />
+          <div className="ddc-skel-line md" style={{ width: "45%" }} />
+          <div className="ddc-skel-line md" style={{ width: "55%" }} />
+        </div>
+      </div>
+
+      {/* Tabs skeleton */}
+      <div className="ddc-skel ddc-shimmer">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div
+              key={i}
+              className="ddc-skel-line md"
+              style={{ width: 52 + (i % 3) * 18, borderRadius: 999, height: 30 }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* List skeleton */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="ddc-skel-row ddc-shimmer" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
 
@@ -176,6 +211,7 @@ export default function App() {
   const [teamIndex, setTeamIndex] = useState(initialUi.teamIndex);
   const [activeTab, setActiveTab] = useState(initialUi.activeTab);
   const { toast, showToast, clearToast } = useToast(1800);
+  const [isLoadingTeams, setIsLoadingTeams] = useState(false);
 
   // Prevent UI prefs from being overwritten by defaults before we restore them
   const didHydrateRef = useRef(false);
@@ -202,7 +238,7 @@ export default function App() {
 
   const connectedAs = getSleeperUsername();
 
-  // Bootstrap Sleeper + restore UI prefs
+    // Bootstrap Sleeper + restore UI prefs
   useEffect(() => {
     (async () => {
       try {
@@ -211,6 +247,8 @@ export default function App() {
           didHydrateRef.current = true;
           return;
         }
+
+        setIsLoadingTeams(true);
 
         const sleeperTeams = await loadTeamsFromSleeper();
 
@@ -238,6 +276,8 @@ export default function App() {
       } catch (e) {
         console.warn("Failed to load Sleeper teams:", e);
         didHydrateRef.current = true;
+      } finally {
+        setIsLoadingTeams(false);
       }
     })();
   }, []);
@@ -301,7 +341,7 @@ export default function App() {
     saveUiPrefs({ activeTeamId: t.id });
   }, [teams, teamIndex]);
 
-    useEffect(() => {
+  useEffect(() => {
     const msg = consumeNextToast();
     if (msg) showToast(msg);
   }, [showToast]);
@@ -526,7 +566,9 @@ export default function App() {
 
       {/* SUMMARY STRIP */}
       <div style={{ marginTop: 12, ...ui.card }}>
-        {!team ? (
+        {connectedAs && isLoadingTeams ? (
+          <div style={{ fontSize: 14, ...ui.muted }}>Loading leagues…</div>
+        ) : !team ? (
           <div style={{ fontSize: 14, ...ui.muted }}>
             Connect Sleeper above to load your leagues.
           </div>
@@ -597,7 +639,9 @@ export default function App() {
       )}
 
       {/* Content */}
-      {!team ? null : activeTab === "PICKS" ? (
+      {connectedAs && isLoadingTeams ? (
+        <SkeletonHome />
+      ) : !team ? null : activeTab === "PICKS" ? (
         <PicksView picksByYear={team.picksByYear} />
       ) : (
         <div style={{ marginTop: 18 }}>
@@ -609,16 +653,17 @@ export default function App() {
           />
         </div>
       )}
-            {toast && (
-              <div className="ddc-toast" role="status" aria-live="polite">
-                <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {toast}
-                </span>
-                <button className="ddc-focusable" onClick={clearToast} aria-label="Dismiss toast">
-                  ✕
-                </button>
-              </div>
-            )}
+
+    {toast && (
+      <div className="ddc-toast" role="status" aria-live="polite">
+        <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {toast}
+        </span>
+        <button className="ddc-focusable" onClick={clearToast} aria-label="Dismiss toast">
+          ✕
+        </button>
+      </div>
+    )}
     </main>
   );
 }
