@@ -58,6 +58,12 @@ function pprLabel(league) {
   return null;
 }
 
+function passTdLabel(league) {
+  const passTd = num(league?.scoring_settings?.pass_td);
+  if (passTd === 6) return "6 PT Pass TD";
+  return null; // treat everything else as default / don’t show
+}
+
 function num(value) {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
@@ -142,6 +148,10 @@ function buildSettingsPillsFromLeague(league) {
     if (ppfd.rec) parts.push(`REC ${ppfd.rec}`);
     pills.push(`PPFD (${parts.join(", ")})`);
   }
+
+  // Passing TDs (only show if non-default)
+  const passTd = passTdLabel(league);
+  if (passTd) pills.push(passTd);
 
   // Starters
   const starters = countStartersFromRosterPositions(league);

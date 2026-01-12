@@ -512,6 +512,12 @@ export default function App() {
                       value={sleeperInput}
                       onChange={(e) => setSleeperInput(e.target.value)}
                       placeholder="Sleeper username"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          connectSleeper();
+                        }
+                      }}
                       style={{
                         minWidth: 220,
                         padding: "8px 10px",
