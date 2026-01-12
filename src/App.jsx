@@ -135,6 +135,39 @@ function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
   });
 }
 
+// ---- toast helpers (tiny, reload-safe) ----
+const TOAST_KEY = "ddc.toast.v1";
+
+function setNextToast(message) {
+  try {
+    localStorage.setItem(TOAST_KEY, JSON.stringify({ message, ts: Date.now() }));
+  } catch {}
+}
+
+function consumeNextToast() {
+  try {
+    const raw = localStorage.getItem(TOAST_KEY);
+    if (!raw) return null;
+    localStorage.removeItem(TOAST_KEY);
+    const parsed = JSON.parse(raw);
+    return parsed?.message || null;
+  } catch {
+    return null;
+  }
+}
+
+function useToast(timeoutMs = 1800) {
+  const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), timeoutMs);
+    return () => clearTimeout(t);
+  }, [toast, timeoutMs]);
+
+  return { toast, showToast: setToast, clearToast: () => setToast(null) };
+}
+
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
 
@@ -142,6 +175,7 @@ export default function App() {
 
   const [teamIndex, setTeamIndex] = useState(initialUi.teamIndex);
   const [activeTab, setActiveTab] = useState(initialUi.activeTab);
+  const { toast, showToast, clearToast } = useToast(1800);
 
   // Prevent UI prefs from being overwritten by defaults before we restore them
   const didHydrateRef = useRef(false);
@@ -154,6 +188,7 @@ export default function App() {
     if (!u) return;
     setSleeperUsername(u);
     clearAppState(); // clears only dynasty-depthchart.v1 (NOT ddc.edits.v1)
+    setNextToast(`Connected to Sleeper as ${u}`);
     location.reload(); // simple + reliable
   }
 
@@ -161,6 +196,7 @@ export default function App() {
     clearSleeperUsername();
     clearAppState();      // clears teams from saved app state
     setState({ teams: [] }); // makes teams disappear immediately in UI
+    setNextToast("Disconnected from Sleeper (local order preserved)");
     location.reload();
   }
 
@@ -265,6 +301,11 @@ export default function App() {
     saveUiPrefs({ activeTeamId: t.id });
   }, [teams, teamIndex]);
 
+    useEffect(() => {
+    const msg = consumeNextToast();
+    if (msg) showToast(msg);
+  }, [showToast]);
+
   const playersByGroup = useMemo(() => {
     const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
     for (const p of team?.players ?? []) {
@@ -307,6 +348,8 @@ export default function App() {
       t.players = [...others, ...renumbered];
       return next;
     });
+
+    showToast(`${group} order saved`);
   }
 
   function togglePlayerInjured(playerId) {
@@ -319,6 +362,7 @@ export default function App() {
       if (!p) return prev;
 
       p.injured = !p.injured;
+      showToast(p.injured ? "Marked injured" : "Marked healthy");
 
       // Persist injured flag so disconnect/reconnect won't wipe it
       setTeamEdit(t.id, p.id, { group: p.group, injured: !!p.injured });
@@ -565,6 +609,16 @@ export default function App() {
           />
         </div>
       )}
+            {toast && (
+              <div className="ddc-toast" role="status" aria-live="polite">
+                <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {toast}
+                </span>
+                <button className="ddc-focusable" onClick={clearToast} aria-label="Dismiss toast">
+                  ✕
+                </button>
+              </div>
+            )}
     </main>
   );
 }

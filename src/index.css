@@ -172,6 +172,49 @@ option {
 }
 
 /* ================================
+   Toasts
+   ================================ */
+
+.ddc-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 9999;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ddc-border);
+
+  background: var(--ddc-card-bg);
+  color: var(--ddc-text);
+
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  max-width: min(520px, calc(100vw - 24px));
+
+  font-size: var(--ddc-text-sm);
+  font-weight: var(--ddc-weight-medium);
+}
+
+.ddc-toast button {
+  border: none;
+  background: transparent;
+  color: var(--ddc-muted);
+  cursor: pointer;
+  font-weight: var(--ddc-weight-bold);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.ddc-toast button:hover {
+  color: var(--ddc-text);
+}
+
+/* ================================
    Mobile ergonomics (phones only)
    ================================ */
 
@@ -259,5 +302,10 @@ option {
 
   select {
     font-size: 16px;
+  }
+
+  .ddc-toast {
+    bottom: 12px;
+    font-size: 13px;
   }
 }
