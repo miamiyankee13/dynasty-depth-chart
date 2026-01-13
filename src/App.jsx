@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Tabs } from "./components/Tabs";
 import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
@@ -211,6 +211,8 @@ export default function App() {
   const [loadError, setLoadError] = useState("");
   const [fcValues, setFcValues] = useState(new Map());
 
+  const summaryRef = useRef(null);
+
   // Prevent UI prefs from being overwritten by defaults before we restore them
   const didHydrateRef = useRef(false);
 
@@ -326,6 +328,31 @@ export default function App() {
 
   const teams = state?.teams ?? [];
   const team = teams[teamIndex];
+
+  useLayoutEffect(() => {
+  const el = summaryRef.current;
+  if (!el) return;
+
+  const root = document.documentElement;
+
+  function setVar() {
+    const h = Math.ceil(el.getBoundingClientRect().height || 0);
+    root.style.setProperty("--ddc-summary-h", `${h}px`);
+  }
+
+  setVar();
+
+  const ro = new ResizeObserver(() => setVar());
+  ro.observe(el);
+
+  window.addEventListener("resize", setVar);
+
+  return () => {
+    ro.disconnect();
+    window.removeEventListener("resize", setVar);
+    root.style.removeProperty("--ddc-summary-h");
+  };
+}, [team?.id]);
 
   useEffect(() => {
     (async () => {
@@ -607,67 +634,67 @@ export default function App() {
       </div>
 
       {/* SUMMARY STRIP */}
-      <div style={{ marginTop: 12, ...ui.card }}>
-        {connectedAs && loadError ? (
-        <div style={{ fontSize: 14, ...ui.muted }}>
-          {loadError}
-        </div>
-      ) : connectedAs && isLoadingTeams ? (
-        <div style={{ fontSize: 14, ...ui.muted }}>Loading leagues…</div>
-      ) : !team ? (
-        <div style={{ fontSize: 14, ...ui.muted }}>
-          Connect Sleeper above to load your leagues.
-        </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div
-              style={{
-                fontSize: "var(--ddc-text-lg)",
-                fontWeight: "var(--ddc-weight-bold)",
-                letterSpacing: "-0.01em",
-              }}
-            >
-              {team.leagueName} — {team.name}
+      <div ref={summaryRef} className="ddc-summary-sticky" style={{ marginTop: 12 }}>
+        <div style={ui.card}>
+          {!team ? (
+            <div style={{ fontSize: 14, ...ui.muted }}>
+              Connect Sleeper above to load your leagues.
             </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div
+                style={{
+                  fontSize: "var(--ddc-text-lg)",
+                  fontWeight: "var(--ddc-weight-bold)",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                {team.leagueName} — {team.name}
+              </div>
 
-            {/* Settings pills (ABOVE counts, as requested) */}
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {(team.settingsPills ?? []).map((s) => (
-                <div key={s} style={ui.pill}>
-                  {s}
-                </div>
-              ))}
-            </div>
-
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {["QB", "RB", "WR", "TE"]
-                .concat((playersByGroup.DEF?.length ?? 0) > 0 ? ["DEF"] : [])
-                .concat(["TAXI"])
-                .map((g) => (
-                  <div key={g} style={ui.pill}>
-                    {g}: {playersByGroup[g]?.length ?? 0}
+              {/* Settings pills */}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {(team.settingsPills ?? []).map((s) => (
+                  <div key={s} style={ui.pill}>
+                    {s}
                   </div>
                 ))}
-            </div>
+              </div>
 
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {["2026", "2027", "2028"].map((y) => (
-                <div key={y} style={ui.pill}>
-                  {y} picks: {team.picksByYear?.[y]?.length ?? 0}
-                </div>
-              ))}
+              {/* Counts */}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {["QB", "RB", "WR", "TE"]
+                  .concat((playersByGroup.DEF?.length ?? 0) > 0 ? ["DEF"] : [])
+                  .concat(["TAXI"])
+                  .map((g) => (
+                    <div key={g} style={ui.pill}>
+                      {g}: {playersByGroup[g]?.length ?? 0}
+                    </div>
+                  ))}
+              </div>
+
+              {/* Picks counts */}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {["2026", "2027", "2028"].map((y) => (
+                  <div key={y} style={ui.pill}>
+                    {y} picks: {team.picksByYear?.[y]?.length ?? 0}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
 
       {/* Tabs */}
       {visibleTabs.length > 0 && (
         <div
+          className="ddc-tabs-sticky"
           style={{
             position: "sticky",
             top: 0,
-            zIndex: 50,
+            zIndex: 30,
             background: "var(--ddc-card-bg)",
             paddingTop: 10,
             paddingBottom: 10,

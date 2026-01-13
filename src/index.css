@@ -370,4 +370,20 @@ option {
   .ddc-col-val {
     display: none !important;
   }
+
+    /* Sticky summary (mobile only) */
+  .ddc-summary-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--ddc-bg);
+    padding-top: 12px;
+    padding-bottom: 10px;
+  }
+
+  /* Tabs stick below the summary (mobile only) */
+  .ddc-tabs-sticky {
+    top: var(--ddc-summary-h, 0px) !important;
+    z-index: 30;
+  }
 }
