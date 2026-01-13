@@ -644,15 +644,19 @@ export default function App() {
       {/* SUMMARY STRIP */}
       <div ref={summaryRef} className="ddc-summary-sticky" style={{ marginTop: 12 }}>
         <div style={ui.card}>
-          {connectedAs && isLoadingTeams ? (
+          {loadError ? (
+            <div style={{ fontSize: 14, color: "var(--ddc-danger)", fontWeight: 600 }}>
+              {loadError}
+            </div>
+          ) : connectedAs && isLoadingTeams ? (
             <div style={{ fontSize: 14, ...ui.muted }}>
               Loading leagues from Sleeper…
             </div>
-          ) : !team ? (
+          ) : !connectedAs ? (
             <div style={{ fontSize: 14, ...ui.muted }}>
               Connect Sleeper above to load your leagues.
             </div>
-          ) : (
+          ) : !team ? null : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div
                 style={{
