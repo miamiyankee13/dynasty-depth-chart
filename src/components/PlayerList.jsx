@@ -119,6 +119,7 @@ function Row({ player, group, index, onToggleInjured, value }) {
 
           <div className="ddc-meta">
             {player.nflTeam || "—"} • {player.age || "—"}
+            {value != null ? ` • Val ${value}` : ""}
           </div>
 
           <button
