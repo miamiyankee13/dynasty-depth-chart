@@ -1,4 +1,3 @@
-import { groupTheme } from "../theme";
 import {
   DndContext,
   closestCenter,
@@ -10,6 +9,7 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { groupTheme } from "../theme";
 
 function Row({ player, group, index, onToggleInjured, value }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -173,7 +173,7 @@ function Row({ player, group, index, onToggleInjured, value }) {
 }
 
 export function PlayerList({ group, players, valuesByPlayerId, onReorder, onToggleInjured }) {
-    const sensors = useSensors(
+  const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
     }),
