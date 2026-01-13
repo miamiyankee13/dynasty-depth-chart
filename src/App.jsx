@@ -239,7 +239,49 @@ export default function App() {
 
   const connectedAs = getSleeperUsername();
 
-    // Bootstrap Sleeper + restore UI prefs
+  const teams = state?.teams ?? [];
+  const team = teams[teamIndex];
+
+  const playersByGroup = useMemo(() => {
+    const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
+    for (const p of team?.players ?? []) {
+      if (groups[p.group]) groups[p.group].push(p);
+    }
+    for (const g of Object.keys(groups)) {
+      groups[g].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+    }
+    return groups;
+  }, [team]);
+
+  const valuesByPlayerId = useMemo(() => {
+    const out = new Map();
+
+    for (const p of team?.players ?? []) {
+      // p.id is "sleeper-player:1234"
+      const sid = String(p.id).split(":")[1];
+      if (!sid) continue;
+
+      const raw = fcValues.get(String(sid));
+      const scaled = scaleFantasyCalcValue(raw);
+
+      if (scaled != null) {
+        out.set(p.id, scaled);
+      }
+    }
+
+    return out;
+  }, [team, fcValues]);
+
+  const visibleTabs = useMemo(() => {
+    if (!team) return [];
+
+    const base = ["QB", "RB", "WR", "TE"];
+    if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
+    base.push("TAXI", "PICKS");
+    return base;
+  }, [team, playersByGroup]);
+
+  // Bootstrap Sleeper + restore UI prefs
   useEffect(() => {
     (async () => {
       try {
@@ -327,33 +369,30 @@ export default function App() {
     if (state) saveAppState(state);
   }, [state]);
 
-  const teams = state?.teams ?? [];
-  const team = teams[teamIndex];
-
   useLayoutEffect(() => {
-  const el = summaryRef.current;
-  if (!el) return;
+    const el = summaryRef.current;
+    if (!el) return;
 
-  const root = document.documentElement;
+    const root = document.documentElement;
 
-  function setVar() {
-    const h = Math.ceil(el.getBoundingClientRect().height || 0);
-    root.style.setProperty("--ddc-summary-h", `${h}px`);
-  }
+    function setVar() {
+      const h = Math.ceil(el.getBoundingClientRect().height || 0);
+      root.style.setProperty("--ddc-summary-h", `${h}px`);
+    }
 
-  setVar();
+    setVar();
 
-  const ro = new ResizeObserver(() => setVar());
-  ro.observe(el);
+    const ro = new ResizeObserver(() => setVar());
+    ro.observe(el);
 
-  window.addEventListener("resize", setVar);
+    window.addEventListener("resize", setVar);
 
-  return () => {
-    ro.disconnect();
-    window.removeEventListener("resize", setVar);
-    root.style.removeProperty("--ddc-summary-h");
-  };
-}, [team?.id]);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", setVar);
+      root.style.removeProperty("--ddc-summary-h");
+    };
+  }, [team?.id]);
 
   useEffect(() => {
     (async () => {
@@ -390,45 +429,6 @@ export default function App() {
     const msg = consumeNextToast();
     if (msg) showToast(msg);
   }, [showToast]);
-
-  const playersByGroup = useMemo(() => {
-    const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
-    for (const p of team?.players ?? []) {
-      if (groups[p.group]) groups[p.group].push(p);
-    }
-    for (const g of Object.keys(groups)) {
-      groups[g].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-    }
-    return groups;
-  }, [team]);
-
-  const valuesByPlayerId = useMemo(() => {
-    const out = new Map();
-
-    for (const p of team?.players ?? []) {
-      // p.id is "sleeper-player:1234"
-      const sid = String(p.id).split(":")[1];
-      if (!sid) continue;
-
-      const raw = fcValues.get(String(sid));
-      const scaled = scaleFantasyCalcValue(raw);
-
-      if (scaled != null) {
-        out.set(p.id, scaled);
-      }
-    }
-
-    return out;
-  }, [team, fcValues]);
-
-  const visibleTabs = useMemo(() => {
-    if (!team) return [];
-
-    const base = ["QB", "RB", "WR", "TE"];
-    if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
-    base.push("TAXI", "PICKS");
-    return base;
-  }, [team, playersByGroup]);
 
   useEffect(() => {
     if (visibleTabs.length === 0) return;
