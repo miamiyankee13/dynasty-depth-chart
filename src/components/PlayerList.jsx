@@ -101,7 +101,7 @@ function Row({ player, group, index, onToggleInjured, value }) {
 
       {/* Name (flex) */}
       <div className="ddc-col-name" style={{ flex: 1, minWidth: 0 }}>
-        <div className="ddc-name-row" style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
           <div
             style={{
               fontSize: "var(--ddc-text-md)",
