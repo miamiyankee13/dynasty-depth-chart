@@ -4,12 +4,8 @@ import { Tabs } from "./components/Tabs";
 import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
 import { loadAppState, saveAppState, clearAppState } from "./services/storage";
-import {
-  loadTeamsFromSleeper,
-  getSleeperUsername,
-  setSleeperUsername,
-  clearSleeperUsername,
-} from "./data/sources/sleeper/sleeperAdapter";
+import { loadTeamsFromSleeper, getSleeperUsername, setSleeperUsername, clearSleeperUsername } from "./data/sources/sleeper/sleeperAdapter";
+import { getFantasyCalcValues, scaleFantasyCalcValue } from "./data/sources/fantasycalc/fantasycalc";
 
 // ---- UI prefs helpers (team/tab persistence) ----
 const UI_KEY = "ddc.ui";
@@ -213,6 +209,7 @@ export default function App() {
   const { toast, showToast, clearToast } = useToast(1800);
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [fcValues, setFcValues] = useState(new Map());
 
   // Prevent UI prefs from being overwritten by defaults before we restore them
   const didHydrateRef = useRef(false);
@@ -330,6 +327,22 @@ export default function App() {
   const teams = state?.teams ?? [];
   const team = teams[teamIndex];
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const params = team?.external?.fantasycalc;
+        if (!params) return;
+
+        const { values } = await getFantasyCalcValues(params);
+        setFcValues(values);
+      } catch (e) {
+        console.warn("FantasyCalc values fetch failed:", e);
+        // Optional: keep this quiet to avoid noise
+        // showToast("Trade values unavailable right now");
+      }
+    })();
+  }, [team?.id]);
+
   // Persist active tab (AFTER hydrate)
   useEffect(() => {
     if (!didHydrateRef.current) return;
@@ -360,6 +373,25 @@ export default function App() {
     }
     return groups;
   }, [team]);
+
+  const valuesByPlayerId = useMemo(() => {
+    const out = new Map();
+
+    for (const p of team?.players ?? []) {
+      // p.id is "sleeper-player:1234"
+      const sid = String(p.id).split(":")[1];
+      if (!sid) continue;
+
+      const raw = fcValues.get(String(sid));
+      const scaled = scaleFantasyCalcValue(raw);
+
+      if (scaled != null) {
+        out.set(p.id, scaled);
+      }
+    }
+
+    return out;
+  }, [team, fcValues]);
 
   const visibleTabs = useMemo(() => {
     if (!team) return [];
@@ -662,6 +694,7 @@ export default function App() {
           <PlayerList
             group={activeTab}
             players={playersByGroup[activeTab] ?? []}
+            valuesByPlayerId={valuesByPlayerId}
             onReorder={(next) => updateGroupOrder(activeTab, next)}
             onToggleInjured={togglePlayerInjured}
           />

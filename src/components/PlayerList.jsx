@@ -11,7 +11,7 @@ import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-ki
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-function Row({ player, group, index, onToggleInjured }) {
+function Row({ player, group, index, onToggleInjured, value }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: player.id,
   });
@@ -100,51 +100,51 @@ function Row({ player, group, index, onToggleInjured }) {
       </div>
 
       {/* Name (flex) */}
-<div className="ddc-col-name" style={{ flex: 1, minWidth: 0 }}>
-  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-    <div
-      style={{
-        fontSize: "var(--ddc-text-md)",
-        fontWeight: "var(--ddc-weight-bold)",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        fontStyle: player.injured ? "italic" : "normal",
-        color: player.injured ? "var(--ddc-danger)" : "var(--ddc-text)",
-      }}
-      title={player.name}
-    >
-      {player.name}
-    </div>
+      <div className="ddc-col-name" style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: "var(--ddc-text-md)",
+              fontWeight: "var(--ddc-weight-bold)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              fontStyle: player.injured ? "italic" : "normal",
+              color: player.injured ? "var(--ddc-danger)" : "var(--ddc-text)",
+            }}
+            title={player.name}
+          >
+            {player.name}
+          </div>
 
-    <div className="ddc-meta">
-      {player.nflTeam || "—"} • {player.age || "—"}
-    </div>
+          <div className="ddc-meta">
+            {player.nflTeam || "—"} • {player.age || "—"}
+          </div>
 
-    <button
-      className="ddc-injury-btn"
-      onClick={() => onToggleInjured?.(player.id)}
-      title={player.injured ? "Mark healthy" : "Mark injured"}
-      style={{
-        background: "transparent",
-        color: player.injured ? "var(--ddc-danger)" : "var(--ddc-muted)",
-        border: player.injured ? "1px solid var(--ddc-danger)" : "none",
-        borderRadius: 8,
-        padding: "2px 6px",
-        cursor: "pointer",
-        fontWeight: 900,
-        fontSize: 12,
-        lineHeight: 1,
-        opacity: player.injured ? 1 : 0.6,
-        outline: "none",
-        boxShadow: "none",
-        flex: "0 0 auto",
-      }}
-    >
-      ✚
-    </button>
-  </div>
-</div>
+          <button
+            className="ddc-injury-btn"
+            onClick={() => onToggleInjured?.(player.id)}
+            title={player.injured ? "Mark healthy" : "Mark injured"}
+            style={{
+              background: "transparent",
+              color: player.injured ? "var(--ddc-danger)" : "var(--ddc-muted)",
+              border: player.injured ? "1px solid var(--ddc-danger)" : "none",
+              borderRadius: 8,
+              padding: "2px 6px",
+              cursor: "pointer",
+              fontWeight: 900,
+              fontSize: 12,
+              lineHeight: 1,
+              opacity: player.injured ? 1 : 0.6,
+              outline: "none",
+              boxShadow: "none",
+              flex: "0 0 auto",
+            }}
+          >
+            ✚
+          </button>
+        </div>
+      </div>
 
       {/* Age */}
       <div className="ddc-col-age" style={{ width: 60, textAlign: "right" }}>
@@ -158,11 +158,17 @@ function Row({ player, group, index, onToggleInjured }) {
         <div style={colValue}>{player.nflTeam || "—"}</div>
       </div>
 
+      {/* Value (FantasyCalc scaled) */}
+      <div className="ddc-col-val" style={{ width: 58, textAlign: "right" }}>
+        <div style={colMuted}>Val</div>
+        <div style={colValue}>{value ?? "—"}</div>
+      </div>
+
     </div>
   );
 }
 
-export function PlayerList({ group, players, onReorder, onToggleInjured }) {
+export function PlayerList({ group, players, valuesByPlayerId, onReorder, onToggleInjured }) {
     const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
@@ -207,6 +213,7 @@ export function PlayerList({ group, players, onReorder, onToggleInjured }) {
             player={p}
             group={group}
             index={idx}
+            value={valuesByPlayerId?.get(p.id) ?? null}
             onToggleInjured={onToggleInjured}
           />
         ))

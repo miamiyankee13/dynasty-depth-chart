@@ -491,7 +491,17 @@ export async function loadTeamsFromSleeper() {
       picksByYear,
       settingsPills: buildSettingsPillsFromLeague(league),
       source: "sleeper",
-      external: { platform: "sleeper", leagueId: lg.league_id, userId: user.user_id },
+      external: {
+        platform: "sleeper",
+        leagueId: lg.league_id,
+        userId: user.user_id,
+        fantasycalc: {
+          isDynasty: true,
+          numQbs: isSuperflex(league) || isTwoQB(league) ? 2 : 1,
+          numTeams: Number.isFinite(Number(league?.total_rosters)) ? Number(league.total_rosters) : 12,
+          ppr: num(league?.scoring_settings?.rec) ?? 1,
+        },
+      },
     });
   }
   return teams;
