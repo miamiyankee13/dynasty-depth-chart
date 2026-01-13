@@ -34,12 +34,16 @@
 
   --ddc-danger: #dc2626;
 
+  --ddc-logo-accent: #3f8f5d;
+  --ddc-logo-band: color-mix(in oklab, var(--ddc-text) 90%, transparent);
+  --ddc-brand-icon-size: 24px; /* change this to scale the icon */
+
   /* Typography scale */
   --ddc-text-xs: 12px;
   --ddc-text-sm: 13px;
   --ddc-text-md: 14px;
   --ddc-text-lg: 16px;
-  --ddc-text-xl: 18px;
+  --ddc-text-xl: 20px;
 
   --ddc-weight-regular: 450;
   --ddc-weight-medium: 600;
@@ -78,6 +82,9 @@
     --ddc-row-hover-border: rgba(255, 255, 255, 0.18);
 
     --ddc-danger: #fb7185;
+
+    --ddc-logo-accent: #4fa36a;
+    --ddc-logo-band: var(--ddc-text);
 
     /* Stronger focus ring in dark mode */
     --ddc-focus-ring: 0 0 0 3px
@@ -275,6 +282,31 @@ option {
 .ddc-tabs {
   padding-left: 8px;
   padding-right: 8px;
+}
+
+/* App title lockup: icon + word */
+.ddc-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;              /* premium SaaS spacing */
+  min-width: 0;
+}
+
+.ddc-logo {
+  width: var(--ddc-brand-icon-size);
+  height: var(--ddc-brand-icon-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;         /* prevents shrinking in wrap */
+}
+
+.ddc-title {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-bottom: 2px; /* prevents descender clipping (y, g, p) */
 }
 
 /* ================================

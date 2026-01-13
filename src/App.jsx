@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Tabs } from "./components/Tabs";
 import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
+import { DepthIcon } from "./components/DepthIcon";
 import { loadAppState, saveAppState, clearAppState } from "./services/storage";
 import { loadTeamsFromSleeper, getSleeperUsername, setSleeperUsername, clearSleeperUsername } from "./data/sources/sleeper/sleeperAdapter";
 import { getFantasyCalcValues, scaleFantasyCalcValue } from "./data/sources/fantasycalc/fantasycalc";
@@ -521,22 +522,29 @@ export default function App() {
         <div
           style={{
             display: "flex",
-            alignItems: "flex-start",
+            alignItems: "center",
             gap: 12,
             flexWrap: "wrap",
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {/* Title */}
-            <div
-              style={{
-                fontSize: "var(--ddc-text-xl)",
-                fontWeight: "var(--ddc-weight-bold)",
-                lineHeight: 1.25,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              Dynasty Depth Chart
+            <div className="ddc-brand">
+              <span className="ddc-logo" aria-hidden="true">
+                <DepthIcon size={24} />
+              </span>
+
+              <div
+                className="ddc-title"
+                style={{
+                  fontSize: "var(--ddc-text-xl)",
+                  fontWeight: "var(--ddc-weight-bold)",
+                  lineHeight: 1.18,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Dynasty Depth Chart
+              </div>
             </div>
 
             {/* Controls row under title */}
