@@ -530,10 +530,6 @@ export default function App() {
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {/* Title */}
             <div className="ddc-brand">
-              <span className="ddc-logo" aria-hidden="true">
-                <DepthIcon size={24} />
-              </span>
-
               <div
                 className="ddc-title"
                 style={{
@@ -545,6 +541,10 @@ export default function App() {
               >
                 Dynasty Depth Chart
               </div>
+
+              <span className="ddc-logo" aria-hidden="true">
+                <DepthIcon size={24} />
+              </span>
             </div>
 
             {/* Controls row under title */}
