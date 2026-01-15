@@ -3,7 +3,7 @@ import {
   closestCenter,
   useSensor,
   useSensors,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -66,6 +66,8 @@ function Row({ player, group, index, onToggleInjured, value }) {
           userSelect: "none",
           WebkitUserSelect: "none",
           WebkitTouchCallout: "none",
+          touchAction: "none",
+          WebkitTapHighlightColor: "transparent",
           fontSize: 20,
           lineHeight: 1,
           padding: "0",
@@ -174,7 +176,7 @@ function Row({ player, group, index, onToggleInjured, value }) {
 
 export function PlayerList({ group, players, valuesByPlayerId, onReorder, onToggleInjured }) {
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: { distance: 8 },
     }),
     useSensor(TouchSensor, {

@@ -320,6 +320,10 @@ option {
   display: none;
 }
 
+.ddc-drag-handle {
+  touch-action: none;
+}
+
 @media (max-width: 520px) {
   /* Reduce outer padding */
   main {
@@ -388,10 +392,6 @@ option {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-
-  .ddc-drag-handle {
-    touch-action: none;
   }
 
   /* iOS Safari: prevent auto-zoom on input focus */
