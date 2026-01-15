@@ -367,8 +367,11 @@ option {
   /* Larger touch targets */
   .ddc-drag-handle,
   .ddc-injury-btn {
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   /* Hide low-value columns */
