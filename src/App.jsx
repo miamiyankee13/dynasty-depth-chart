@@ -769,6 +769,7 @@ export default function App() {
       ) : (
         <div style={{ marginTop: 18 }}>
           <PlayerList
+            key={`${team.id}:${activeTab}`}
             group={activeTab}
             players={playersByGroup[activeTab] ?? []}
             valuesByPlayerId={valuesByPlayerId}

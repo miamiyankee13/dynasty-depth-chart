@@ -336,6 +336,18 @@ option {
   opacity: 1 !important;
 }
 
+/* Hide bench split controls on short/touch layouts (phone landscape), but keep iPad */
+@media (max-height: 520px) {
+  .ddc-col-benchaction {
+    display: none !important;
+  }
+
+  /* Keep divider as just a line on phone landscape */
+  .ddc-bench-divider div:nth-child(2) {
+    display: none !important;
+  }
+}
+
 /* ================================
    Mobile ergonomics (phones only)
    ================================ */
