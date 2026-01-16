@@ -50,6 +50,10 @@ function isTwoQB(league) {
   return qbCount >= 2;
 }
 
+function isBestBall(league) {
+  return !!league?.settings?.best_ball;
+}
+
 function pprLabel(league) {
   const rec = league?.scoring_settings?.rec;
   if (rec === 1) return "PPR";
@@ -126,6 +130,9 @@ function buildSettingsPillsFromLeague(league) {
   if (isSuperflex(league)) pills.push("SF");
   else if (isTwoQB(league)) pills.push("2QB");
   else pills.push("1QB");
+
+  // Best Ball
+  if (isBestBall(league)) pills.push("BB");
 
   // PPR
   const ppr = pprLabel(league);
@@ -490,6 +497,7 @@ export async function loadTeamsFromSleeper() {
       players: rows,
       picksByYear,
       settingsPills: buildSettingsPillsFromLeague(league),
+      isBestBall: isBestBall(league),
       source: "sleeper",
       external: {
         platform: "sleeper",

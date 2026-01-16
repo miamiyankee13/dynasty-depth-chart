@@ -212,76 +212,77 @@ function Row({
         <div style={colValue}>{value ?? "—"}</div>
       </div>
 
-      {/* Bench split action column (reserves space so it never overlaps Val) */}
-      <div
-        className="ddc-col-benchaction"
-        style={{
-          width: 74,                 // <-- important: wide enough for "Bench"/"Clear"
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          flex: "0 0 auto",
-        }}
-      >
-        {typeof benchStartIndex === "number" && benchStartIndex === index ? (
-          <button
-            type="button"
-            className="ddc-bench-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onClearBenchStart?.();
-            }}
-            title="Clear starters/bench split"
-            aria-label="Clear starters/bench split"
-            style={{
-              background: "transparent",
-              border: "1px solid var(--ddc-border)",
-              color: "var(--ddc-muted)",
-              borderRadius: 10,
-              padding: "4px 8px",
-              fontSize: 12,
-              fontWeight: 800,
-              cursor: "pointer",
-              opacity: 0,              // shown on hover via CSS
-              transition: "opacity 120ms ease",
-              outline: "none",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Clear
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="ddc-bench-btn"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onSetBenchStart?.(index);
-            }}
-            title="Bench starts here"
-            aria-label="Bench starts here"
-            style={{
-              background: "transparent",
-              border: "1px solid var(--ddc-border)",
-              color: "var(--ddc-muted)",
-              borderRadius: 10,
-              padding: "4px 8px",
-              fontSize: 12,
-              fontWeight: 800,
-              cursor: "pointer",
-              opacity: 0,              // shown on hover via CSS
-              transition: "opacity 120ms ease",
-              outline: "none",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Bench
-          </button>
-        )}
-      </div>
-
+      {/* Bench split action column (only render when enabled) */}
+      {(onSetBenchStart || onClearBenchStart) && (
+        <div
+          className="ddc-col-benchaction"
+          style={{
+            width: 74,                 // wide enough for "Bench"/"Clear"
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            flex: "0 0 auto",
+          }}
+        >
+          {typeof benchStartIndex === "number" && benchStartIndex === index ? (
+            <button
+              type="button"
+              className="ddc-bench-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClearBenchStart?.();
+              }}
+              title="Clear starters/bench split"
+              aria-label="Clear starters/bench split"
+              style={{
+                background: "transparent",
+                border: "1px solid var(--ddc-border)",
+                color: "var(--ddc-muted)",
+                borderRadius: 10,
+                padding: "4px 8px",
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: "pointer",
+                opacity: 0, // shown on hover via CSS
+                transition: "opacity 120ms ease",
+                outline: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Clear
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="ddc-bench-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onSetBenchStart?.(index);
+              }}
+              title="Bench starts here"
+              aria-label="Bench starts here"
+              style={{
+                background: "transparent",
+                border: "1px solid var(--ddc-border)",
+                color: "var(--ddc-muted)",
+                borderRadius: 10,
+                padding: "4px 8px",
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: "pointer",
+                opacity: 0, // shown on hover via CSS
+                transition: "opacity 120ms ease",
+                outline: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Bench
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

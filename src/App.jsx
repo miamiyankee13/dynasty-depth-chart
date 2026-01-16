@@ -280,6 +280,13 @@ export default function App() {
     return groups;
   }, [team]);
 
+  // Bench split availability
+  const isBestBall = (team?.settingsPills ?? []).some((s) =>
+    /best ball/i.test(String(s))
+  );
+
+  const benchSplitEnabled = !!team && activeTab !== "TAXI" && !team?.isBestBall;
+
   const valuesByPlayerId = useMemo(() => {
     const out = new Map();
 
@@ -775,17 +782,22 @@ export default function App() {
             valuesByPlayerId={valuesByPlayerId}
             onReorder={(next) => updateGroupOrder(activeTab, next)}
             onToggleInjured={togglePlayerInjured}
-            benchStartIndex={benchStartIndex}
-            onSetBenchStart={(idx) => {
-              if (!team?.id) return;
-              setTeamBenchStart(team.id, activeTab, idx);
-              showToast("Bench split saved");
-            }}
-            onClearBenchStart={() => {
-              if (!team?.id) return;
-              setTeamBenchStart(team.id, activeTab, null);
-              showToast("Bench split cleared");
-            }}
+            {...(benchSplitEnabled
+              ? {
+                  benchStartIndex: benchStartIndex,
+                  onSetBenchStart: (idx) => {
+                    if (!team?.id) return;
+                    setTeamBenchStart(team.id, activeTab, idx);
+                    const name = (playersByGroup[activeTab] ?? [])[idx]?.name;
+                    showToast(name ? `Bench starts at ${name}` : "Bench split saved");
+                  },
+                  onClearBenchStart: () => {
+                    if (!team?.id) return;
+                    setTeamBenchStart(team.id, activeTab, null);
+                    showToast("Bench split cleared");
+                  },
+                }
+              : {})}
           />
         </div>
       )}
