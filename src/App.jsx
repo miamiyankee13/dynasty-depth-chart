@@ -52,6 +52,33 @@ function setTeamEdit(teamId, playerId, patch) {
   saveEdits(all);
 }
 
+const BENCH_STARTS_KEY = "__benchStarts";
+
+function getTeamBenchStarts(teamId) {
+  const teamEdits = getTeamEdits(teamId);
+  const raw = teamEdits?.[BENCH_STARTS_KEY];
+  return raw && typeof raw === "object" ? raw : {};
+}
+
+function setTeamBenchStart(teamId, group, idxOrNull) {
+  const all = loadEdits();
+  const teamEdits = all[teamId] || {};
+
+  const prev = teamEdits[BENCH_STARTS_KEY];
+  const benchStarts = prev && typeof prev === "object" ? { ...prev } : {};
+
+  if (idxOrNull == null) {
+    delete benchStarts[group];
+  } else {
+    benchStarts[group] = idxOrNull;
+  }
+
+  teamEdits[BENCH_STARTS_KEY] = benchStarts;
+  all[teamId] = teamEdits;
+
+  saveEdits(all);
+}
+
 function computeInitialUiFromSavedState(savedState) {
   const prefs = loadUiPrefs();
 
@@ -475,6 +502,13 @@ export default function App() {
     });
   }
 
+  const benchStartsForTeam = team?.id ? getTeamBenchStarts(team.id) : {};
+
+  const benchStartIndex =
+    typeof benchStartsForTeam?.[activeTab] === "number"
+      ? benchStartsForTeam[activeTab]
+      : null;
+
   const ui = {
     card: {
       background: "var(--ddc-card-bg)",
@@ -740,6 +774,17 @@ export default function App() {
             valuesByPlayerId={valuesByPlayerId}
             onReorder={(next) => updateGroupOrder(activeTab, next)}
             onToggleInjured={togglePlayerInjured}
+            benchStartIndex={benchStartIndex}
+            onSetBenchStart={(idx) => {
+              if (!team?.id) return;
+              setTeamBenchStart(team.id, activeTab, idx);
+              showToast("Bench split saved");
+            }}
+            onClearBenchStart={() => {
+              if (!team?.id) return;
+              setTeamBenchStart(team.id, activeTab, null);
+              showToast("Bench split cleared");
+            }}
           />
         </div>
       )}

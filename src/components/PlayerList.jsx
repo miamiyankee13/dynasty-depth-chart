@@ -11,7 +11,47 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { groupTheme } from "../theme";
 
-function Row({ player, group, index, onToggleInjured, value }) {
+function BenchDivider({ label = "Bench" }) {
+  return (
+    <div
+      aria-label="Bench divider"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        margin: "10px 2px 12px",
+        opacity: 0.75,
+        userSelect: "none",
+      }}
+      className="ddc-bench-divider"
+    >
+      <div style={{ height: 1, flex: 1, background: "var(--ddc-border)" }} />
+      <div
+        style={{
+          fontSize: "var(--ddc-text-xs)",
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "var(--ddc-muted)",
+          fontWeight: "var(--ddc-weight-bold)",
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ height: 1, flex: 1, background: "var(--ddc-border)" }} />
+    </div>
+  );
+}
+
+function Row({ 
+  player,
+  group,
+  index,
+  onToggleInjured,
+  value,
+  benchStartIndex,
+  onSetBenchStart,
+  onClearBenchStart, 
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: player.id,
   });
@@ -27,11 +67,13 @@ function Row({ player, group, index, onToggleInjured, value }) {
     alignItems: "center",
     gap: 8,
     padding: "8px 10px",
+    paddingRight: 6,
     marginBottom: 6,
     borderLeft: `5px solid ${th.color}`,
     transformOrigin: "center",
     willChange: "transform",
     color: "var(--ddc-text)",
+    position: "relative",
   };
 
   const colMuted = {
@@ -170,11 +212,90 @@ function Row({ player, group, index, onToggleInjured, value }) {
         <div style={colValue}>{value ?? "—"}</div>
       </div>
 
+      {/* Bench split action column (reserves space so it never overlaps Val) */}
+      <div
+        className="ddc-col-benchaction"
+        style={{
+          width: 74,                 // <-- important: wide enough for "Bench"/"Clear"
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          flex: "0 0 auto",
+        }}
+      >
+        {typeof benchStartIndex === "number" && benchStartIndex === index ? (
+          <button
+            type="button"
+            className="ddc-bench-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClearBenchStart?.();
+            }}
+            title="Clear starters/bench split"
+            aria-label="Clear starters/bench split"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--ddc-border)",
+              color: "var(--ddc-muted)",
+              borderRadius: 10,
+              padding: "4px 8px",
+              fontSize: 12,
+              fontWeight: 800,
+              cursor: "pointer",
+              opacity: 0,              // shown on hover via CSS
+              transition: "opacity 120ms ease",
+              outline: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Clear
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="ddc-bench-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onSetBenchStart?.(index);
+            }}
+            title="Bench starts here"
+            aria-label="Bench starts here"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--ddc-border)",
+              color: "var(--ddc-muted)",
+              borderRadius: 10,
+              padding: "4px 8px",
+              fontSize: 12,
+              fontWeight: 800,
+              cursor: "pointer",
+              opacity: 0,              // shown on hover via CSS
+              transition: "opacity 120ms ease",
+              outline: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Bench
+          </button>
+        )}
+      </div>
+
     </div>
   );
 }
 
-export function PlayerList({ group, players, valuesByPlayerId, onReorder, onToggleInjured }) {
+export function PlayerList({ 
+  group, 
+  players,
+  valuesByPlayerId, 
+  onReorder, 
+  onToggleInjured,
+  benchStartIndex,
+  onSetBenchStart,
+  onClearBenchStart,
+}) {
   const sensors = useSensors(
     useSensor(MouseSensor, {
       activationConstraint: { distance: 8 },
@@ -193,6 +314,11 @@ export function PlayerList({ group, players, valuesByPlayerId, onReorder, onTogg
     const next = arrayMove(players, oldIndex, newIndex);
     onReorder(next);
   }
+  
+  const clampedBenchStart =
+  typeof benchStartIndex === "number"
+    ? Math.max(0, Math.min(players.length, benchStartIndex))
+    : null;
 
   return (
     <DndContext
@@ -214,14 +340,22 @@ export function PlayerList({ group, players, valuesByPlayerId, onReorder, onTogg
         </div>
       ) : (
         players.map((p, idx) => (
-          <Row
-            key={p.id}
-            player={p}
-            group={group}
-            index={idx}
-            value={valuesByPlayerId?.get(p.id) ?? null}
-            onToggleInjured={onToggleInjured}
-          />
+          <div key={p.id}>
+            {typeof clampedBenchStart === "number" && clampedBenchStart === idx ? (
+              <BenchDivider label="Bench" />
+            ) : null}
+
+            <Row
+              player={p}
+              group={group}
+              index={idx}
+              value={valuesByPlayerId?.get(p.id) ?? null}
+              onToggleInjured={onToggleInjured}
+              benchStartIndex={clampedBenchStart}
+              onSetBenchStart={onSetBenchStart}
+              onClearBenchStart={onClearBenchStart}
+            />
+          </div>
         ))
       )}
       </SortableContext>

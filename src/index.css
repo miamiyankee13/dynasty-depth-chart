@@ -156,6 +156,26 @@ option {
   background-color: var(--ddc-card-bg);
 }
 
+/* --- Bench divider drag layering --- */
+
+/* Ensure rows participate in stacking context */
+.ddc-row {
+  position: relative;
+  z-index: 1;
+}
+
+/* Keep the bench divider above non-dragging rows */
+.ddc-bench-divider {
+  position: relative;
+  z-index: 2;
+  pointer-events: none; /* divider should never intercept drag/clicks */
+}
+
+/* Actively dragged row should stay on top */
+.ddc-row[data-dragging="true"] {
+  z-index: 5;
+}
+
 /* iOS: prevent long-press text selection/callout while dragging */
 .ddc-drag-handle {
   -webkit-user-select: none;
@@ -311,6 +331,11 @@ option {
   padding-bottom: 2px; /* prevents descender clipping (y, g, p) */
 }
 
+/* Bench split action: hidden by default, shown on row hover (desktop) */
+.ddc-row:hover .ddc-bench-btn {
+  opacity: 1 !important;
+}
+
 /* ================================
    Mobile ergonomics (phones only)
    ================================ */
@@ -429,5 +454,19 @@ option {
   .ddc-tabs-sticky {
     top: var(--ddc-summary-h, 0px) !important;
     z-index: 30;
+  }
+
+  .ddc-col-benchaction {
+    display: none !important;
+  }
+
+  /* Make divider extra subtle on mobile */
+  .ddc-bench-divider {
+    margin: 8px 2px 10px !important;
+    opacity: 0.6 !important;
+  }
+
+  .ddc-bench-divider div:nth-child(2) {
+    display: none; /* hide "Bench" label, keep just a line */
   }
 }
