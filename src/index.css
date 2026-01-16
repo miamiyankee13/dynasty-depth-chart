@@ -156,6 +156,16 @@ option {
   background-color: var(--ddc-card-bg);
 }
 
+/* Subtle bench deemphasis: dim slot pill only */
+.ddc-row[data-bench="true"] .ddc-col-slot {
+  opacity: 0.7;
+}
+
+/* Keep dragged row fully emphasized */
+.ddc-row[data-dragging="true"] .ddc-col-slot {
+  opacity: 1;
+}
+
 /* --- Bench divider drag layering --- */
 
 /* Ensure rows participate in stacking context */

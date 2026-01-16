@@ -96,6 +96,11 @@ function Row({
       style={style}
       className="ddc-row"
       data-dragging={isDragging ? "true" : "false"}
+      data-bench={
+        typeof benchStartIndex === "number" && index >= benchStartIndex
+          ? "true"
+          : "false"
+      }
     >
       {/* Drag handle */}
       <span
