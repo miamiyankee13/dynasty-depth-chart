@@ -388,48 +388,52 @@ export async function loadTeamsFromSleeper() {
 
     try {
       const drafts = await getLeagueDrafts(lg.league_id);
+      const totalRosters = Number(league?.total_rosters) || (rosters?.length ?? 0);
+      const rookieRounds = getRookieRoundsFromLeague(league);
 
+      // Only consider drafts for the 2026 season (NO fallback to other drafts)
+      const seasonDrafts = (drafts || []).filter((d) => String(d.season) === "2026");
+
+      // Prefer explicitly-rookie if present, otherwise pick one that "looks like" rookie
+      // (rookie drafts are usually <= 10 rounds; startups are often much larger)
       const d2026 =
-        (drafts || []).find((d) => String(d.season) === "2026") ||
-        (drafts || []).find((d) => String(d.status).toLowerCase() === "pre_draft") ||
-        (drafts || []).find((d) => String(d.status).toLowerCase() === "drafting") ||
-        (drafts || [])[0] ||
+        seasonDrafts.find((d) => String(d.draft_type || "").toLowerCase() === "rookie") ||
+        seasonDrafts.find((d) => {
+          const rounds = Number(d?.settings?.rounds);
+          return Number.isFinite(rounds) && rounds > 0 && rounds <= Math.max(10, rookieRounds);
+        }) ||
         null;
 
       if (d2026?.draft_id) {
         const draft = await getDraft(d2026.draft_id);
-        const slotToRoster = draft?.slot_to_roster_id;
 
-        // Preferred: slot_to_roster_id (slot -> roster_id)
-        if (slotToRoster) {
-          const entries = Array.isArray(slotToRoster)
-            ? slotToRoster.map((v, i) => [String(i + 1), v])
-            : Object.entries(slotToRoster);
+        const userIdToSlot = draft?.draft_order || {};
+        const hasExplicitOrder = Object.keys(userIdToSlot).length > 0;
 
-          const map = new Map(); // roster_id -> slot
-          for (const [slotStr, rosterId] of entries) {
-            const slot = Number(slotStr);
-            if (!Number.isFinite(slot)) continue;
-            if (rosterId == null) continue;
-            map.set(String(rosterId), slot);
-          }
-
-          if (map.size > 0) slotByRosterId2026 = map;
+        if (!hasExplicitOrder) {
+          // Draft exists but order not set → do NOT show slot-based picks
+          slotByRosterId2026 = null;
         } else {
-          // Fallback: draft_order (user_id -> slot)
-          const userIdToSlot = draft?.draft_order || {};
           const map = new Map(); // roster_id -> slot
 
           for (const r of rosters || []) {
             const slot = userIdToSlot[r.owner_id];
-            if (slot != null) map.set(String(r.roster_id), Number(slot));
+            if (slot != null) {
+              map.set(String(r.roster_id), Number(slot));
+            }
           }
 
-          if (map.size > 0) slotByRosterId2026 = map;
+          // Only accept if it covers most of the league
+          const total = Number(league?.total_rosters) || rosters.length;
+          if (map.size >= Math.floor(total * 0.8)) {
+            slotByRosterId2026 = map;
+          } else {
+            slotByRosterId2026 = null;
+          }
         }
       }
     } catch {
-      // Draft order not available — fall back to round-only display for 2026.
+      slotByRosterId2026 = null;
     }
 
     const years = ["2026", "2027", "2028"];
