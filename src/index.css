@@ -208,6 +208,13 @@ option {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+/* Desktop: gently deemphasize secondary column values */
+.ddc-col-age > div:nth-child(2),
+.ddc-col-team > div:nth-child(2),
+.ddc-col-val > div:nth-child(2) {
+  opacity: 0.75;
+}
+
 /* ================================
    Toasts
    ================================ */
