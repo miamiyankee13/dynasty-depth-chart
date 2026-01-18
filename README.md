@@ -1,16 +1,50 @@
-# React + Vite
+# Dynasty Depth Chart
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## What this app is
 
-Currently, two official plugins are available:
+**Dynasty Depth Chart** is a fast, frontend-only web app for viewing and manually managing dynasty fantasy football depth charts across multiple leagues.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+It is designed to be:
 
-## React Compiler
+- **Minimal** — no unnecessary UI, no configuration screens
+- **Fast** — instant load, instant interaction
+- **Data-dense** — show what matters, where you need it
+- **Manual by design** — you control ordering, not projections
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The app connects to Sleeper by username, fetches league and roster data client-side, and lets you:
 
-## Expanding the ESLint configuration
+- View all leagues in one place
+- Organize players by position and depth
+- Reorder players via drag-and-drop
+- Persist your own depth chart edits locally
+- See dynasty trade values as a subtle reference (not a ranking engine)
+- View your current and future rookie draft picks by year
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+This tool is meant to mirror how experienced dynasty players *actually* think about their teams:  
+as evolving depth charts and draft capital, not optimized lineups.
+
+## What this app intentionally does **not** do
+
+Dynasty Depth Chart is opinionated. The following omissions are deliberate.
+
+- **No lineup optimization**  
+  It does not tell you who to start, who to bench, or how to maximize points.
+
+- **No projections, grades, or recommendations**  
+  There are no rankings, tiers, or “expert takes” built into the UI.
+
+- **No automatic roster logic**  
+  The app will not auto-sort, auto-tier, or auto-manage your team.
+
+- **No backend or accounts**  
+  There is no server, no database, and no user profile beyond your browser.
+
+- **No league management or transactions**  
+  You cannot make trades, waiver claims, or lineup changes from this app.
+
+- **No attempt to be everything**  
+  This is not a draft tool, a trade calculator, or a league hub.
+
+If a feature would add noise, reduce speed, or take control away from the user, it does not belong here.
+
+> This app exists to reduce friction, not to replace judgment.
