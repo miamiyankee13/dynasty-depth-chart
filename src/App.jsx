@@ -307,13 +307,17 @@ export default function App() {
   }, [team, fcValues]);
 
   const visibleTabs = useMemo(() => {
-    if (!team) return [];
+  if (!team) return [];
 
-    const base = ["QB", "RB", "WR", "TE"];
-    if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
-    base.push("TAXI", "PICKS");
-    return base;
-  }, [team, playersByGroup]);
+  const base = ["QB", "RB", "WR", "TE"];
+  if ((playersByGroup.DEF?.length ?? 0) > 0) base.push("DEF");
+
+  // Hide TAXI in Best Ball (no lineup context)
+  if (!team.isBestBall) base.push("TAXI");
+
+  base.push("PICKS");
+  return base;
+}, [team, playersByGroup]);
 
   // Bootstrap Sleeper + restore UI prefs
   useEffect(() => {
@@ -722,7 +726,7 @@ export default function App() {
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {["QB", "RB", "WR", "TE"]
                   .concat((playersByGroup.DEF?.length ?? 0) > 0 ? ["DEF"] : [])
-                  .concat(["TAXI"])
+                  .concat(!team.isBestBall ? ["TAXI"] : [])
                   .map((g) => (
                     <div key={g} style={ui.pill}>
                       {g}: {playersByGroup[g]?.length ?? 0}
