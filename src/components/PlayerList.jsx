@@ -143,7 +143,7 @@ function Row({
           borderRadius: 999,
           background: th.bg ?? "#f3f4f6",
           color: th.color,
-          border: `1px solid ${th.color}`,
+          border: `1px solid color-mix(in oklab, ${th.color} 45%, transparent)`,
           userSelect: "none",
           letterSpacing: "0.02em",
           lineHeight: 1,
