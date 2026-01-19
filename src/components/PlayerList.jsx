@@ -66,7 +66,7 @@ function Row({
     display: "flex",
     alignItems: "center",
     gap: 8,
-    padding: "8px 10px",
+    padding: "7px 10px",
     paddingRight: 6,
     marginBottom: 6,
     borderLeft: `5px solid ${th.color}`,

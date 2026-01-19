@@ -18,7 +18,7 @@
   /* Light theme defaults */
   --ddc-bg: #f3f4f6;
   --ddc-text: #111827;
-  --ddc-muted: rgba(17, 24, 39, 0.75);
+  --ddc-muted: rgba(17, 24, 39, 0.7);
 
   --ddc-card-bg: #ffffff;
   --ddc-border: #e5e7eb;
@@ -67,7 +67,7 @@
   :root {
     --ddc-bg: #0b1220;
     --ddc-text: #e5e7eb;
-    --ddc-muted: rgba(229, 231, 235, 0.75);
+    --ddc-muted: rgba(229, 231, 235, 0.7);
 
     --ddc-card-bg: #0f172a;
     --ddc-border: rgba(255, 255, 255, 0.12);
