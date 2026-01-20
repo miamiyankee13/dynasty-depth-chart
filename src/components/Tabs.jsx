@@ -1,11 +1,6 @@
 import { groupTheme } from "../theme";
 
-export function Tabs({ tabs, active, onChange }) {
-  const isDark =
-    typeof window !== "undefined" &&
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
-
+export function Tabs({ tabs, active, onChange, isDark = false }) {
   return (
     <div className="ddc-tabs" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
       {tabs.map((t) => {

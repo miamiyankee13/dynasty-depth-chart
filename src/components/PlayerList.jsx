@@ -50,19 +50,14 @@ function Row({
   value,
   benchStartIndex,
   onSetBenchStart,
-  onClearBenchStart, 
+  onClearBenchStart,
+  isDark = false, 
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: player.id,
   });
 
   const base = groupTheme[group] ?? { color: "#e5e7eb", bg: "#f3f4f6" };
-
-  const isDark =
-    typeof window !== "undefined" &&
-    window.matchMedia &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
-
   const th = isDark && base.bgDark ? { ...base, bg: base.bgDark } : base;
 
   const slotLabel = group === "TAXI" ? `TX${index + 1}` : `${group}${index + 1}`;
@@ -309,6 +304,7 @@ export function PlayerList({
   benchStartIndex,
   onSetBenchStart,
   onClearBenchStart,
+  isDark = false,
 }) {
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -368,6 +364,7 @@ export function PlayerList({
               benchStartIndex={clampedBenchStart}
               onSetBenchStart={onSetBenchStart}
               onClearBenchStart={onClearBenchStart}
+              isDark={isDark}
             />
           </div>
         ))

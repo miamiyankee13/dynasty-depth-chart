@@ -227,6 +227,35 @@ function SkeletonHome() {
   );
 }
 
+function usePrefersDark() {
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+
+  useEffect(() => {
+    if (!window.matchMedia) return;
+
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handler = (e) => setIsDark(!!e.matches);
+
+    // Modern browsers
+    if (typeof mql.addEventListener === "function") {
+      mql.addEventListener("change", handler);
+      return () => mql.removeEventListener("change", handler);
+    }
+
+    // Safari fallback
+    if (typeof mql.addListener === "function") {
+      mql.addListener(handler);
+      return () => mql.removeListener(handler);
+    }
+  }, []);
+
+  return isDark;
+}
+
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
 
@@ -238,6 +267,7 @@ export default function App() {
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [fcValues, setFcValues] = useState(new Map());
+  const isDark = usePrefersDark();
 
   const summaryRef = useRef(null);
 
@@ -768,6 +798,7 @@ export default function App() {
             tabs={visibleTabs}
             active={activeTab}
             onChange={setActiveTab}
+            isDark={isDark}
           />
         </div>
       )}
@@ -802,6 +833,7 @@ export default function App() {
                   },
                 }
               : {})}
+            isDark={isDark}
           />
         </div>
       )}
