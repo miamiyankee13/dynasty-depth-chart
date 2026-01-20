@@ -56,7 +56,15 @@ function Row({
     id: player.id,
   });
 
-  const th = groupTheme[group] ?? { color: "#e5e7eb", bg: "#f3f4f6" };
+  const base = groupTheme[group] ?? { color: "#e5e7eb", bg: "#f3f4f6" };
+
+  const isDark =
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+  const th = isDark && base.bgDark ? { ...base, bg: base.bgDark } : base;
+
   const slotLabel = group === "TAXI" ? `TX${index + 1}` : `${group}${index + 1}`;
 
   // RowShell: final density + polish (hover handled by CSS via .ddc-row)
