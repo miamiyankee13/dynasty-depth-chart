@@ -23,6 +23,14 @@ const pickTheme = {
   5: { bg: "#fce7f3", color: "#9d174d" }, // light pink
 };
 
+const pickThemeDark = {
+  1: { bg: "#3a2f12", color: "#facc15" }, // warm gold
+  2: { bg: "#143022", color: "#4ade80" }, // green
+  3: { bg: "#12313a", color: "#22d3ee" }, // cyan/blue
+  4: { bg: "#3a2312", color: "#fb923c" }, // orange
+  5: { bg: "#2a1f26", color: "#f472b6" }, // pink
+};
+
 function parsePickKey(pick) {
   const raw = String(pick ?? "").trim();
   const m = raw.match(/^(\d{1,2})\.(\d{2})$/);
@@ -48,9 +56,9 @@ function sortPicks(list) {
   return [...standard.map((x) => x.p), ...other];
 }
 
-function PickChip({ text }) {
+function PickChip({ text, isDark }) {
   const round = getPickRound(text);
-  const theme = pickTheme[round];
+  const theme = (isDark ? pickThemeDark : pickTheme)[round];
 
   return (
     <span
@@ -59,7 +67,7 @@ function PickChip({ text }) {
         alignItems: "center",
         padding: "8px 10px",
         borderRadius: 999,
-        border: `1px solid ${theme ? theme.color : "var(--ddc-pill-border)"}`,
+        border: `1px solid ${theme ? `color-mix(in oklab, ${theme.color} 55%, transparent)` : "var(--ddc-pill-border)"}`,
         background: theme ? theme.bg : "var(--ddc-pill-bg)",
         color: theme ? theme.color : "var(--ddc-text)",
         fontSize: "var(--ddc-text-sm)",
@@ -74,7 +82,7 @@ function PickChip({ text }) {
   );
 }
 
-export function PicksView({ picksByYear }) {
+export function PicksView({ picksByYear, isDark = false }) {
   const years = ["2026", "2027", "2028"];
 
   return (
@@ -119,7 +127,7 @@ export function PicksView({ picksByYear }) {
             ) : (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {picks.map((p, idx) => (
-                  <PickChip key={`${y}-${p}-${idx}`} text={p} />
+                  <PickChip key={`${y}-${p}-${idx}`} text={p} isDark={isDark} />
                 ))}
               </div>
             )}

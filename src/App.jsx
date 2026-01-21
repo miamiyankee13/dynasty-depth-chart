@@ -807,7 +807,7 @@ export default function App() {
       {connectedAs && isLoadingTeams ? (
         <SkeletonHome />
       ) : !team ? null : activeTab === "PICKS" ? (
-        <PicksView picksByYear={team.picksByYear} />
+        <PicksView picksByYear={team.picksByYear} isDark={isDark} />
       ) : (
         <div style={{ marginTop: 18 }}>
           <PlayerList
