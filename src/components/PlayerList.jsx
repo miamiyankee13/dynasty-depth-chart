@@ -59,6 +59,10 @@ function Row({
 
   const base = groupTheme[group] ?? { color: "#e5e7eb", bg: "#f3f4f6" };
   const th = isDark && base.bgDark ? { ...base, bg: base.bgDark } : base;
+  const qbAccent =
+  group === "QB" && isDark
+    ? `color-mix(in oklab, ${th.color} 78%, var(--ddc-text))`
+    : th.color;
 
   const slotLabel = group === "TAXI" ? `TX${index + 1}` : `${group}${index + 1}`;
 
@@ -72,7 +76,7 @@ function Row({
     padding: "7px 10px",
     paddingRight: 6,
     marginBottom: 6,
-    borderLeft: `5px solid ${th.color}`,
+    borderLeft: `5px solid ${qbAccent}`,
     transformOrigin: "center",
     willChange: "transform",
     color: "var(--ddc-text)",
@@ -145,8 +149,8 @@ function Row({
           padding: "5px 6px",
           borderRadius: 999,
           background: th.bg ?? "#f3f4f6",
-          color: th.color,
-          border: `1px solid color-mix(in oklab, ${th.color} 45%, transparent)`,
+          color: qbAccent,
+          border: `1px solid color-mix(in oklab, ${qbAccent} 55%, transparent)`,
           userSelect: "none",
           letterSpacing: "0.02em",
           lineHeight: 1,

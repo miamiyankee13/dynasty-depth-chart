@@ -6,6 +6,10 @@ export function Tabs({ tabs, active, onChange, isDark = false }) {
       {tabs.map((t) => {
         const base = groupTheme[t] ?? { color: "#111827", bg: "#f3f4f6", label: t };
         const th = isDark && base.bgDark ? { ...base, bg: base.bgDark } : base;
+        const qbAccent =
+          t === "QB" && isDark
+            ? `color-mix(in oklab, ${th.color} 78%, var(--ddc-text))`
+            : th.color;
 
         const isActive = active === t;
 
@@ -16,9 +20,9 @@ export function Tabs({ tabs, active, onChange, isDark = false }) {
             className="ddc-tab ddc-focusable ddc-pressable"
             data-active={isActive ? "true" : "false"}
             style={{
-              border: `1px solid ${isActive ? th.color : "var(--ddc-border)"}`,
+              border: `1px solid ${isActive ? qbAccent : "var(--ddc-border)"}`,
               background: isActive ? th.bg : "var(--ddc-card-bg)",
-              color: isActive ? th.color : "var(--ddc-text)",
+              color: isActive ? qbAccent : "var(--ddc-text)",
               cursor: "pointer",
               fontWeight: isActive ? 800 : 600,
             }}
