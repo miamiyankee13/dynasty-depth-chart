@@ -348,6 +348,21 @@ option {
   padding-bottom: 2px; /* prevents descender clipping (y, g, p) */
 }
 
+/* Injury icon wrapper: lets us keep a big hit target but a smaller visible ring */
+.ddc-injury-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  line-height: 1;
+}
+
+.ddc-injury-btn[data-injured="true"] .ddc-injury-icon {
+  box-shadow: 0 0 0 1px var(--ddc-danger) inset;
+}
+
 /* Bench split action: hidden by default, shown on row hover (desktop) */
 .ddc-row:hover .ddc-bench-btn {
   opacity: 1 !important;
@@ -418,16 +433,20 @@ option {
     padding: 0 10px;
   }
 
-  /* Larger touch targets */
   .ddc-drag-handle,
   .ddc-injury-btn {
-    min-width: 44px;
-    min-height: 44px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0 !important;
-    border-radius: 10px;
+  }
+
+  .ddc-injury-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 9px;
   }
 
   /* Hide low-value columns */

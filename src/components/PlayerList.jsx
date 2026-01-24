@@ -183,25 +183,35 @@ function Row({
 
           <button
             className="ddc-injury-btn"
+            data-injured={player.injured ? "true" : "false"}
             onClick={() => onToggleInjured?.(player.id)}
             title={player.injured ? "Mark healthy" : "Mark injured"}
             style={{
               background: "transparent",
               color: player.injured ? "var(--ddc-danger)" : "var(--ddc-muted)",
               border: "none",
-              borderRadius: 8,
-              boxShadow: player.injured ? "0 0 0 1px var(--ddc-danger) inset" : "none",
-              padding: "2px 6px",
+              borderRadius: 10,
               cursor: "pointer",
               fontWeight: 900,
               fontSize: 12,
               lineHeight: 1,
               opacity: player.injured ? 1 : 0.6,
               outline: "none",
+              boxShadow: "none",
+              // KEY: make the button a consistent flex box (fixes vertical alignment)
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              // Desktop visual size (mobile will override to 44x44 in CSS)
+              width: 28,
+              height: 28,
+              padding: 0,
               flex: "0 0 auto",
             }}
           >
-            ✚
+            <span className="ddc-injury-icon" aria-hidden="true">
+              ✚
+            </span>
           </button>
         </div>
       </div>
