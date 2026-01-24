@@ -188,8 +188,9 @@ function Row({
             style={{
               background: "transparent",
               color: player.injured ? "var(--ddc-danger)" : "var(--ddc-muted)",
-              border: player.injured ? "1px solid var(--ddc-danger)" : "none",
+              border: "none",
               borderRadius: 8,
+              boxShadow: player.injured ? "0 0 0 1px var(--ddc-danger) inset" : "none",
               padding: "2px 6px",
               cursor: "pointer",
               fontWeight: 900,
@@ -197,7 +198,6 @@ function Row({
               lineHeight: 1,
               opacity: player.injured ? 1 : 0.6,
               outline: "none",
-              boxShadow: "none",
               flex: "0 0 auto",
             }}
           >
