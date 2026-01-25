@@ -2,7 +2,7 @@ import { groupTheme } from "../theme";
 
 export function Tabs({ tabs, active, onChange, isDark = false }) {
   return (
-    <div className="ddc-tabs" style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+    <div className="ddc-tabs" style={{ display: "flex", gap: 8, flexWrap: "nowrap", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
       {tabs.map((t) => {
         const base = groupTheme[t] ?? { color: "#111827", bg: "#f3f4f6", label: t };
         const th = isDark && base.bgDark ? { ...base, bg: base.bgDark } : base;
