@@ -313,8 +313,28 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
             color: "var(--ddc-text)",
             }}
         >
-            <div style={{ fontSize: 14, fontWeight: 900, marginBottom: 4 }}>
-                Rookie Picks
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: 10,
+                marginBottom: 6,
+              }}
+            >
+              <div
+                aria-hidden="true"
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 999,
+                  background: groupTheme.PICKS.color,
+                  boxShadow: `0 0 0 3px color-mix(in oklab, ${groupTheme.PICKS.color} 18%, transparent)`,
+                  flex: "0 0 auto",
+                }}
+              />
+              <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
+                PICKS
+              </div>
             </div>
 
             <div style={{ marginTop: -8 }}>
@@ -393,8 +413,28 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
                 color: "var(--ddc-text)",
             }}
             >
-                <div style={{ fontSize: 14, fontWeight: 900, marginBottom: 4 }}>
-                    Rookie Picks
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: 10,
+                    marginBottom: 6,
+                  }}
+                >
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 999,
+                      background: groupTheme.PICKS.color,
+                      boxShadow: `0 0 0 3px color-mix(in oklab, ${groupTheme.PICKS.color} 18%, transparent)`,
+                      flex: "0 0 auto",
+                    }}
+                  />
+                  <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
+                    PICKS
+                  </div>
                 </div>
 
                 <div style={{ marginTop: -8 }}>
