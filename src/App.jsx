@@ -793,13 +793,15 @@ export default function App() {
             borderBottom: "1px solid var(--ddc-border)",
           }}
         >
-          <Tabs
-            key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
-            tabs={visibleTabs}
-            active={activeTab}
-            onChange={setActiveTab}
-            isDark={isDark}
-          />
+          {connectedAs && isLoadingTeams ? null : (
+            <Tabs
+              key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
+              tabs={visibleTabs}
+              active={activeTab}
+              onChange={setActiveTab}
+              isDark={isDark}
+            />
+          )}
         </div>
       )}
 
