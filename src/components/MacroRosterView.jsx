@@ -284,9 +284,52 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
   return (
     <div style={{ marginTop: 16 }}>
       <div style={{ marginBottom: 12 }}>
-        {/* Line 1: Title */}
-        <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
-          Full Roster Snapshot
+        {/* Line 1: Title + total player value */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 10,
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
+            Full Roster Snapshot
+          </div>
+
+          {/* Desktop-only: Total Player Val */}
+          <div
+            className="ddc-team-totalval"
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              gap: 6,
+            }}
+          >
+            <div
+              style={{
+                fontSize: "var(--ddc-text-xs)",
+                color: "var(--ddc-muted)",
+                fontWeight: "var(--ddc-weight-medium)",
+                letterSpacing: "0.02em",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Total Player Val
+            </div>
+            <div
+              style={{
+                fontSize: "var(--ddc-text-xs)",
+                color: "var(--ddc-text)",
+                fontWeight: "var(--ddc-weight-medium)",
+                letterSpacing: "0.01em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {formatValTotal(totalTeamVal)}
+            </div>
+          </div>
         </div>
 
         {/* Line 2: Mode / description */}
@@ -295,47 +338,10 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
             fontSize: "var(--ddc-text-xs)",
             color: "var(--ddc-muted)",
             fontWeight: "var(--ddc-weight-medium)",
-            letterSpacing: "0",
-            textTransform: "none",
             marginTop: 2,
           }}
         >
-          Read-Only • Reflects Saved Depth Chart Order
-        </div>
-
-        {/* Line 3: Desktop-only total team value */}
-        <div
-          className="ddc-team-totalval"
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            gap: 8,
-            marginTop: 2,
-          }}
-        >
-          <div
-            style={{
-              fontSize: "var(--ddc-text-xs)",
-              color: "var(--ddc-muted)",
-              fontWeight: "var(--ddc-weight-medium)",
-              letterSpacing: "0.02em",
-              textTransform: "uppercase",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Total Player Val
-          </div>
-          <div
-            style={{
-              fontSize: "var(--ddc-text-xs)",
-              color: "var(--ddc-text)",
-              fontWeight: "var(--ddc-weight-medium)",
-              letterSpacing: "0.01em",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {formatValTotal(totalTeamVal)}
-          </div>
+          Read-Only (Saved Depth Chart Order)
         </div>
       </div>
 

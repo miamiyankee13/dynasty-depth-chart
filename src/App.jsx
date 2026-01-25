@@ -291,7 +291,7 @@ export default function App() {
     clearSleeperUsername();
     clearAppState();      // clears teams from saved app state
     setState({ teams: [] }); // makes teams disappear immediately in UI
-    setNextToast("Disconnected from Sleeper (local order preserved)");
+    setNextToast("Disconnected from Sleeper (Local Order Preserved)");
     location.reload();
   }
 
@@ -388,9 +388,9 @@ export default function App() {
 
         didHydrateRef.current = true;
       } catch (e) {
-        console.warn("Failed to load Sleeper teams:", e);
-        setLoadError("Couldn’t load Sleeper leagues. Check username and try again.");
-        showToast("Couldn’t load Sleeper leagues. Check username and try again.");
+        console.warn("Failed to Load Sleeper Teams:", e);
+        setLoadError("Couldn’t Load Sleeper Leagues. Check Username and Try Again.");
+        showToast("Couldn’t Load Sleeper Leagues. Check Username and Try Again.");
         didHydrateRef.current = true;
       } finally {
         setIsLoadingTeams(false);
@@ -473,9 +473,7 @@ export default function App() {
         const { values } = await getFantasyCalcValues(params);
         setFcValues(values);
       } catch (e) {
-        console.warn("FantasyCalc values fetch failed:", e);
-        // Optional: keep this quiet to avoid noise
-        // showToast("Trade values unavailable right now");
+        console.warn("FantasyCalc Values Fetch Failed:", e);
       }
     })();
   }, [team?.id]);
@@ -523,7 +521,7 @@ export default function App() {
       return next;
     });
 
-    showToast(`${group} order saved`);
+    showToast(`${group} Order Saved`);
   }
 
   function togglePlayerInjured(playerId) {
@@ -536,7 +534,7 @@ export default function App() {
       if (!p) return prev;
 
       p.injured = !p.injured;
-      showToast(p.injured ? "Marked injured" : "Marked healthy");
+      showToast(p.injured ? "Marked Injured" : "Marked Healthy");
 
       // Persist injured flag so disconnect/reconnect won't wipe it
       setTeamEdit(t.id, p.id, { group: p.group, injured: !!p.injured });
@@ -727,11 +725,11 @@ export default function App() {
             </div>
           ) : connectedAs && isLoadingTeams ? (
             <div style={{ fontSize: 14, ...ui.muted }}>
-              Loading leagues from Sleeper…
+              Loading Leagues from Sleeper…
             </div>
           ) : !connectedAs ? (
             <div style={{ fontSize: 14, ...ui.muted }}>
-              Connect Sleeper above to load your leagues.
+              Connect Sleeper Above to Load Your Leagues
             </div>
           ) : !team ? null : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -770,7 +768,7 @@ export default function App() {
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {["2026", "2027", "2028"].map((y) => (
                   <div key={y} style={ui.pill}>
-                    {y} picks: {team.picksByYear?.[y]?.length ?? 0}
+                    {y} Picks: {team.picksByYear?.[y]?.length ?? 0}
                   </div>
                 ))}
               </div>
@@ -833,12 +831,12 @@ export default function App() {
                     if (!team?.id) return;
                     setTeamBenchStart(team.id, activeTab, idx);
                     const name = (playersByGroup[activeTab] ?? [])[idx]?.name;
-                    showToast(name ? `Bench starts at ${name}` : "Bench split saved");
+                    showToast(name ? `Bench Starts at ${name}` : "Bench Split Saved");
                   },
                   onClearBenchStart: () => {
                     if (!team?.id) return;
                     setTeamBenchStart(team.id, activeTab, null);
-                    showToast("Bench split cleared");
+                    showToast("Bench Split Cleared");
                   },
                 }
               : {})}
