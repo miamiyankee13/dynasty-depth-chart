@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Tabs } from "./components/Tabs";
 import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
+import { MacroRosterView } from "./components/MacroRosterView";
 import { DepthIcon } from "./components/DepthIcon";
 import { loadAppState, saveAppState, clearAppState } from "./services/storage";
 import { loadTeamsFromSleeper, getSleeperUsername, setSleeperUsername, clearSleeperUsername } from "./data/sources/sleeper/sleeperAdapter";
@@ -346,6 +347,7 @@ export default function App() {
   if (!team.isBestBall) base.push("TAXI");
 
   base.push("PICKS");
+  base.push("ROSTER");
   return base;
 }, [team, playersByGroup]);
 
@@ -808,6 +810,13 @@ export default function App() {
         <SkeletonHome />
       ) : !team ? null : activeTab === "PICKS" ? (
         <PicksView picksByYear={team.picksByYear} isDark={isDark} />
+      ) : activeTab === "ROSTER" ? (
+        <MacroRosterView
+          playersByGroup={playersByGroup}
+          valuesByPlayerId={valuesByPlayerId}
+          picksByYear={team.picksByYear}
+          isDark={isDark}
+        />
       ) : (
         <div style={{ marginTop: 18 }}>
           <PlayerList
