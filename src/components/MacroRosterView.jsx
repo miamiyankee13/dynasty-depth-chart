@@ -65,14 +65,6 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, isDark }) {
       whiteSpace: "nowrap",
     };
 
-    const metaStrong = {
-      ...metaStyle,
-      color: "var(--ddc-text)",
-      fontWeight: "var(--ddc-weight-bold)",
-      textTransform: "none",
-      letterSpacing: "0.01em",
-    };
-
     return (
       <div
         style={{
@@ -106,7 +98,7 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, isDark }) {
 
         {/* Right: Total Val */}
         <div className="ddc-group-totalval" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <div style={metaStyle}>Total Val</div>
+          <div style={metaStyle}>Total {title} Val</div>
           <div style={metaStyle}>{formatValTotal(totalVal)}</div>
         </div>
       </div>
@@ -264,6 +256,18 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, isDark }) {
 }
 
 export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear, isDark = false }) {
+    // Total Team Val (includes TAXI)
+  const teamPlayers = [
+    ...(playersByGroup?.QB ?? []),
+    ...(playersByGroup?.RB ?? []),
+    ...(playersByGroup?.WR ?? []),
+    ...(playersByGroup?.TE ?? []),
+    ...(playersByGroup?.DEF ?? []),
+    ...(playersByGroup?.TAXI ?? []),
+  ];
+
+  const totalTeamVal = computeGroupTotalVal(teamPlayers, valuesByPlayerId);
+  
   // Only show meaningful groups (keeps it clean)
   const showDEF = (playersByGroup?.DEF?.length ?? 0) > 0;
   const showTAXI = (playersByGroup?.TAXI?.length ?? 0) > 0;
@@ -279,13 +283,59 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
 
   return (
     <div style={{ marginTop: 16 }}>
-      {/* Small header (minimal chrome) */}
       <div style={{ marginBottom: 12 }}>
+        {/* Line 1: Title */}
         <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
           Full Roster Snapshot
         </div>
-        <div style={{ fontSize: 12, color: "var(--ddc-muted)", marginTop: 2 }}>
+
+        {/* Line 2: Mode / description */}
+        <div
+          style={{
+            fontSize: "var(--ddc-text-xs)",
+            color: "var(--ddc-muted)",
+            fontWeight: "var(--ddc-weight-medium)",
+            letterSpacing: "0",
+            textTransform: "none",
+            marginTop: 2,
+          }}
+        >
           Read-Only • Reflects Saved Depth Chart Order
+        </div>
+
+        {/* Line 3: Desktop-only total team value */}
+        <div
+          className="ddc-team-totalval"
+          style={{
+            display: "flex",
+            alignItems: "baseline",
+            gap: 8,
+            marginTop: 2,
+          }}
+        >
+          <div
+            style={{
+              fontSize: "var(--ddc-text-xs)",
+              color: "var(--ddc-muted)",
+              fontWeight: "var(--ddc-weight-medium)",
+              letterSpacing: "0.02em",
+              textTransform: "uppercase",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Total Player Val
+          </div>
+          <div
+            style={{
+              fontSize: "var(--ddc-text-xs)",
+              color: "var(--ddc-text)",
+              fontWeight: "var(--ddc-weight-medium)",
+              letterSpacing: "0.01em",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {formatValTotal(totalTeamVal)}
+          </div>
         </div>
       </div>
 
@@ -498,6 +548,10 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
                 .ddc-macro-single .ddc-group-totalval,
                 .ddc-macro-columns .ddc-group-totalval {
                     display: none !important;
+                }
+
+                .ddc-team-totalval {
+                  display: none !important;
                 }
             }
         `}</style>
