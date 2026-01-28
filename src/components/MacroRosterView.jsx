@@ -124,34 +124,38 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
               <div key={p.id}>
                 {showBenchMarker ? (
                   <div
-                    className="ddc-macro-bench"
+                    aria-label="Bench divider"
+                    className="ddc-bench-divider"
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 10,
-                      margin: "10px 2px",
-                      opacity: 0.95,
+                      margin: "10px 2px 12px",
+                      opacity: 0.75,
+                      userSelect: "none",
                     }}
                   >
-                    <div style={{ height: 1, background: "var(--ddc-border)", flex: 1 }} />
+                    <div style={{ height: 1, flex: 1, background: "var(--ddc-border)" }} />
                     <div
                       style={{
                         fontSize: "var(--ddc-text-xs)",
-                        color: "var(--ddc-muted)",
-                        fontWeight: "var(--ddc-weight-medium)",
-                        letterSpacing: "0.02em",
+                        letterSpacing: "0.08em",
                         textTransform: "uppercase",
-                        whiteSpace: "nowrap",
+                        color: "var(--ddc-muted)",
+                        fontWeight: "var(--ddc-weight-bold)",
                       }}
                     >
                       Bench
                     </div>
-                    <div style={{ height: 1, background: "var(--ddc-border)", flex: 1 }} />
+                    <div style={{ height: 1, flex: 1, background: "var(--ddc-border)" }} />
                   </div>
                 ) : null}
 
                 <div
                   className="ddc-row"
+                  data-bench={
+                    typeof benchStartIndex === "number" && idx >= benchStartIndex ? "true" : "false"
+                  }
                   style={{
                     display: "flex",
                     alignItems: "center",
