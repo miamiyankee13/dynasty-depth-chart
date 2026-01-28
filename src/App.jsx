@@ -815,6 +815,7 @@ export default function App() {
           playersByGroup={playersByGroup}
           valuesByPlayerId={valuesByPlayerId}
           picksByYear={team.picksByYear}
+          benchStartsByGroup={benchStartsForTeam}
           isDark={isDark}
         />
       ) : (
