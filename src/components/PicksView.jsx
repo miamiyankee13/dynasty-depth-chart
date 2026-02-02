@@ -62,10 +62,11 @@ function PickChip({ text, isDark }) {
 
   return (
     <span
+      className="ddc-num"
       style={{
         display: "inline-flex",
         alignItems: "center",
-        padding: "8px 10px",
+        padding: "6px 10px",
         borderRadius: 999,
         border: `1px solid ${theme ? `color-mix(in oklab, ${theme.color} 55%, transparent)` : "var(--ddc-pill-border)"}`,
         background: theme ? theme.bg : "var(--ddc-pill-bg)",

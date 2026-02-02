@@ -145,7 +145,7 @@ option {
 
 /* Always allow hover lift (desktop/laptop will work regardless of media query quirks) */
 .ddc-row:hover {
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
   border-color: var(--ddc-row-hover-border);
   background-color: var(--ddc-row-hover-bg);
 }
@@ -213,6 +213,21 @@ option {
 .ddc-col-team > div:nth-child(2),
 .ddc-col-val > div:nth-child(2) {
   opacity: 0.75;
+}
+
+.ddc-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Numeric columns / totals should never "jitter" */
+.ddc-col-age,
+.ddc-col-team,
+.ddc-col-val,
+.ddc-team-totalval,
+.ddc-group-totalval {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 /* ================================

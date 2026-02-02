@@ -159,10 +159,10 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
+                    gap: 8,
                     padding: "7px 10px",
                     borderLeft: `5px solid ${accent}`,
-                    marginBottom: 0,
+                    marginBottom: 6,
                   }}
                 >
                   {/* Slot pill (read-only) */}
