@@ -331,7 +331,7 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
           }}
         >
           <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
-            Full Roster Snapshot
+            Roster Snapshot
           </div>
 
           {/* Desktop-only: Total Player Val */}
@@ -378,7 +378,7 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
             marginTop: 2,
           }}
         >
-          READ-ONLY (Edit Order in Position Tabs)
+        Edit Order in Position Tabs
         </div>
       </div>
 
