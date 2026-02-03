@@ -249,7 +249,7 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
           None
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {players.map((p, idx) => {
             const val = valuesByPlayerId?.get(p.id) ?? null;
 
