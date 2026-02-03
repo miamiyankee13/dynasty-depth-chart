@@ -127,21 +127,46 @@ function normalizeClipboardText(text) {
   return out;
 }
 
+function isIOS() {
+  // Covers iPhone/iPad/iPod and iPadOS Safari (which sometimes reports as Mac)
+  const ua = navigator?.userAgent || "";
+  const isAppleTouch =
+    (navigator?.platform === "MacIntel" && navigator?.maxTouchPoints > 1) ||
+    /iPad|iPhone|iPod/.test(ua);
+
+  return isAppleTouch;
+}
+
 async function copyTextToClipboard(text) {
-  if (navigator?.clipboard?.writeText) {
+  const forceFallback = isIOS();
+
+  if (!forceFallback && navigator?.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
     return;
   }
 
-  // Fallback for older browsers / permissions edge cases
+  // Fallback for iOS + older browsers / permissions edge cases
   const ta = document.createElement("textarea");
   ta.value = text;
+
+  // iOS can be picky; these attributes help
   ta.setAttribute("readonly", "");
+  ta.setAttribute("aria-hidden", "true");
+
+  // Prevent zoom / scroll jumps on iOS
   ta.style.position = "fixed";
-  ta.style.top = "-9999px";
-  ta.style.left = "-9999px";
+  ta.style.top = "0";
+  ta.style.left = "0";
+  ta.style.opacity = "0";
+  ta.style.pointerEvents = "none";
+
   document.body.appendChild(ta);
+  ta.focus();
   ta.select();
+
+  // Extra iOS compatibility
+  ta.setSelectionRange(0, ta.value.length);
+
   document.execCommand("copy");
   document.body.removeChild(ta);
 }
@@ -438,7 +463,6 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
     try {
       const raw = formatRosterSummary({ playersByGroup, picksByYear });
       const text = normalizeClipboardText(raw);
-      console.log("COPY_PREVIEW:", text.slice(0, 80));
       await copyTextToClipboard(text);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1200);
