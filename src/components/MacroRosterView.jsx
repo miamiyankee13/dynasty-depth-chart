@@ -69,7 +69,7 @@ function formatRosterSummary({ playersByGroup, picksByYear }) {
     if (!firstGroup) lines.push(""); // blank line between groups
     firstGroup = false;
 
-    lines.push(`${key}: ${players.map((p) => p.name).join("; ")}`);
+    lines.push(`${key}: ${players.map((p) => p.name).join(", ")}`);
   }
 
   const years = Object.keys(picksByYear ?? {}).sort(); // YYYY keys
