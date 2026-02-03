@@ -11,6 +11,21 @@ function makeKey(params) {
   return `${isDynasty}|qbs=${numQbs}|teams=${numTeams}|ppr=${ppr}`;
 }
 
+export function getFantasyCalcUpdatedAt(params) {
+  try {
+    const key = makeKey(params);
+    const raw = localStorage.getItem(`${FC_CACHE_PREFIX}:${key}`);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw);
+    if (!parsed?.ts) return null;
+
+    return Number(parsed.ts);
+  } catch {
+    return null;
+  }
+}
+
 function getCache(key) {
   try {
     const raw = localStorage.getItem(`${FC_CACHE_PREFIX}:${key}`);

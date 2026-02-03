@@ -817,6 +817,7 @@ export default function App() {
           picksByYear={team.picksByYear}
           benchStartsByGroup={benchStartsForTeam}
           isDark={isDark}
+          fcParams={team?.external?.fantasycalc} 
         />
       ) : (
         <div style={{ marginTop: 18 }}>

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { groupTheme } from "../theme";
 import { PicksView } from "./PicksView";
+import { getFantasyCalcUpdatedAt } from "../data/sources/fantasycalc/fantasycalc";
 
 function formatVal(v) {
   if (v == null) return "—";
@@ -431,7 +432,7 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
   );
 }
 
-export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear, benchStartsByGroup = {}, isDark = false }) {
+export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear, benchStartsByGroup = {}, isDark = false, fcParams = null }) {
     // Total Team Val (includes TAXI)
   const teamPlayers = [
     ...(playersByGroup?.QB ?? []),
@@ -443,6 +444,17 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
   ];
 
   const totalTeamVal = computeGroupTotalVal(teamPlayers, valuesByPlayerId);
+
+  const fcUpdatedAt = fcParams ? getFantasyCalcUpdatedAt(fcParams) : null;
+
+  const fcUpdatedLabel = fcUpdatedAt
+    ? new Date(fcUpdatedAt).toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : null;
   
   // Only show meaningful groups (keeps it clean)
   const showDEF = (playersByGroup?.DEF?.length ?? 0) > 0;
@@ -474,7 +486,7 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
   return (
     <div style={{ marginTop: 16 }}>
       <div style={{ marginBottom: 12 }}>
-        {/* Line 1: Title + total player value */}
+        {/* Line 1: Title + Copy button (left) + Total Player Val (right) */}
         <div
           style={{
             display: "flex",
@@ -484,79 +496,104 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
             flexWrap: "wrap",
           }}
         >
+          {/* Left cluster: Title + Copy */}
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
             <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
               Roster Snapshot
             </div>
 
-            {/* Desktop-only: Total Player Val */}
-            <div
-              className="ddc-team-totalval"
+            <button
+              type="button"
+              onClick={onCopySummary}
               style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: 6,
+                padding: "6px 10px",
+                borderRadius: 10,
+                border: "1px solid var(--ddc-border)",
+                background: "var(--ddc-card-bg)",
+                color: "var(--ddc-text)",
+                fontSize: "var(--ddc-text-xs)",
+                fontWeight: "var(--ddc-weight-medium)",
+                letterSpacing: "0.01em",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                opacity: 0.9,
               }}
+              aria-label="Copy Roster Snapshot"
+              title="Copy Roster Snapshot"
             >
-              <div
-                style={{
-                  fontSize: "var(--ddc-text-xs)",
-                  color: "var(--ddc-muted)",
-                  fontWeight: "var(--ddc-weight-medium)",
-                  letterSpacing: "0.02em",
-                  textTransform: "uppercase",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                Total Player Val
-              </div>
-              <div
-                style={{
-                  fontSize: "var(--ddc-text-xs)",
-                  color: "var(--ddc-text)",
-                  fontWeight: "var(--ddc-weight-medium)",
-                  letterSpacing: "0.01em",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {formatValTotal(totalTeamVal)}
-              </div>
-            </div>
+              {copied ? "Copied" : "Copy Snapshot"}
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={onCopySummary}
+          {/* Right cluster: Total Player Val */}
+          <div
+            className="ddc-team-totalval"
             style={{
-              padding: "6px 10px",
-              borderRadius: 10,
-              border: "1px solid var(--ddc-border)",
-              background: "var(--ddc-card-bg)",
-              color: "var(--ddc-text)",
-              fontSize: "var(--ddc-text-xs)",
-              fontWeight: "var(--ddc-weight-medium)",
-              letterSpacing: "0.01em",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              opacity: 0.9,
+              display: "flex",
+              alignItems: "baseline",
+              gap: 6,
             }}
-            aria-label="Copy Roster Snapshot"
-            title="Copy Roster Snapshot"
           >
-            {copied ? "Copied" : "Copy Snapshot"}
-          </button>
+            <div
+              style={{
+                fontSize: "var(--ddc-text-xs)",
+                color: "var(--ddc-muted)",
+                fontWeight: "var(--ddc-weight-medium)",
+                letterSpacing: "0.02em",
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Total Player Val
+            </div>
+            <div
+              style={{
+                fontSize: "var(--ddc-text-xs)",
+                color: "var(--ddc-text)",
+                fontWeight: "var(--ddc-weight-medium)",
+                letterSpacing: "0.01em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {formatValTotal(totalTeamVal)}
+            </div>
+          </div>
         </div>
 
         {/* Line 2: Mode / description */}
         <div
           style={{
-            fontSize: "var(--ddc-text-xs)",
-            color: "var(--ddc-muted)",
-            fontWeight: "var(--ddc-weight-medium)",
+            display: "flex",
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            gap: 10,
             marginTop: 2,
           }}
         >
-        Edit Order in Position Tabs
+          <div
+            style={{
+              fontSize: "var(--ddc-text-xs)",
+              color: "var(--ddc-muted)",
+              fontWeight: "var(--ddc-weight-medium)",
+            }}
+          >
+            Edit Order in Position Tabs
+          </div>
+
+          {fcUpdatedLabel ? (
+            <div
+              className="ddc-fc-updated"
+              style={{
+                fontSize: "var(--ddc-text-xs)",
+                color: "var(--ddc-muted)",
+                fontWeight: "var(--ddc-weight-medium)",
+                whiteSpace: "nowrap",
+              }}
+              title="FantasyCalc values cache timestamp"
+            >
+              Values Updated: {fcUpdatedLabel}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -785,6 +822,10 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
                 }
 
                 .ddc-team-totalval {
+                  display: none !important;
+                }
+                
+                .ddc-fc-updated {
                   display: none !important;
                 }
             }
