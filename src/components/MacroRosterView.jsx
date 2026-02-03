@@ -59,12 +59,16 @@ function sortPickStrings(list) {
 
 function formatRosterSummary({ playersByGroup, picksByYear }) {
   const order = ["QB", "RB", "WR", "TE", "DEF", "TAXI"];
-  const lines = ["Roster Snapshot"];
+  const lines = [];
+  let firstGroup = true;
 
   for (const key of order) {
     const players = playersByGroup?.[key] ?? [];
     if (!players.length) continue;
-    // names only — no injury marker, no values
+
+    if (!firstGroup) lines.push(""); // blank line between groups
+    firstGroup = false;
+
     lines.push(`${key}: ${players.map((p) => p.name).join("; ")}`);
   }
 
@@ -78,7 +82,13 @@ function formatRosterSummary({ playersByGroup, picksByYear }) {
   }
 
   if (pickChunks.length) {
-    lines.push(`PICKS: ${pickChunks.join("; ")}`);
+    lines.push("");
+    lines.push("PICKS:");
+
+    pickChunks.forEach((chunk, idx) => {
+      if (idx > 0) lines.push(""); // blank line between years
+      lines.push(chunk);
+    });
   }
 
   return lines.join("\n");
@@ -474,7 +484,7 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
             aria-label="Copy Roster Snapshot"
             title="Copy Roster Snapshot"
           >
-            {copied ? "Copied!" : "Copy Snapshot"}
+            {copied ? "Copied" : "Copy Snapshot"}
           </button>
         </div>
 
