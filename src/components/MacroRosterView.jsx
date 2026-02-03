@@ -95,14 +95,36 @@ function formatRosterSummary({ playersByGroup, picksByYear }) {
 }
 
 function normalizeClipboardText(text) {
-  // If it contains %XX sequences, it is almost certainly URL-encoded
-  if (!/%[0-9A-Fa-f]{2}/.test(text)) return text;
+  let out = String(text ?? "");
 
-  try {
-    return decodeURIComponent(text);
-  } catch {
-    return text; // never fail copying
+  // Quick exit if it doesn't even look encoded
+  if (!/%[0-9A-Fa-f]{2}/.test(out)) return out;
+
+  // Some encoders use '+' for spaces in query-ish strings
+  out = out.replace(/\+/g, " ");
+
+  // Decode up to 3 times (covers double-encoding and mixed cases)
+  for (let i = 0; i < 3; i++) {
+    if (!/%[0-9A-Fa-f]{2}/.test(out)) break;
+    try {
+      const next = decodeURIComponent(out);
+      if (next === out) break;
+      out = next;
+    } catch {
+      break;
+    }
   }
+
+  // Last-resort: if still encoded, manually handle the common sequences
+  // (This covers weird cases where decodeURIComponent fails due to stray %)
+  out = out
+    .replaceAll("%0A", "\n")
+    .replaceAll("%0a", "\n")
+    .replaceAll("%20", " ")
+    .replaceAll("%3A", ":")
+    .replaceAll("%3a", ":");
+
+  return out;
 }
 
 async function copyTextToClipboard(text) {
@@ -416,6 +438,7 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
     try {
       const raw = formatRosterSummary({ playersByGroup, picksByYear });
       const text = normalizeClipboardText(raw);
+      console.log("COPY_PREVIEW:", text.slice(0, 80));
       await copyTextToClipboard(text);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1200);
