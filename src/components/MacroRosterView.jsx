@@ -1,4 +1,5 @@
 // src/components/MacroRosterView.jsx
+import { useState } from "react";
 import { groupTheme } from "../theme";
 import { PicksView } from "./PicksView";
 
@@ -30,6 +31,76 @@ function computeGroupTotalVal(players, valuesByPlayerId) {
     hasAny = true;
   }
   return hasAny ? sum : null;
+}
+
+function sortPickStrings(list) {
+  const arr = (list ?? []).map((p) => String(p).trim()).filter(Boolean);
+
+  function parsePickKey(pick) {
+    const m = pick.match(/^(\d{1,2})\.(\d{2})$/);
+    if (!m) return null;
+    return Number(m[1]) * 100 + Number(m[2]);
+  }
+
+  const standard = [];
+  const other = [];
+
+  for (const p of arr) {
+    const key = parsePickKey(p);
+    if (key == null) other.push(p);
+    else standard.push({ p, key });
+  }
+
+  standard.sort((a, b) => a.key - b.key);
+  other.sort((a, b) => a.localeCompare(b));
+
+  return [...standard.map((x) => x.p), ...other];
+}
+
+function formatRosterSummary({ playersByGroup, picksByYear }) {
+  const order = ["QB", "RB", "WR", "TE", "DEF", "TAXI"];
+  const lines = ["Roster Snapshot"];
+
+  for (const key of order) {
+    const players = playersByGroup?.[key] ?? [];
+    if (!players.length) continue;
+    // names only — no injury marker, no values
+    lines.push(`${key}: ${players.map((p) => p.name).join("; ")}`);
+  }
+
+  const years = Object.keys(picksByYear ?? {}).sort(); // YYYY keys
+  const pickChunks = [];
+
+  for (const y of years) {
+    const picks = sortPickStrings(picksByYear?.[y] ?? []);
+    if (!picks.length) continue;
+    pickChunks.push(`${y} ${picks.join(", ")}`);
+  }
+
+  if (pickChunks.length) {
+    lines.push(`PICKS: ${pickChunks.join("; ")}`);
+  }
+
+  return lines.join("\n");
+}
+
+async function copyTextToClipboard(text) {
+  if (navigator?.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  // Fallback for older browsers / permissions edge cases
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.top = "-9999px";
+  ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
 }
 
 function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex, isDark }) {
@@ -124,7 +195,7 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
               <div key={p.id}>
                 {showBenchMarker ? (
                   <div
-                    aria-label="Bench divider"
+                    aria-label="Bench Divider"
                     className="ddc-bench-divider"
                     style={{
                       display: "flex",
@@ -183,7 +254,7 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
                       lineHeight: 1,
                       flex: "0 0 auto",
                     }}
-                    title="Saved order"
+                    title="Saved Order"
                   >
                     {groupKey === "TAXI" ? `TX${idx + 1}` : `${groupKey}${idx + 1}`}
                   </div>
@@ -224,7 +295,7 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
                             lineHeight: 1.2,
                             whiteSpace: "nowrap",
                           }}
-                          title="Marked injured"
+                          title="Marked Injured"
                         >
                           INJ
                         </span>
@@ -318,6 +389,19 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
     ...(showTAXI ? [{ key: "TAXI", title: "TAXI" }] : []),
   ];
 
+  const [copied, setCopied] = useState(false);
+
+  async function onCopySummary() {
+    try {
+      const text = formatRosterSummary({ playersByGroup, picksByYear });
+      await copyTextToClipboard(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   return (
     <div style={{ marginTop: 16 }}>
       <div style={{ marginBottom: 12 }}>
@@ -326,47 +410,72 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
           style={{
             display: "flex",
             alignItems: "baseline",
+            justifyContent: "space-between",
             gap: 10,
             flexWrap: "wrap",
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
-            Roster Snapshot
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
+              Roster Snapshot
+            </div>
+
+            {/* Desktop-only: Total Player Val */}
+            <div
+              className="ddc-team-totalval"
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: 6,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "var(--ddc-text-xs)",
+                  color: "var(--ddc-muted)",
+                  fontWeight: "var(--ddc-weight-medium)",
+                  letterSpacing: "0.02em",
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Total Player Val
+              </div>
+              <div
+                style={{
+                  fontSize: "var(--ddc-text-xs)",
+                  color: "var(--ddc-text)",
+                  fontWeight: "var(--ddc-weight-medium)",
+                  letterSpacing: "0.01em",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {formatValTotal(totalTeamVal)}
+              </div>
+            </div>
           </div>
 
-          {/* Desktop-only: Total Player Val */}
-          <div
-            className="ddc-team-totalval"
+          <button
+            type="button"
+            onClick={onCopySummary}
             style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 6,
+              padding: "6px 10px",
+              borderRadius: 10,
+              border: "1px solid var(--ddc-border)",
+              background: "var(--ddc-card-bg)",
+              color: "var(--ddc-text)",
+              fontSize: "var(--ddc-text-xs)",
+              fontWeight: "var(--ddc-weight-medium)",
+              letterSpacing: "0.01em",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              opacity: 0.9,
             }}
+            aria-label="Copy Roster Snapshot"
+            title="Copy Roster Snapshot"
           >
-            <div
-              style={{
-                fontSize: "var(--ddc-text-xs)",
-                color: "var(--ddc-muted)",
-                fontWeight: "var(--ddc-weight-medium)",
-                letterSpacing: "0.02em",
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Total Player Val
-            </div>
-            <div
-              style={{
-                fontSize: "var(--ddc-text-xs)",
-                color: "var(--ddc-text)",
-                fontWeight: "var(--ddc-weight-medium)",
-                letterSpacing: "0.01em",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {formatValTotal(totalTeamVal)}
-            </div>
-          </div>
+            {copied ? "Copied!" : "Copy Snapshot"}
+          </button>
         </div>
 
         {/* Line 2: Mode / description */}

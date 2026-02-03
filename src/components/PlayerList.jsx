@@ -14,7 +14,7 @@ import { groupTheme } from "../theme";
 function BenchDivider({ label = "Bench" }) {
   return (
     <div
-      aria-label="Bench divider"
+      aria-label="Bench Divider"
       style={{
         display: "flex",
         alignItems: "center",
@@ -113,7 +113,7 @@ function Row({
       <span
         {...attributes}
         {...listeners}
-        title="Drag to reorder"
+        title="Drag to Reorder"
         className="ddc-drag-handle"
         style={{
           cursor: isDragging ? "grabbing" : "grab",
@@ -255,8 +255,8 @@ function Row({
                 e.stopPropagation();
                 onClearBenchStart?.();
               }}
-              title="Clear starters/bench split"
-              aria-label="Clear starters/bench split"
+              title="Clear Starters/Bench Split"
+              aria-label="Clear Starters/Bench Split"
               style={{
                 background: "transparent",
                 border: "1px solid var(--ddc-border)",
@@ -283,8 +283,8 @@ function Row({
                 e.stopPropagation();
                 onSetBenchStart?.(index);
               }}
-              title="Bench starts here"
-              aria-label="Bench starts here"
+              title="Bench Starts Here"
+              aria-label="Bench Starts Here"
               style={{
                 background: "transparent",
                 border: "1px solid var(--ddc-border)",
