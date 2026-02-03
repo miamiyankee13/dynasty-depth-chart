@@ -94,6 +94,17 @@ function formatRosterSummary({ playersByGroup, picksByYear }) {
   return lines.join("\n");
 }
 
+function normalizeClipboardText(text) {
+  // If it contains %XX sequences, it is almost certainly URL-encoded
+  if (!/%[0-9A-Fa-f]{2}/.test(text)) return text;
+
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text; // never fail copying
+  }
+}
+
 async function copyTextToClipboard(text) {
   if (navigator?.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
@@ -403,7 +414,8 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
 
   async function onCopySummary() {
     try {
-      const text = formatRosterSummary({ playersByGroup, picksByYear });
+      const raw = formatRosterSummary({ playersByGroup, picksByYear });
+      const text = normalizeClipboardText(raw);
       await copyTextToClipboard(text);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1200);
