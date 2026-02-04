@@ -506,8 +506,9 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
               type="button"
               onClick={onCopySummary}
               style={{
-                padding: "6px 10px",
-                borderRadius: 10,
+                padding: "4px 8px",
+                borderRadius: 8,
+                marginLeft: 2,
                 border: "1px solid var(--ddc-border)",
                 background: "var(--ddc-card-bg)",
                 color: "var(--ddc-text)",
@@ -516,12 +517,12 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
                 letterSpacing: "0.01em",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
-                opacity: 0.9,
+                opacity: 0.8,     
               }}
               aria-label="Copy Roster Snapshot"
               title="Copy Roster Snapshot"
             >
-              {copied ? "Copied" : "Copy Snapshot"}
+              {copied ? "Copied" : "Copy"}
             </button>
           </div>
 
@@ -591,7 +592,7 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
               }}
               title="FantasyCalc values cache timestamp"
             >
-              Values Updated: {fcUpdatedLabel}
+              Updated: {fcUpdatedLabel}
             </div>
           ) : null}
         </div>
