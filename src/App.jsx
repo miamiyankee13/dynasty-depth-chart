@@ -571,13 +571,13 @@ export default function App() {
       WebkitAppearance: "auto",
     },
     pill: {
-      padding: "8px 10px",
+      padding: "7px 10px",
       borderRadius: 999,
       border: "1px solid var(--ddc-pill-border)",
       background: "var(--ddc-pill-bg)",
-      color: "var(--ddc-text)",
+      color: "var(--ddc-muted)",
       fontSize: 13,
-      fontWeight: 800,
+      fontWeight: 600,
     },
     muted: { color: "var(--ddc-muted)" },
   };
