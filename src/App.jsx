@@ -778,7 +778,7 @@ export default function App() {
 
 
       {/* Tabs */}
-      {visibleTabs.length > 0 && (
+      {visibleTabs.length > 0 && !(connectedAs && isLoadingTeams) && (
         <div
           className="ddc-tabs-sticky"
           style={{
@@ -792,15 +792,13 @@ export default function App() {
             borderBottom: "1px solid var(--ddc-border)",
           }}
         >
-          {connectedAs && isLoadingTeams ? null : (
-            <Tabs
-              key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
-              tabs={visibleTabs}
-              active={activeTab}
-              onChange={setActiveTab}
-              isDark={isDark}
-            />
-          )}
+          <Tabs
+            key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
+            tabs={visibleTabs}
+            active={activeTab}
+            onChange={setActiveTab}
+            isDark={isDark}
+          />
         </div>
       )}
 
