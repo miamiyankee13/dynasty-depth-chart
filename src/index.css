@@ -345,6 +345,12 @@ option {
 .ddc-tabs {
   padding-left: 8px;
   padding-right: 8px;
+  scrollbar-width: none;  
+  -ms-overflow-style: none; 
+}
+
+.ddc-tabs::-webkit-scrollbar {
+  display: none;                /* Chrome/Safari */
 }
 
 /* App title lockup: icon + word */
