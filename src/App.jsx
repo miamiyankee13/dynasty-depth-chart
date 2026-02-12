@@ -621,14 +621,15 @@ export default function App() {
             </div>
 
             {/* Controls row under title */}
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              {/* Sleeper connect (always visible) */}
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+              {/* Sleeper connect */}
               <div>
                 {connectedAs ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                     <div style={{ fontSize: 14, fontWeight: 800 }}>
                       Sleeper: <span style={{ fontWeight: 900 }}>{connectedAs}</span>
                     </div>
+
                     <button
                       className="ddc-focusable ddc-pressable"
                       onClick={disconnectSleeper}
@@ -640,13 +641,34 @@ export default function App() {
                         color: "var(--ddc-text)",
                         cursor: "pointer",
                         fontWeight: 800,
+                        whiteSpace: "nowrap",
                       }}
                     >
                       Disconnect
                     </button>
+
+                    {/* MOBILE theme button (only visible on mobile, only when connected) */}
+                    <button
+                      className="ddc-theme-mobile ddc-focusable ddc-pressable"
+                      type="button"
+                      onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: 10,
+                        border: "1px solid var(--ddc-input-border)",
+                        background: "var(--ddc-input-bg)",
+                        color: "var(--ddc-text)",
+                        cursor: "pointer",
+                        fontWeight: 800,
+                        whiteSpace: "nowrap",
+                      }}
+                      title="Toggle Theme"
+                    >
+                      {theme === "dark" ? "Light" : "Dark"}
+                    </button>
                   </div>
                 ) : (
-                  <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                     <input
                       className="ddc-sleeper-input ddc-focusable"
                       value={sleeperInput}
@@ -680,6 +702,7 @@ export default function App() {
                         color: "var(--ddc-card-bg)",
                         cursor: "pointer",
                         fontWeight: 900,
+                        whiteSpace: "nowrap",
                       }}
                     >
                       Connect
@@ -690,14 +713,14 @@ export default function App() {
 
               {/* League dropdown */}
               {teams.length > 0 && (
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <select
                     className="ddc-focusable"
                     value={teamIndex}
                     onChange={(e) => {
                       setTeamIndex(Number(e.target.value));
                       setActiveTab("QB");
-                      e.target.blur(); // iPadOS: don’t leave native select focused
+                      e.target.blur();
                     }}
                     style={ui.select}
                   >
@@ -710,8 +733,10 @@ export default function App() {
                 </div>
               )}
 
+              {/* DESKTOP/iPad theme button (visible on >=521px, even if not connected) */}
               <button
-                className="ddc-focusable ddc-pressable"
+                className="ddc-theme-desktop ddc-focusable ddc-pressable"
+                type="button"
                 onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
                 style={{
                   padding: "8px 12px",

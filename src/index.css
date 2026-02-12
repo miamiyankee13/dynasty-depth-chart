@@ -408,6 +408,28 @@ option {
   touch-action: none;
 }
 
+/* Theme toggle placement:
+   - Desktop/iPad: show desktop button (to the right of league dropdown)
+   - Mobile: hide desktop button, show mobile button (next to Disconnect)
+*/
+.ddc-theme-mobile {
+  display: none;
+}
+
+.ddc-theme-desktop {
+  display: inline-flex;
+}
+
+@media (max-width: 520px) {
+  .ddc-theme-desktop {
+    display: none !important;
+  }
+
+  .ddc-theme-mobile {
+    display: inline-flex !important;
+  }
+}
+
 @media (max-width: 520px) {
   /* Reduce outer padding */
   main {
