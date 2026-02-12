@@ -96,7 +96,7 @@
 /* ================================
    Document defaults
    ================================ */
-
+html { scrollbar-gutter: stable; }
 html,
 body {
   background: var(--ddc-bg);
