@@ -10,7 +10,7 @@
   font-weight: 400;
 
   /* Tell the browser we support both */
-  color-scheme: light dark;
+  color-scheme: light;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -65,33 +65,32 @@
     color-mix(in oklab, var(--ddc-accent) 30%, transparent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ddc-bg: #0b1220;
-    --ddc-text: #e5e7eb;
-    --ddc-muted: rgba(229, 231, 235, 0.7);
+/* Manual theme: DARK override */
+[data-theme="dark"] {
+  --ddc-bg: #0b1220;
+  --ddc-text: #e5e7eb;
+  --ddc-muted: rgba(229, 231, 235, 0.7);
 
-    --ddc-card-bg: #0f172a;
-    --ddc-border: rgba(255, 255, 255, 0.12);
+  --ddc-card-bg: #0f172a;
+  --ddc-border: rgba(255, 255, 255, 0.12);
 
-    --ddc-pill-bg: rgba(255, 255, 255, 0.06);
-    --ddc-pill-border: rgba(255, 255, 255, 0.14);
+  --ddc-pill-bg: rgba(255, 255, 255, 0.06);
+  --ddc-pill-border: rgba(255, 255, 255, 0.14);
 
-    --ddc-input-bg: rgba(255, 255, 255, 0.06);
-    --ddc-input-border: rgba(255, 255, 255, 0.16);
+  --ddc-input-bg: rgba(255, 255, 255, 0.06);
+  --ddc-input-border: rgba(255, 255, 255, 0.16);
 
-    --ddc-row-hover-bg: rgba(255, 255, 255, 0.04);
-    --ddc-row-hover-border: rgba(255, 255, 255, 0.18);
+  --ddc-row-hover-bg: rgba(255, 255, 255, 0.04);
+  --ddc-row-hover-border: rgba(255, 255, 255, 0.18);
 
-    --ddc-danger: #fb7185;
+  --ddc-danger: #fb7185;
 
-    --ddc-logo-accent: #4fa36a;
-    --ddc-logo-band: var(--ddc-text);
+  --ddc-logo-accent: #4fa36a;
+  --ddc-logo-band: var(--ddc-text);
 
-    /* Stronger focus ring in dark mode */
-    --ddc-focus-ring: 0 0 0 3px
-      color-mix(in oklab, var(--ddc-accent) 55%, transparent);
-  }
+  /* Stronger focus ring in dark mode */
+  --ddc-focus-ring: 0 0 0 3px
+    color-mix(in oklab, var(--ddc-accent) 55%, transparent);
 }
 
 /* ================================

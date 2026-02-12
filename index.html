@@ -2,6 +2,15 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("ddc.theme");
+          if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
+          else document.documentElement.removeAttribute("data-theme");
+        } catch (e) {}
+      })();
+    </script>
     <!-- SVG favicons (theme-aware) -->
     <link rel="icon" type="image/svg+xml" href="/favicon-light.svg" media="(prefers-color-scheme: light)" />
     <link rel="icon" type="image/svg+xml" href="/favicon-dark.svg"  media="(prefers-color-scheme: dark)" />

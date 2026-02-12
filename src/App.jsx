@@ -11,6 +11,28 @@ import { getFantasyCalcValues, scaleFantasyCalcValue } from "./data/sources/fant
 
 // ---- UI prefs helpers (team/tab persistence) ----
 const UI_KEY = "ddc.ui";
+const THEME_KEY = "ddc.theme"; // "light" | "dark"
+
+function loadTheme() {
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    return t === "dark" ? "dark" : "light";
+  } catch {
+    return "light";
+  }
+}
+
+function saveTheme(t) {
+  try {
+    localStorage.setItem(THEME_KEY, t);
+  } catch {}
+}
+
+function applyThemeToDom(t) {
+  const root = document.documentElement; // <html>
+  if (t === "dark") root.setAttribute("data-theme", "dark");
+  else root.removeAttribute("data-theme"); // light is default
+}
 
 function loadUiPrefs() {
   try {
@@ -228,35 +250,6 @@ function SkeletonHome() {
   );
 }
 
-function usePrefersDark() {
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return false;
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-
-  useEffect(() => {
-    if (!window.matchMedia) return;
-
-    const mql = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handler = (e) => setIsDark(!!e.matches);
-
-    // Modern browsers
-    if (typeof mql.addEventListener === "function") {
-      mql.addEventListener("change", handler);
-      return () => mql.removeEventListener("change", handler);
-    }
-
-    // Safari fallback
-    if (typeof mql.addListener === "function") {
-      mql.addListener(handler);
-      return () => mql.removeListener(handler);
-    }
-  }, []);
-
-  return isDark;
-}
-
 export default function App() {
   const [state, setState] = useState(() => loadAppState());
 
@@ -268,7 +261,13 @@ export default function App() {
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [fcValues, setFcValues] = useState(new Map());
-  const isDark = usePrefersDark();
+  const [theme, setTheme] = useState(() => loadTheme());
+  const isDark = theme === "dark";
+
+  useEffect(() => {
+    applyThemeToDom(theme);
+    saveTheme(theme);
+  }, [theme]);
 
   const summaryRef = useRef(null);
 
@@ -710,6 +709,24 @@ export default function App() {
                   </select>
                 </div>
               )}
+
+              <button
+                className="ddc-focusable ddc-pressable"
+                onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--ddc-input-border)",
+                  background: "var(--ddc-input-bg)",
+                  color: "var(--ddc-text)",
+                  cursor: "pointer",
+                  fontWeight: 800,
+                  whiteSpace: "nowrap",
+                }}
+                title="Toggle Theme"
+              >
+                {theme === "dark" ? "Light" : "Dark"}
+              </button>
             </div>
           </div>
         </div>
