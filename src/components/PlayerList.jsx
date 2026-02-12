@@ -32,7 +32,7 @@ function BenchDivider({ label = "Bench" }) {
           letterSpacing: "0.08em",
           textTransform: "uppercase",
           color: "var(--ddc-muted)",
-          fontWeight: "var(--ddc-weight-bold)",
+          fontWeight: "var(--ddc-weight-medium)",
         }}
       >
         {label}
@@ -93,7 +93,7 @@ function Row({
 
   const colValue = {
     fontSize: "var(--ddc-text-md)",
-    fontWeight: "var(--ddc-weight-bold)",
+    fontWeight: "var(--ddc-weight-medium)",
     color: "var(--ddc-text)",
   };
 
@@ -192,8 +192,7 @@ function Row({
               border: "none",
               borderRadius: 10,
               cursor: "pointer",
-              fontWeight: 900,
-              fontSize: 12,
+              fontSize: "var(--ddc-text-md)",
               lineHeight: 1,
               opacity: player.injured ? 1 : 0.6,
               outline: "none",
@@ -263,8 +262,7 @@ function Row({
                 color: "var(--ddc-muted)",
                 borderRadius: 10,
                 padding: "4px 8px",
-                fontSize: 12,
-                fontWeight: 800,
+                fontSize: "var(--ddc-text-md)",
                 cursor: "pointer",
                 opacity: 0, // shown on hover via CSS
                 transition: "opacity 120ms ease",
@@ -291,8 +289,7 @@ function Row({
                 color: "var(--ddc-muted)",
                 borderRadius: 10,
                 padding: "4px 8px",
-                fontSize: 12,
-                fontWeight: 800,
+                fontSize: "var(--ddc-text-md)",
                 cursor: "pointer",
                 opacity: 0, // shown on hover via CSS
                 transition: "opacity 120ms ease",

@@ -24,7 +24,6 @@ export function Tabs({ tabs, active, onChange, isDark = false }) {
               background: isActive ? th.bg : "var(--ddc-card-bg)",
               color: isActive ? qbAccent : "var(--ddc-text)",
               cursor: "pointer",
-              fontWeight: isActive ? 800 : 600,
             }}
           >
             {th.label}

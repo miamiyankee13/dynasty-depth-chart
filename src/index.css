@@ -41,15 +41,15 @@
   --ddc-brand-icon-size: 24px; /* change this to scale the icon */
 
   /* Typography scale */
-  --ddc-text-xs: 12px;
-  --ddc-text-sm: 13px;
-  --ddc-text-md: 14px;
+  --ddc-text-xs: 11px;
+  --ddc-text-sm: 12px;
+  --ddc-text-md: 13px;
   --ddc-text-lg: 16px;
-  --ddc-text-xl: 20px;
+  --ddc-text-xl: 18px;
 
-  --ddc-weight-regular: 450;
+  --ddc-weight-regular: 400;
   --ddc-weight-medium: 600;
-  --ddc-weight-bold: 800;
+  --ddc-weight-bold: 700;
 
   /* Spacing scale */
   --ddc-space-1: 4px;
@@ -106,6 +106,17 @@ body {
   min-height: 100vh;
   font-size: var(--ddc-text-md);
   line-height: 1.45;
+}
+
+/* Force form controls to inherit Inter instead of defaulting to Arial */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 /* Make native selects/options readable in dark mode */
@@ -199,7 +210,7 @@ option {
   padding: 0 12px;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--ddc-weight-medium);
   outline: none;
   transition: background-color 120ms ease, color 120ms ease;
 }
