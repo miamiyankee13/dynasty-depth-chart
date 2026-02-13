@@ -228,7 +228,6 @@ option {
 
 .ddc-num {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
 }
 
 /* Numeric columns / totals should never "jitter" */
@@ -238,7 +237,6 @@ option {
 .ddc-team-totalval,
 .ddc-group-totalval {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
 }
 
 /* ================================
@@ -440,6 +438,7 @@ option {
 .ddc-col-slot {
   width: 48px;
   flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 520px) {
