@@ -727,14 +727,16 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
                 color: "var(--ddc-text)",
             }}
             >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "baseline",
-                    gap: 10,
-                    marginBottom: 6,
-                  }}
-                >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  marginBottom: 6,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
                   <div
                     aria-hidden="true"
                     style={{
@@ -751,6 +753,16 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
                   </div>
                 </div>
 
+                <a
+                  href="https://rookie-board.vercel.app/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="ddc-rookie-link ddc-focusable"
+                  title="Open Rookie Board"
+                >
+                  Open Rookie Board →
+                </a>
+              </div>
                 <div style={{ marginTop: -8 }}>
                     <PicksView picksByYear={picksByYear} isDark={isDark} />
                 </div>
