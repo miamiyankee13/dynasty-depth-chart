@@ -437,6 +437,11 @@ option {
   display: inline-flex;
 }
 
+.ddc-col-slot {
+  width: 48px;
+  flex: 0 0 auto;
+}
+
 @media (max-width: 520px) {
   .ddc-theme-desktop {
     display: none !important;

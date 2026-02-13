@@ -309,7 +309,6 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
                   <div
                     className="ddc-col-slot"
                     style={{
-                      width: 60,
                       textAlign: "center",
                       fontSize: "var(--ddc-text-xs)",
                       fontWeight: "var(--ddc-weight-bold)",
@@ -772,12 +771,6 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
             .ddc-macro-columns .ddc-col-age,
             .ddc-macro-columns .ddc-col-team {
                 display: none !important;
-            }
-
-            /* Narrow slot pill in Full Roster snapshot (your fix #2) */
-            .ddc-macro-single .ddc-col-slot,
-            .ddc-macro-columns .ddc-col-slot {
-                width: 48px !important;
             }
 
             /* Mobile default: show single stack, hide desktop columns */

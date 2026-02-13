@@ -142,7 +142,6 @@ function Row({
       <div
         className="ddc-col-slot"
         style={{
-          width: 60,
           textAlign: "center",
           fontSize: "var(--ddc-text-xs)",
           fontWeight: "var(--ddc-weight-bold)",
