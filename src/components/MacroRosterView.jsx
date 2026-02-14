@@ -777,12 +777,18 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
                 box-sizing: border-box;
             }
 
-            /* Hide Age/Team columns in Full Roster snapshot (your fix #1) */
-            .ddc-macro-single .ddc-col-age,
-            .ddc-macro-single .ddc-col-team,
+            /* Hide Age/Team ONLY when we are in the 2-column desktop layout */
             .ddc-macro-columns .ddc-col-age,
             .ddc-macro-columns .ddc-col-team {
+              display: none !important;
+            }
+
+            /* On phone portrait, still hide Age/Team (keeps macro rows compact) */
+            @media (max-width: 520px) {
+              .ddc-macro-single .ddc-col-age,
+              .ddc-macro-single .ddc-col-team {
                 display: none !important;
+              }
             }
 
             /* Mobile default: show single stack, hide desktop columns */
