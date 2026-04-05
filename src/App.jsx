@@ -119,6 +119,14 @@ function computeInitialUiFromSavedState(savedState) {
   return { teamIndex, activeTab };
 }
 
+function getPickYearsForTeam(team) {
+  if (Array.isArray(team?.pickYears) && team.pickYears.length > 0) {
+    return team.pickYears.map(String);
+  }
+
+  return Object.keys(team?.picksByYear || {}).sort((a, b) => Number(a) - Number(b));
+}
+
 // ---- merge local edits (order) back onto fresh Sleeper data ----
 function mergeLocalEditsIntoSleeperTeams(sleeperTeams, savedTeams) {
   const savedById = new Map((savedTeams || []).map((t) => [t.id, t]));
@@ -298,6 +306,7 @@ export default function App() {
 
   const teams = state?.teams ?? [];
   const team = teams[teamIndex];
+  const pickYears = useMemo(() => getPickYearsForTeam(team), [team]);
 
   const playersByGroup = useMemo(() => {
     const groups = { QB: [], RB: [], WR: [], TE: [], DEF: [], TAXI: [] };
@@ -807,7 +816,7 @@ export default function App() {
 
               {/* Picks counts */}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {["2026", "2027", "2028"].map((y) => (
+                {pickYears.map((y) => (
                   <div key={y} style={ui.pill}>
                     {y} Picks: {team.picksByYear?.[y]?.length ?? 0}
                   </div>
@@ -848,7 +857,11 @@ export default function App() {
       {connectedAs && isLoadingTeams ? (
         <SkeletonHome />
       ) : !team ? null : activeTab === "PICKS" ? (
-        <PicksView picksByYear={team.picksByYear} isDark={isDark} />
+          <PicksView
+            picksByYear={team.picksByYear}
+            pickYears={pickYears}
+            isDark={isDark}
+          />
       ) : activeTab === "ROSTER" ? (
         <MacroRosterView
           playersByGroup={playersByGroup}

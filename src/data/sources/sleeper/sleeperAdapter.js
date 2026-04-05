@@ -6,8 +6,7 @@ import {
   getLeagueRosters,
   getLeague,
   getLeagueTradedPicks,
-  getLeagueDrafts,   
-  getDraft       
+  getLeagueDrafts,  
 } from "./sleeperClient";
 
 import { getSleeperPlayersDict } from "./playersCache";
@@ -250,6 +249,77 @@ function getRookieRoundsFromLeague(league) {
   return 5; // common default for dynasty rookie drafts
 }
 
+function getLeagueSeason(league) {
+  const season = Number(league?.season);
+  return Number.isFinite(season) ? season : DEFAULT_SEASON;
+}
+
+function getPickYears(startSeason, span = 3) {
+  return Array.from({ length: span }, (_, i) => String(startSeason + i));
+}
+
+function isLikelyRookieDraft(draft, rookieRounds) {
+  if (!draft) return false;
+
+  if (String(draft?.draft_type || "").toLowerCase() === "rookie") {
+    return true;
+  }
+
+  const rounds = Number(draft?.settings?.rounds);
+  return Number.isFinite(rounds) && rounds > 0 && rounds <= Math.max(10, rookieRounds);
+}
+
+function findSeasonRookieDraft(drafts, season, rookieRounds) {
+  const seasonDrafts = (drafts || []).filter(
+    (d) => String(d.season) === String(season)
+  );
+
+  return (
+    seasonDrafts.find((d) => String(d?.draft_type || "").toLowerCase() === "rookie") ||
+    seasonDrafts.find((d) => isLikelyRookieDraft(d, rookieRounds)) ||
+    null
+  );
+}
+
+function isDraftComplete(draft) {
+  return String(draft?.status || "").toLowerCase() === "complete";
+}
+
+function getNextPickSeason({ league, drafts, rookieRounds }) {
+  const leagueSeason = getLeagueSeason(league);
+  const currentSeasonDraft = findSeasonRookieDraft(drafts, leagueSeason, rookieRounds);
+
+  // If the league's current-season rookie draft is complete,
+  // that season's picks are consumed and should disappear.
+  if (currentSeasonDraft && isDraftComplete(currentSeasonDraft)) {
+    return leagueSeason + 1;
+  }
+
+  return leagueSeason;
+}
+
+function buildSlotMapFromDraftOrder({ rosters, draftOrder, totalRosters }) {
+  const userIdToSlot = draftOrder || {};
+  const hasExplicitOrder = Object.keys(userIdToSlot).length > 0;
+
+  if (!hasExplicitOrder) return null;
+
+  const map = new Map(); // roster_id -> slot
+
+  for (const r of rosters || []) {
+    const slot = userIdToSlot[r.owner_id];
+    if (slot != null) {
+      map.set(String(r.roster_id), Number(slot));
+    }
+  }
+
+  if (map.size >= Math.floor(totalRosters * 0.8)) {
+    return map;
+  }
+
+  return null;
+}
+
 function formatSlotPick(round, slot) {
   const rr = String(round);
   const ss = String(slot).padStart(2, "0");
@@ -283,15 +353,15 @@ function buildPicksByYearUsingOwnership({
   tradedPicks,
   myRosterId,
   rosterIdToName,
-  slotByRosterId2026,
+  slotByRosterIdByYear,
 }) {
   const myId = String(myRosterId);
 
   // pickKey -> currentOwnerRosterId
-  // pickKey is stable: season-round-originalRoster
+  // key = season-round-originalRoster
   const ownerByPickKey = new Map();
 
-  // 1) Baseline: my own original picks exist even if never traded.
+  // 1) Baseline: my own original picks exist even if never traded
   for (const y of years) {
     for (let r = 1; r <= rounds; r++) {
       const key = `${y}-${r}-${myId}`;
@@ -299,7 +369,7 @@ function buildPicksByYearUsingOwnership({
     }
   }
 
-  // 2) Overlay traded picks: set current owner for that pick identity
+  // 2) Overlay traded picks
   for (const p of tradedPicks || []) {
     const year = String(p.season);
     if (!years.includes(year)) continue;
@@ -307,8 +377,8 @@ function buildPicksByYearUsingOwnership({
     const round = Number(p.round);
     if (!Number.isFinite(round) || round < 1 || round > rounds) continue;
 
-    const original = String(p.roster_id); // ORIGINAL roster
-    const owner = String(p.owner_id);     // CURRENT owner
+    const original = String(p.roster_id);
+    const owner = String(p.owner_id);
 
     if (!original || !owner) continue;
 
@@ -316,32 +386,29 @@ function buildPicksByYearUsingOwnership({
     ownerByPickKey.set(key, owner);
   }
 
-  // 3) Collect picks I currently own, with formatting rules
+  // 3) Collect picks I currently own
   const out = Object.fromEntries(years.map((y) => [y, []]));
 
   for (const [key, owner] of ownerByPickKey.entries()) {
     if (owner !== myId) continue;
 
-    const parts = key.split("-");
-    const year = parts[0];
-    const round = Number(parts[1]);
-    const originalRosterId = parts[2];
+    const [year, roundRaw, originalRosterId] = key.split("-");
+    const round = Number(roundRaw);
 
     if (!out[year]) continue;
 
-    // 2026: show 1.01 style if we have slot mapping
-    if (year === "2026" && slotByRosterId2026) {
-      const slot = slotByRosterId2026.get(String(originalRosterId));
+    const slotMapForYear = slotByRosterIdByYear?.[year] || null;
+
+    // For the current live rookie season, if draft order exists but draft is not complete,
+    // show 1.01 / 2.03 / etc. For future years, show 1st / via.
+    if (slotMapForYear) {
+      const slot = slotMapForYear.get(String(originalRosterId));
       if (slot != null) {
         out[year].push(formatSlotPick(round, slot));
         continue;
       }
-      // fallback if slot unknown
-      out[year].push(formatFuturePick(round, originalRosterId, myId, rosterIdToName));
-      continue;
     }
 
-    // Future years: "Nth" or "Nth via Owner"
     out[year].push(formatFuturePick(round, originalRosterId, myId, rosterIdToName));
   }
 
@@ -365,11 +432,12 @@ export async function loadTeamsFromSleeper() {
 
   for (const lg of leagues) {
     
-    const [league, users, rosters, tradedPicks] = await Promise.all([
+    const [league, users, rosters, tradedPicks, drafts] = await Promise.all([
       getLeague(lg.league_id),
       getLeagueUsers(lg.league_id),
       getLeagueRosters(lg.league_id),
       getLeagueTradedPicks(lg.league_id),
+      getLeagueDrafts(lg.league_id),
     ]);
 
     const usersById = Object.fromEntries(users.map((u) => [u.user_id, u]));
@@ -384,69 +452,45 @@ export async function loadTeamsFromSleeper() {
     const myRoster = (rosters || []).find((r) => rosterHasUser(r, user.user_id));
     if (!myRoster) continue;
 
-    let slotByRosterId2026 = null;
+  const rookieRounds = getRookieRoundsFromLeague(league);
+  const totalRosters = Number(league?.total_rosters) || (rosters?.length ?? 0);
 
-    try {
-      const drafts = await getLeagueDrafts(lg.league_id);
-      const totalRosters = Number(league?.total_rosters) || (rosters?.length ?? 0);
-      const rookieRounds = getRookieRoundsFromLeague(league);
+  const nextPickSeason = getNextPickSeason({
+    league,
+    drafts,
+    rookieRounds,
+  });
 
-      // Only consider drafts for the 2026 season (NO fallback to other drafts)
-      const seasonDrafts = (drafts || []).filter((d) => String(d.season) === "2026");
+  const pickYears = getPickYears(nextPickSeason, 3);
 
-      // Prefer explicitly-rookie if present, otherwise pick one that "looks like" rookie
-      // (rookie drafts are usually <= 10 rounds; startups are often much larger)
-      const d2026 =
-        seasonDrafts.find((d) => String(d.draft_type || "").toLowerCase() === "rookie") ||
-        seasonDrafts.find((d) => {
-          const rounds = Number(d?.settings?.rounds);
-          return Number.isFinite(rounds) && rounds > 0 && rounds <= Math.max(10, rookieRounds);
-        }) ||
-        null;
+  // Only the first displayed year can ever have slot-based rookie order.
+  // Example:
+  // - pre-draft / in-progress 2026 rookie draft -> show 2026 as 1.01 style if order exists
+  // - completed 2026 rookie draft -> 2026 disappears, window starts 2027
+  const slotByRosterIdByYear = {};
 
-      if (d2026?.draft_id) {
-        const draft = await getDraft(d2026.draft_id);
+const liveSeasonDraft = findSeasonRookieDraft(drafts, nextPickSeason, rookieRounds);
 
-        const userIdToSlot = draft?.draft_order || {};
-        const hasExplicitOrder = Object.keys(userIdToSlot).length > 0;
+if (liveSeasonDraft && !isDraftComplete(liveSeasonDraft)) {
+  const slotMap = buildSlotMapFromDraftOrder({
+    rosters,
+    draftOrder: liveSeasonDraft?.draft_order,
+    totalRosters,
+  });
 
-        if (!hasExplicitOrder) {
-          // Draft exists but order not set → do NOT show slot-based picks
-          slotByRosterId2026 = null;
-        } else {
-          const map = new Map(); // roster_id -> slot
+  if (slotMap) {
+    slotByRosterIdByYear[String(nextPickSeason)] = slotMap;
+  }
+}
 
-          for (const r of rosters || []) {
-            const slot = userIdToSlot[r.owner_id];
-            if (slot != null) {
-              map.set(String(r.roster_id), Number(slot));
-            }
-          }
-
-          // Only accept if it covers most of the league
-          const total = Number(league?.total_rosters) || rosters.length;
-          if (map.size >= Math.floor(total * 0.8)) {
-            slotByRosterId2026 = map;
-          } else {
-            slotByRosterId2026 = null;
-          }
-        }
-      }
-    } catch {
-      slotByRosterId2026 = null;
-    }
-
-    const years = ["2026", "2027", "2028"];
-    const rounds = getRookieRoundsFromLeague(league);
-
-    const picksByYear = buildPicksByYearUsingOwnership({
-      years,
-      rounds,
-      tradedPicks,
-      myRosterId: myRoster.roster_id,
-      rosterIdToName,
-      slotByRosterId2026, // can be null if no draft/order found
-    });
+const picksByYear = buildPicksByYearUsingOwnership({
+  years: pickYears,
+  rounds: rookieRounds,
+  tradedPicks,
+  myRosterId: myRoster.roster_id,
+  rosterIdToName,
+  slotByRosterIdByYear,
+});
 
     const taxiSet = new Set(myRoster.taxi || []);
     const startersSet = new Set(myRoster.starters || []);
@@ -500,6 +544,7 @@ export async function loadTeamsFromSleeper() {
       name: buildTeamName(myRoster, usersById),
       players: rows,
       picksByYear,
+      pickYears,
       settingsPills: buildSettingsPillsFromLeague(league),
       isBestBall: isBestBall(league),
       source: "sleeper",

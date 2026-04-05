@@ -83,8 +83,11 @@ function PickChip({ text, isDark }) {
   );
 }
 
-export function PicksView({ picksByYear, isDark = false }) {
-  const years = ["2026", "2027", "2028"];
+export function PicksView({ picksByYear, pickYears, isDark = false }) {
+  const years =
+    Array.isArray(pickYears) && pickYears.length > 0
+      ? pickYears.map(String)
+      : Object.keys(picksByYear || {}).sort((a, b) => Number(a) - Number(b));
 
   return (
     <div style={{ marginTop: 16 }}>
