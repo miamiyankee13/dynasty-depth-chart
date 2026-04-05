@@ -340,12 +340,11 @@ function formatFuturePick(round, originalRosterId, myRosterId, rosterIdToName) {
 
 /**
  * @param {Object} args
- * @param {string[]} args.years - ["2026","2027","2028"]
+ * @param {string[]} args.years - dynamic seasons (e.g. ["2027","2028","2029"])
  * @param {number} args.rounds - rookie rounds
  * @param {Array} args.tradedPicks - Sleeper /traded_picks response
  * @param {number|string} args.myRosterId - your roster_id number
  * @param {Map<string,string>} args.rosterIdToName - roster_id -> display_name (for "via")
- * @param {Map<string,number>|null} args.slotByRosterId2026 - roster_id -> draft slot (1..N) for 2026, or null if unavailable
  */
 function buildPicksByYearUsingOwnership({
   years,
