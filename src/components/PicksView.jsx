@@ -107,10 +107,10 @@ function findMostRecentCompletedRookieDraft(drafts) {
 export function PicksView({   
   picksByYear,
   pickYears,
-  leagueId,
-  rosterId,
-  draftResultsByLeague,
-  setDraftResultsByLeague,
+  leagueId = null,
+  rosterId = null,
+  draftResultsByLeague = {},
+  setDraftResultsByLeague = null,
   isDark = false, 
 }) {
 
@@ -121,12 +121,12 @@ export function PicksView({
   
   const [showDraft, setShowDraft] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(false);
-  const draftData = draftResultsByLeague[leagueId] ?? null;
+  const draftData = leagueId ? draftResultsByLeague[leagueId] ?? null : null;
   const draftResults = draftData?.picks ?? [];
   const draftSeason = draftData?.season ?? null;
 
   async function loadLastDraft() {
-    if (!leagueId || !rosterId || draftResultsByLeague[leagueId]) return;
+    if (!leagueId || !rosterId || !setDraftResultsByLeague || draftResultsByLeague[leagueId]) return;
 
     try {
       setLoadingDraft(true);
@@ -268,112 +268,112 @@ export function PicksView({
         );
       })}
       {/* Draft Results Section */}
-      <div
-        style={{
-          marginTop: 8,
-          background: "var(--ddc-card-bg)",
-          border: "1px solid var(--ddc-border)",
-          borderRadius: 16,
-          padding: 14,
-        }}
-      >
+      {leagueId && rosterId ? (
         <div
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 8,
+            marginTop: 8,
+            background: "var(--ddc-card-bg)",
+            border: "1px solid var(--ddc-border)",
+            borderRadius: 16,
+            padding: 14,
           }}
         >
-        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 10 }}>
-          <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ddc-text)" }}>
-            Last Completed Rookie Draft
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ddc-text)" }}>
+              Last Completed Rookie Draft
+            </div>
+
+            <button
+              className="ddc-focusable ddc-pressable"
+              type="button"
+              onClick={async () => {
+                const next = !showDraft;
+                setShowDraft(next);
+                if (next) await loadLastDraft();
+              }}
+              style={{
+                padding: "6px 10px",
+                borderRadius: 10,
+                border: "1px solid var(--ddc-input-border)",
+                background: "var(--ddc-input-bg)",
+                color: "var(--ddc-text)",
+                cursor: "pointer",
+                fontWeight: 800,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {showDraft ? "Hide" : "View Draft"}
+            </button>
           </div>
-        </div>
 
-        <button
-          className="ddc-focusable ddc-pressable"
-          type="button"
-          onClick={async () => {
-            const next = !showDraft;
-            setShowDraft(next);
-            if (next) await loadLastDraft();
-          }}
-          style={{
-            padding: "6px 10px",
-            borderRadius: 10,
-            border: "1px solid var(--ddc-input-border)",
-            background: "var(--ddc-input-bg)",
-            color: "var(--ddc-text)",
-            cursor: "pointer",
-            fontWeight: 800,
-            whiteSpace: "nowrap",
-          }}
-        >
-          {showDraft ? "Hide" : "View Draft"}
-        </button>
-        </div>
-
-        {showDraft && (
-          <>
-            {loadingDraft ? (
-              <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
-                Loading draft...
-              </div>
-            ) : !draftResults.length ? (
-              <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
-                No completed draft found.
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {draftSeason ? (
-                  <div
-                    style={{
-                      fontSize: "var(--ddc-text-xs)",
-                      color: "var(--ddc-muted)",
-                      fontWeight: "var(--ddc-weight-medium)",
-                      letterSpacing: "0.02em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {draftSeason} Draft Results
-                  </div>
-                ) : null}
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {draftResults.map((p) => (
+          {showDraft && (
+            <>
+              {loadingDraft ? (
+                <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
+                  Loading draft...
+                </div>
+              ) : !draftResults.length ? (
+                <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
+                  No completed draft found.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {draftSeason ? (
                     <div
-                      key={p.label}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        minWidth: 0,
+                        fontSize: "var(--ddc-text-xs)",
+                        color: "var(--ddc-muted)",
+                        fontWeight: "var(--ddc-weight-medium)",
+                        letterSpacing: "0.02em",
+                        textTransform: "uppercase",
                       }}
                     >
-                      <PickChip text={p.label} isDark={isDark} />
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "var(--ddc-text)",
-                          minWidth: 0,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                        title={p.name}
-                      >
-                        {p.name}
-                      </div>
+                      {draftSeason} Draft Results
                     </div>
-                  ))}
+                  ) : null}
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {draftResults.map((p) => (
+                      <div
+                        key={p.label}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          minWidth: 0,
+                        }}
+                      >
+                        <PickChip text={p.label} isDark={isDark} />
+                        <div
+                          style={{
+                            fontSize: "var(--ddc-text-md)",
+                            fontWeight: "var(--ddc-weight-bold)",
+                            color: "var(--ddc-text)",
+                            minWidth: 0,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                          title={p.name}
+                        >
+                          {p.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+              )}
+            </>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
