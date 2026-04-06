@@ -281,7 +281,7 @@ export function PicksView({
         </div>
 
         <button
-          className="ddc-theme-desktop ddc-focusable ddc-pressable"
+          className="ddc-focusable ddc-pressable"
           type="button"
           onClick={async () => {
             const next = !showDraft;
