@@ -338,6 +338,10 @@ function formatFuturePick(round, originalRosterId, myRosterId, rosterIdToName) {
   return `${base} via ${via}`;
 }
 
+function leagueHasAnyRosteredPlayers(rosters) {
+  return (rosters || []).some((r) => Array.isArray(r.players) && r.players.length > 0);
+}
+
 /**
  * @param {Object} args
  * @param {string[]} args.years - dynamic seasons (e.g. ["2027","2028","2029"])
@@ -438,6 +442,10 @@ export async function loadTeamsFromSleeper() {
       getLeagueTradedPicks(lg.league_id),
       getLeagueDrafts(lg.league_id),
     ]);
+
+    if (!leagueHasAnyRosteredPlayers(rosters)) {
+      continue;
+    }
 
     const usersById = Object.fromEntries(users.map((u) => [u.user_id, u]));
     const rosterIdToName = new Map(
