@@ -437,21 +437,46 @@ export function PicksView({
                   ) : null}
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "64px minmax(0, 320px) 52px",
+                        alignItems: "center",
+                        columnGap: 10,
+                        marginBottom: 2,
+                      }}
+                    >
+                      <div />
+                      <div />
+                      <div
+                        style={{
+                          textAlign: "center",
+                          fontSize: "var(--ddc-text-xs)",
+                          color: "var(--ddc-muted)",
+                          fontWeight: "var(--ddc-weight-medium)",
+                          letterSpacing: "0.02em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Grade
+                      </div>
+                    </div>
                     {draftResults.map((p) => (
                       <div
                         key={p.label}
                         style={{
-                          display: "flex",
+                          display: "grid",
+                          gridTemplateColumns: "64px minmax(0, 320px) 52px",
                           alignItems: "center",
-                          gap: 10,
-                          minWidth: 0,
+                          columnGap: 10,
                         }}
                       >
-                        <PickChip text={p.label} isDark={isDark} />
+                        <div>
+                          <PickChip text={p.label} isDark={isDark} />
+                        </div>
 
                         <div
                           style={{
-                            flex: 1,
                             minWidth: 0,
                             fontSize: "var(--ddc-text-md)",
                             fontWeight: "var(--ddc-weight-bold)",
@@ -465,7 +490,14 @@ export function PicksView({
                           {p.name}
                         </div>
 
-                        <GradeBadge grade={p.grade} isDark={isDark} />
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <GradeBadge grade={p.grade} isDark={isDark} />
+                        </div>
                       </div>
                     ))}
                   </div>
