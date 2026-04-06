@@ -270,6 +270,7 @@ export default function App() {
   const [loadError, setLoadError] = useState("");
   const [fcValues, setFcValues] = useState(new Map());
   const [theme, setTheme] = useState(() => loadTheme());
+  const [draftResultsByLeague, setDraftResultsByLeague] = useState({});
   const isDark = theme === "dark";
 
   useEffect(() => {
@@ -860,6 +861,10 @@ export default function App() {
           <PicksView
             picksByYear={team.picksByYear}
             pickYears={pickYears}
+            leagueId={team?.external?.leagueId}
+            rosterId={team?.external?.rosterId}
+            draftResultsByLeague={draftResultsByLeague}
+            setDraftResultsByLeague={setDraftResultsByLeague}
             isDark={isDark}
           />
       ) : activeTab === "ROSTER" ? (

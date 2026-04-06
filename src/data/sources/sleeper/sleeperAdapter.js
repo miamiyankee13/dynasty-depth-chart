@@ -551,6 +551,7 @@ const picksByYear = buildPicksByYearUsingOwnership({
         platform: "sleeper",
         leagueId: lg.league_id,
         userId: user.user_id,
+        rosterId: myRoster.roster_id,
         fantasycalc: {
           isDynasty: true,
           numQbs: isSuperflex(league) || isTwoQB(league) ? 2 : 1,

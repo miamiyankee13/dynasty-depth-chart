@@ -1,3 +1,7 @@
+import { useState } from "react";
+import { getLeagueDrafts, getLeague, getDraftPicks } from "../data/sources/sleeper/sleeperClient";
+import { getSleeperPlayersDict } from "../data/sources/sleeper/playersCache";
+
 function getPickRound(pick) {
   const raw = String(pick ?? "").toLowerCase();
 
@@ -83,11 +87,125 @@ function PickChip({ text, isDark }) {
   );
 }
 
-export function PicksView({ picksByYear, pickYears, isDark = false }) {
+function isLikelyRookieDraft(draft) {
+  if (!draft) return false;
+
+  if (String(draft?.draft_type || "").toLowerCase() === "rookie") {
+    return true;
+  }
+
+  const rounds = Number(draft?.settings?.rounds);
+  return Number.isFinite(rounds) && rounds > 0 && rounds <= 10;
+}
+
+function findMostRecentCompletedRookieDraft(drafts) {
+  return (drafts || []).find(
+    (d) => String(d?.status || "").toLowerCase() === "complete" && isLikelyRookieDraft(d)
+  ) || null;
+}
+
+export function PicksView({   
+  picksByYear,
+  pickYears,
+  leagueId,
+  rosterId,
+  draftResultsByLeague,
+  setDraftResultsByLeague,
+  isDark = false, 
+}) {
+
   const years =
     Array.isArray(pickYears) && pickYears.length > 0
       ? pickYears.map(String)
       : Object.keys(picksByYear || {}).sort((a, b) => Number(a) - Number(b));
+  
+  const [showDraft, setShowDraft] = useState(false);
+  const [loadingDraft, setLoadingDraft] = useState(false);
+  const draftResults = draftResultsByLeague[leagueId];
+
+  async function loadLastDraft() {
+    if (!leagueId || !rosterId || draftResultsByLeague[leagueId]) return;
+
+    try {
+      setLoadingDraft(true);
+
+      let currentLeagueId = String(leagueId);
+      let foundDraft = null;
+
+      // Walk current league -> previous league(s) until we find
+      // the most recent completed rookie draft
+      for (let i = 0; i < 5; i++) {
+        if (!currentLeagueId) break;
+
+        const [league, drafts] = await Promise.all([
+          getLeague(currentLeagueId),
+          getLeagueDrafts(currentLeagueId),
+        ]);
+
+        const completedRookieDraft = findMostRecentCompletedRookieDraft(drafts);
+
+        if (completedRookieDraft?.draft_id) {
+          foundDraft = completedRookieDraft;
+          break;
+        }
+
+        currentLeagueId = league?.previous_league_id ? String(league.previous_league_id) : "";
+      }
+      
+      if (!foundDraft?.draft_id) {
+        setDraftResultsByLeague((prev) => ({
+          ...prev,
+          [leagueId]: [],
+        }));
+        return;
+      }
+
+      const picks = await getDraftPicks(foundDraft.draft_id);
+      const playersDict = await getSleeperPlayersDict();
+      const myRosterId = String(rosterId);
+
+      const formatted = (picks || [])
+        .filter((p) => String(p.roster_id) === myRosterId)
+        .map((p) => {
+          const pickNo = Number(p.pick_no);
+          if (!Number.isFinite(pickNo)) return null;
+
+          const round = Number(p.round);
+          const draftSlot = Number(p.draft_slot);
+
+          if (!Number.isFinite(round) || !Number.isFinite(draftSlot)) return null;
+
+          const label = `${round}.${String(draftSlot).padStart(2, "0")}`;
+
+          const player = playersDict[p.player_id];
+          const name =
+            player?.full_name ||
+            [player?.first_name, player?.last_name].filter(Boolean).join(" ") ||
+            "Unknown";
+
+          return {
+            label,
+            name,
+            pickNo,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.pickNo - b.pickNo);
+
+      setDraftResultsByLeague((prev) => ({
+        ...prev,
+        [leagueId]: formatted,
+      }));
+    } catch (e) {
+      console.error("Failed to load draft results:", e);
+      setDraftResultsByLeague((prev) => ({
+        ...prev,
+        [leagueId]: [],
+      }));
+    } finally {
+      setLoadingDraft(false);
+    }
+  }
 
   return (
     <div style={{ marginTop: 16 }}>
@@ -138,6 +256,78 @@ export function PicksView({ picksByYear, pickYears, isDark = false }) {
           </div>
         );
       })}
+      {/* Draft Results Section */}
+      <div
+        style={{
+          marginTop: 8,
+          background: "var(--ddc-card-bg)",
+          border: "1px solid var(--ddc-border)",
+          borderRadius: 16,
+          padding: 14,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 900 }}>
+            Last Completed Rookie Draft
+          </div>
+
+          <button
+            onClick={async () => {
+              const next = !showDraft;
+              setShowDraft(next);
+              if (next) await loadLastDraft();
+            }}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "1px solid var(--ddc-border)",
+              background: "var(--ddc-card-bg)",
+              cursor: "pointer",
+              fontWeight: 700,
+            }}
+          >
+            {showDraft ? "Hide" : "View Draft"}
+          </button>
+        </div>
+
+        {showDraft && (
+          <>
+            {loadingDraft ? (
+              <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
+                Loading draft...
+              </div>
+            ) : !draftResults?.length ? (
+              <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
+                No completed draft found.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {draftResults.map((p) => (
+                  <div
+                    key={p.label}
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      fontSize: 13,
+                      fontWeight: 600,
+                    }}
+                  >
+                    <span style={{ width: 50 }}>{p.label}</span>
+                    <span>{p.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
