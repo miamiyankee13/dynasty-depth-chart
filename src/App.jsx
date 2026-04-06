@@ -865,6 +865,7 @@ export default function App() {
             rosterId={team?.external?.rosterId}
             draftResultsByLeague={draftResultsByLeague}
             setDraftResultsByLeague={setDraftResultsByLeague}
+            fcParams={team?.external?.fantasycalc}
             isDark={isDark}
           />
       ) : activeTab === "ROSTER" ? (

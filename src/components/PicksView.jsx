@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { getLeagueDrafts, getLeague, getDraftPicks } from "../data/sources/sleeper/sleeperClient";
 import { getSleeperPlayersDict } from "../data/sources/sleeper/playersCache";
+import { getFantasyCalcValues } from "../data/sources/fantasycalc/fantasycalc";
 
 function getPickRound(pick) {
   const raw = String(pick ?? "").toLowerCase();
@@ -104,6 +105,85 @@ function findMostRecentCompletedRookieDraft(drafts) {
   ) || null;
 }
 
+const DRAFT_GRADE_BASELINES = {
+  1: 3000,
+  2: 1500,
+  3: 1000,
+  4: 800,
+  5: 600,
+};
+
+function getDraftGrade(rawValue, round) {
+  const value = Number(rawValue);
+  const baseline = DRAFT_GRADE_BASELINES[Number(round)];
+
+  if (!Number.isFinite(value) || !Number.isFinite(baseline) || baseline <= 0) {
+    return null;
+  }
+
+  const ratio = value / baseline;
+
+  if (ratio >= 1.5) return "A";
+  if (ratio >= 1.0) return "B";
+  if (ratio >= 0.65) return "C";
+  if (ratio >= 0.35) return "D";
+  return "F";
+}
+
+function GradeBadge({ grade, isDark }) {
+  const styles = {
+    A: {
+      bg: isDark ? "#143022" : "#dcfce7",
+      color: isDark ? "#4ade80" : "#166534",
+    },
+    B: {
+      bg: isDark ? "#12313a" : "#e0f2fe",
+      color: isDark ? "#22d3ee" : "#075985",
+    },
+    C: {
+      bg: isDark ? "#3a2f12" : "#fef9c3",
+      color: isDark ? "#facc15" : "#854d0e",
+    },
+    D: {
+      bg: isDark ? "#3a2312" : "#ffedd5",
+      color: isDark ? "#fb923c" : "#9a3412",
+    },
+    F: {
+      bg: isDark ? "#2a1f26" : "#fce7f3",
+      color: isDark ? "#f472b6" : "#9d174d",
+    },
+  };
+
+  const theme = styles[grade] || {
+    bg: "var(--ddc-pill-bg)",
+    color: "var(--ddc-text)",
+  };
+
+  return (
+    <span
+      className="ddc-num"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        minWidth: 28,
+        padding: "6px 8px",
+        borderRadius: 999,
+        background: theme.bg,
+        color: theme.color,
+        border: `1px solid color-mix(in oklab, ${theme.color} 55%, transparent)`,
+        fontSize: "var(--ddc-text-sm)",
+        fontWeight: "var(--ddc-weight-bold)",
+        lineHeight: 1,
+        whiteSpace: "nowrap",
+      }}
+      title={grade ? `Draft Grade: ${grade}` : "Ungraded"}
+    >
+      {grade || "—"}
+    </span>
+  );
+}
+
 export function PicksView({   
   picksByYear,
   pickYears,
@@ -111,6 +191,7 @@ export function PicksView({
   rosterId = null,
   draftResultsByLeague = {},
   setDraftResultsByLeague = null,
+  fcParams = null,
   isDark = false, 
 }) {
 
@@ -169,6 +250,16 @@ export function PicksView({
       const playersDict = await getSleeperPlayersDict();
       const myRosterId = String(rosterId);
 
+      let fcValues = new Map();
+      if (fcParams) {
+        try {
+          const { values } = await getFantasyCalcValues(fcParams);
+          fcValues = values;
+        } catch (e) {
+          console.warn("FantasyCalc Values Fetch Failed for Draft Grades:", e);
+        }
+      }
+
       const formatted = (picks || [])
         .filter((p) => String(p.roster_id) === myRosterId)
         .map((p) => {
@@ -188,10 +279,16 @@ export function PicksView({
             [player?.first_name, player?.last_name].filter(Boolean).join(" ") ||
             "Unknown";
 
+          const rawValue = fcValues.get(String(p.player_id)) ?? null;
+          const grade = getDraftGrade(rawValue, round);
+
           return {
             label,
             name,
             pickNo,
+            round,
+            rawValue,
+            grade,
           };
         })
         .filter(Boolean)
@@ -351,12 +448,14 @@ export function PicksView({
                         }}
                       >
                         <PickChip text={p.label} isDark={isDark} />
+
                         <div
                           style={{
+                            flex: 1,
+                            minWidth: 0,
                             fontSize: "var(--ddc-text-md)",
                             fontWeight: "var(--ddc-weight-bold)",
                             color: "var(--ddc-text)",
-                            minWidth: 0,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -365,6 +464,8 @@ export function PicksView({
                         >
                           {p.name}
                         </div>
+
+                        <GradeBadge grade={p.grade} isDark={isDark} />
                       </div>
                     ))}
                   </div>
