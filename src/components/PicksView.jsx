@@ -274,27 +274,33 @@ export function PicksView({
             marginBottom: 8,
           }}
         >
-          <div style={{ fontSize: 14, fontWeight: 900 }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 10 }}>
+          <div style={{ fontSize: 16, fontWeight: 900, color: "var(--ddc-text)" }}>
             Last Completed Rookie Draft
           </div>
+        </div>
 
-          <button
-            onClick={async () => {
-              const next = !showDraft;
-              setShowDraft(next);
-              if (next) await loadLastDraft();
-            }}
-            style={{
-              padding: "6px 10px",
-              borderRadius: 8,
-              border: "1px solid var(--ddc-border)",
-              background: "var(--ddc-card-bg)",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
-          >
-            {showDraft ? "Hide" : "View Draft"}
-          </button>
+        <button
+          className="ddc-theme-desktop ddc-focusable ddc-pressable"
+          type="button"
+          onClick={async () => {
+            const next = !showDraft;
+            setShowDraft(next);
+            if (next) await loadLastDraft();
+          }}
+          style={{
+            padding: "6px 10px",
+            borderRadius: 10,
+            border: "1px solid var(--ddc-input-border)",
+            background: "var(--ddc-input-bg)",
+            color: "var(--ddc-text)",
+            cursor: "pointer",
+            fontWeight: 800,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {showDraft ? "Hide" : "View Draft"}
+        </button>
         </div>
 
         {showDraft && (
