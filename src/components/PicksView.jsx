@@ -121,7 +121,9 @@ export function PicksView({
   
   const [showDraft, setShowDraft] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(false);
-  const draftResults = draftResultsByLeague[leagueId];
+  const draftData = draftResultsByLeague[leagueId] ?? null;
+  const draftResults = draftData?.picks ?? [];
+  const draftSeason = draftData?.season ?? null;
 
   async function loadLastDraft() {
     if (!leagueId || !rosterId || draftResultsByLeague[leagueId]) return;
@@ -155,7 +157,10 @@ export function PicksView({
       if (!foundDraft?.draft_id) {
         setDraftResultsByLeague((prev) => ({
           ...prev,
-          [leagueId]: [],
+          [leagueId]: {
+            season: null,
+            picks: [],
+          },
         }));
         return;
       }
@@ -194,13 +199,19 @@ export function PicksView({
 
       setDraftResultsByLeague((prev) => ({
         ...prev,
-        [leagueId]: formatted,
+        [leagueId]: {
+          season: String(foundDraft.season || ""),
+          picks: formatted,
+        },
       }));
     } catch (e) {
       console.error("Failed to load draft results:", e);
       setDraftResultsByLeague((prev) => ({
         ...prev,
-        [leagueId]: [],
+        [leagueId]: {
+          season: null,
+          picks: [],
+        },
       }));
     } finally {
       setLoadingDraft(false);
@@ -309,26 +320,55 @@ export function PicksView({
               <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
                 Loading draft...
               </div>
-            ) : !draftResults?.length ? (
+            ) : !draftResults.length ? (
               <div style={{ fontSize: 13, color: "var(--ddc-muted)" }}>
                 No completed draft found.
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {draftResults.map((p) => (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {draftSeason ? (
                   <div
-                    key={p.label}
                     style={{
-                      display: "flex",
-                      gap: 10,
-                      fontSize: 13,
-                      fontWeight: 600,
+                      fontSize: "var(--ddc-text-xs)",
+                      color: "var(--ddc-muted)",
+                      fontWeight: "var(--ddc-weight-medium)",
+                      letterSpacing: "0.02em",
+                      textTransform: "uppercase",
                     }}
                   >
-                    <span style={{ width: 50 }}>{p.label}</span>
-                    <span>{p.name}</span>
+                    {draftSeason} Draft Results
                   </div>
-                ))}
+                ) : null}
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {draftResults.map((p) => (
+                    <div
+                      key={p.label}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        minWidth: 0,
+                      }}
+                    >
+                      <PickChip text={p.label} isDark={isDark} />
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: "var(--ddc-text)",
+                          minWidth: 0,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                        title={p.name}
+                      >
+                        {p.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </>
