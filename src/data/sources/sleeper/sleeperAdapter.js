@@ -53,6 +53,10 @@ function isBestBall(league) {
   return !!league?.settings?.best_ball;
 }
 
+function isDynastyLeague(league) {
+  return Number(league?.settings?.type) === 2;
+}
+
 function pprLabel(league) {
   const rec = league?.scoring_settings?.rec;
   if (rec === 1) return "PPR";
@@ -435,17 +439,21 @@ export async function loadTeamsFromSleeper() {
 
   for (const lg of leagues) {
     
-    const [league, users, rosters, tradedPicks, drafts] = await Promise.all([
-      getLeague(lg.league_id),
-      getLeagueUsers(lg.league_id),
-      getLeagueRosters(lg.league_id),
-      getLeagueTradedPicks(lg.league_id),
-      getLeagueDrafts(lg.league_id),
-    ]);
+  const [league, users, rosters, tradedPicks, drafts] = await Promise.all([
+    getLeague(lg.league_id),
+    getLeagueUsers(lg.league_id),
+    getLeagueRosters(lg.league_id),
+    getLeagueTradedPicks(lg.league_id),
+    getLeagueDrafts(lg.league_id),
+  ]);
 
-    if (!leagueHasAnyRosteredPlayers(rosters)) {
-      continue;
-    }
+  if (!isDynastyLeague(league)) {
+    continue;
+  }
+
+  if (!leagueHasAnyRosteredPlayers(rosters)) {
+    continue;
+  }
 
     const usersById = Object.fromEntries(users.map((u) => [u.user_id, u]));
     const rosterIdToName = new Map(
