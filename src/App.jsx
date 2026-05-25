@@ -873,10 +873,11 @@ export default function App() {
           playersByGroup={playersByGroup}
           valuesByPlayerId={valuesByPlayerId}
           picksByYear={team.picksByYear}
+          settingsPills={team.settingsPills}
           benchStartsByGroup={benchStartsForTeam}
           isDark={isDark}
           fcParams={team?.external?.fantasycalc} 
-        />
+/>
       ) : (
         <div style={{ marginTop: 18 }}>
           <PlayerList

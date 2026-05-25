@@ -58,9 +58,20 @@ function sortPickStrings(list) {
   return [...standard.map((x) => x.p), ...other];
 }
 
-function formatRosterSummary({ playersByGroup, picksByYear }) {
+function formatRosterSummary({ playersByGroup, picksByYear, settingsPills }) {
   const order = ["QB", "RB", "WR", "TE", "DEF", "TAXI"];
   const lines = [];
+
+  const settings = (settingsPills ?? [])
+    .map((s) => String(s).trim())
+    .filter(Boolean);
+
+  if (settings.length) {
+    lines.push("SETTINGS:");
+    lines.push(settings.join(" | "));
+    lines.push("");
+  }
+
   let firstGroup = true;
 
   for (const key of order) {
@@ -431,7 +442,15 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
   );
 }
 
-export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear, benchStartsByGroup = {}, isDark = false, fcParams = null }) {
+export function MacroRosterView({
+  playersByGroup,
+  valuesByPlayerId,
+  picksByYear,
+  settingsPills = [],
+  benchStartsByGroup = {},
+  isDark = false,
+  fcParams = null,
+}) {
     // Total Team Val (includes TAXI)
   const teamPlayers = [
     ...(playersByGroup?.QB ?? []),
@@ -472,7 +491,7 @@ export function MacroRosterView({ playersByGroup, valuesByPlayerId, picksByYear,
 
   async function onCopySummary() {
     try {
-      const raw = formatRosterSummary({ playersByGroup, picksByYear });
+      const raw = formatRosterSummary({ playersByGroup, picksByYear, settingsPills });
       const text = normalizeClipboardText(raw);
       await copyTextToClipboard(text);
       setCopied(true);
