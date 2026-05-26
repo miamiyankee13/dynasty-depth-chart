@@ -1,7 +1,6 @@
-// src/components/MacroRosterView.jsx
 import { useState } from "react";
-import { groupTheme } from "../theme";
 import { PicksView } from "./PicksView";
+import { ValBar } from "./ValBar";
 import { getFantasyCalcUpdatedAt } from "../data/sources/fantasycalc/fantasycalc";
 
 function formatVal(v) {
@@ -22,7 +21,6 @@ function computeGroupTotalVal(players, valuesByPlayerId) {
   if (!valuesByPlayerId || !players?.length) return null;
   let sum = 0;
   let hasAny = false;
-
   for (const p of players) {
     const v = valuesByPlayerId.get(p.id);
     if (v == null) continue;
@@ -34,37 +32,38 @@ function computeGroupTotalVal(players, valuesByPlayerId) {
   return hasAny ? sum : null;
 }
 
+function ageClass(age) {
+  const n = parseInt(age, 10);
+  if (!Number.isFinite(n)) return "";
+  if (n <= 23) return "young";
+  if (n >= 29) return "vet";
+  return "";
+}
+
+/* ─── Roster Snapshot text export (unchanged from production) ─── */
 function sortPickStrings(list) {
   const arr = (list ?? []).map((p) => String(p).trim()).filter(Boolean);
-
   function parsePickKey(pick) {
     const m = pick.match(/^(\d{1,2})\.(\d{2})$/);
     if (!m) return null;
     return Number(m[1]) * 100 + Number(m[2]);
   }
-
   const standard = [];
   const other = [];
-
   for (const p of arr) {
     const key = parsePickKey(p);
     if (key == null) other.push(p);
     else standard.push({ p, key });
   }
-
   standard.sort((a, b) => a.key - b.key);
   other.sort((a, b) => a.localeCompare(b));
-
   return [...standard.map((x) => x.p), ...other];
 }
 
 function formatRosterSummary({ playersByGroup, picksByYear, settingsPills }) {
   const order = ["QB", "RB", "WR", "TE", "DEF", "TAXI"];
   const lines = [];
-
-  const settings = (settingsPills ?? [])
-    .map((s) => String(s).trim())
-    .filter(Boolean);
+  const settings = (settingsPills ?? []).map((s) => String(s).trim()).filter(Boolean);
 
   if (settings.length) {
     lines.push("SETTINGS:");
@@ -73,49 +72,36 @@ function formatRosterSummary({ playersByGroup, picksByYear, settingsPills }) {
   }
 
   let firstGroup = true;
-
   for (const key of order) {
     const players = playersByGroup?.[key] ?? [];
     if (!players.length) continue;
-
-    if (!firstGroup) lines.push(""); // blank line between groups
+    if (!firstGroup) lines.push("");
     firstGroup = false;
-
     lines.push(`${key}: ${players.map((p) => p.name).join(", ")}`);
   }
 
-  const years = Object.keys(picksByYear ?? {}).sort(); // YYYY keys
+  const years = Object.keys(picksByYear ?? {}).sort();
   const pickChunks = [];
-
   for (const y of years) {
     const picks = sortPickStrings(picksByYear?.[y] ?? []);
     if (!picks.length) continue;
     pickChunks.push(`${y} ${picks.join(", ")}`);
   }
-
   if (pickChunks.length) {
     lines.push("");
     lines.push("PICKS:");
-
     pickChunks.forEach((chunk, idx) => {
-      if (idx > 0) lines.push(""); // blank line between years
+      if (idx > 0) lines.push("");
       lines.push(chunk);
     });
   }
-
   return lines.join("\n");
 }
 
 function normalizeClipboardText(text) {
   let out = String(text ?? "");
-
-  // Quick exit if it doesn't even look encoded
   if (!/%[0-9A-Fa-f]{2}/.test(out)) return out;
-
-  // Some encoders use '+' for spaces in query-ish strings
   out = out.replace(/\+/g, " ");
-
-  // Decode up to 3 times (covers double-encoding and mixed cases)
   for (let i = 0; i < 3; i++) {
     if (!/%[0-9A-Fa-f]{2}/.test(out)) break;
     try {
@@ -126,332 +112,148 @@ function normalizeClipboardText(text) {
       break;
     }
   }
-
-  // Last-resort: if still encoded, manually handle the common sequences
-  // (This covers weird cases where decodeURIComponent fails due to stray %)
   out = out
-    .replaceAll("%0A", "\n")
-    .replaceAll("%0a", "\n")
+    .replaceAll("%0A", "\n").replaceAll("%0a", "\n")
     .replaceAll("%20", " ")
-    .replaceAll("%3A", ":")
-    .replaceAll("%3a", ":");
-
+    .replaceAll("%3A", ":").replaceAll("%3a", ":");
   return out;
 }
 
 function isIOS() {
-  // Covers iPhone/iPad/iPod and iPadOS Safari (which sometimes reports as Mac)
   const ua = navigator?.userAgent || "";
-  const isAppleTouch =
+  return (
     (navigator?.platform === "MacIntel" && navigator?.maxTouchPoints > 1) ||
-    /iPad|iPhone|iPod/.test(ua);
-
-  return isAppleTouch;
+    /iPad|iPhone|iPod/.test(ua)
+  );
 }
 
 async function copyTextToClipboard(text) {
   const forceFallback = isIOS();
-
   if (!forceFallback && navigator?.clipboard?.writeText) {
     await navigator.clipboard.writeText(text);
     return;
   }
-
-  // Fallback for iOS + older browsers / permissions edge cases
   const ta = document.createElement("textarea");
   ta.value = text;
-
-  // iOS can be picky; these attributes help
   ta.setAttribute("readonly", "");
   ta.setAttribute("aria-hidden", "true");
-
-  // Prevent zoom / scroll jumps on iOS
   ta.style.position = "fixed";
   ta.style.top = "0";
   ta.style.left = "0";
   ta.style.opacity = "0";
   ta.style.pointerEvents = "none";
-
   document.body.appendChild(ta);
   ta.focus();
   ta.select();
-
-  // Extra iOS compatibility
   ta.setSelectionRange(0, ta.value.length);
-
   document.execCommand("copy");
   document.body.removeChild(ta);
 }
 
-function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex, isDark }) {
-  const base = groupTheme[groupKey] ?? { color: "var(--ddc-text)", bg: "var(--ddc-pill-bg)" };
-  const th = isDark && base.bgDark ? { ...base, bg: base.bgDark } : base;
-
-  // match your QB dark-mode accent trick (optional but consistent with Tabs/Row)
-  const accent =
-    groupKey === "QB" && isDark
-      ? `color-mix(in oklab, ${th.color} 78%, var(--ddc-text))`
-      : th.color;
+/* ─── Group card ─── */
+function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex }) {
+  const totalVal = computeGroupTotalVal(players, valuesByPlayerId);
+  const maxValue = (() => {
+    let m = 0;
+    for (const p of players) {
+      const v = valuesByPlayerId?.get(p.id);
+      const n = Number(v);
+      if (Number.isFinite(n) && n > m) m = n;
+    }
+    return m;
+  })();
 
   return (
-    <div
-      className="ddc-macro-card"
-      style={{
-        background: "var(--ddc-card-bg)",
-        border: "1px solid var(--ddc-border)",
-        borderRadius: 16,
-        padding: 14,
-        color: "var(--ddc-text)",
-      }}
-    >
-  {(() => {
-    const totalVal = computeGroupTotalVal(players, valuesByPlayerId);
-
-    const metaStyle = {
-      fontSize: "var(--ddc-text-xs)",
-      color: "var(--ddc-muted)",
-      fontWeight: "var(--ddc-weight-medium)",
-      letterSpacing: "0.02em",
-      textTransform: "uppercase",
-      whiteSpace: "nowrap",
-    };
-
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "baseline",
-          justifyContent: "space-between",
-          gap: 10,
-          marginBottom: 10,
-        }}
-      >
-        {/* Left: Title + count */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <div
-            aria-hidden="true"
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 999,
-              background: accent,
-              boxShadow: `0 0 0 3px color-mix(in oklab, ${accent} 18%, transparent)`,
-              flex: "0 0 auto",
-            }}
-          />
-          <div style={{ display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
-              {title}
-            </div>
-            <div style={metaStyle}>{players.length} total</div>
-          </div>
-        </div>
-
-        {/* Right: Total Val */}
-        <div className="ddc-group-totalval" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <div style={metaStyle}>Total {title} Val</div>
-          <div style={metaStyle}>{formatValTotal(totalVal)}</div>
-        </div>
+    <div className="ddc-panel" data-pos={groupKey}>
+      <div className="ddc-panel-head">
+        <span className="ddc-stamp">{groupKey}</span>
+        <span className="ddc-panel-count">
+          {players.length} {players.length === 1 ? "PLAYER" : "PLAYERS"} ·
+        </span>
+        {totalVal != null && (
+          <span className="ddc-panel-count">
+            TOTAL VAL {formatValTotal(totalVal)}
+          </span>
+        )}
       </div>
-    );
-  })()}
 
       {players.length === 0 ? (
-        <div style={{ fontSize: 13, color: "var(--ddc-muted)", fontStyle: "italic" }}>
-          None
+        <div
+          style={{
+            padding: "14px 16px",
+            fontSize: 12,
+            color: "var(--ddc-dim-2)",
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            fontStyle: "italic",
+          }}
+        >
+          // NONE
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {players.map((p, idx) => {
-            const val = valuesByPlayerId?.get(p.id) ?? null;
+        players.map((p, idx) => {
+          const isBench = benchStartIndex != null && idx >= benchStartIndex;
+          const isBenchStart =
+            benchStartIndex != null &&
+            benchStartIndex > 0 &&
+            benchStartIndex < players.length &&
+            idx === benchStartIndex;
+          const slotLabel = groupKey === "TAXI" ? `TX${idx + 1}` : `${groupKey}${idx + 1}`;
+          const val = valuesByPlayerId?.get(p.id) ?? null;
 
-            const showBenchMarker =
-              typeof benchStartIndex === "number" &&
-              benchStartIndex > 0 &&
-              benchStartIndex < players.length &&
-              idx === benchStartIndex;
+          return (
+            <div key={p.id}>
+              {isBenchStart ? (
+                <div className="ddc-bench-divider" aria-label="Bench Divider">
+                  <div className="ddc-bench-rule" />
+                  <div className="ddc-bench-label">BENCH</div>
+                  <div className="ddc-bench-rule" />
+                </div>
+              ) : null}
 
-            return (
-              <div key={p.id}>
-                {showBenchMarker ? (
-                  <div
-                    aria-label="Bench Divider"
-                    className="ddc-bench-divider"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      margin: "10px 2px 12px",
-                      opacity: 0.75,
-                      userSelect: "none",
-                    }}
-                  >
-                    <div style={{ height: 1, flex: 1, background: "var(--ddc-border)" }} />
-                    <div
-                      style={{
-                        fontSize: "var(--ddc-text-xs)",
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        color: "var(--ddc-muted)",
-                        fontWeight: "var(--ddc-weight-bold)",
-                      }}
-                    >
-                      Bench
+              <div
+                className="ddc-row compact readonly"
+                data-pos={groupKey}
+                data-bench={isBench ? "true" : "false"}
+              >
+                <div className="ddc-col-slot" style={{ paddingLeft: 18 }}>
+                  <span className="ddc-slot" data-pos={groupKey}>{slotLabel}</span>
+                </div>
+                <div className="ddc-col-name">
+                  <div className="ddc-name-wrap">
+                    <div className={`ddc-name${p.injured ? " injured" : ""}`} title={p.name}>
+                      {p.name}
                     </div>
-                    <div style={{ height: 1, flex: 1, background: "var(--ddc-border)" }} />
-                  </div>
-                ) : null}
-
-                <div
-                  className="ddc-row"
-                  data-bench={
-                    typeof benchStartIndex === "number" && idx >= benchStartIndex ? "true" : "false"
-                  }
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "7px 10px",
-                    borderLeft: `5px solid ${accent}`,
-                    marginBottom: 6,
-                  }}
-                >
-                  {/* Slot pill (read-only) */}
-                  <div
-                    className="ddc-col-slot"
-                    style={{
-                      textAlign: "center",
-                      fontSize: "var(--ddc-text-xs)",
-                      fontWeight: "var(--ddc-weight-bold)",
-                      padding: "5px 6px",
-                      borderRadius: 999,
-                      background: th.bg ?? "var(--ddc-pill-bg)",
-                      color: accent,
-                      border: `1px solid color-mix(in oklab, ${accent} 55%, transparent)`,
-                      userSelect: "none",
-                      letterSpacing: "0.02em",
-                      lineHeight: 1,
-                      flex: "0 0 auto",
-                    }}
-                    title="Saved Order"
-                  >
-                    {groupKey === "TAXI" ? `TX${idx + 1}` : `${groupKey}${idx + 1}`}
-                  </div>
-
-                  {/* Name + meta */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                      <div
-                        style={{
-                          fontSize: "var(--ddc-text-md)",
-                          fontWeight: "var(--ddc-weight-bold)",
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          fontStyle: p.injured ? "italic" : "normal",
-                          color: p.injured ? "var(--ddc-danger)" : "var(--ddc-text)",
-                        }}
-                        title={p.name}
-                      >
-                        {p.name}
-                      </div>
-
-                      <div className="ddc-meta">
-                        {p.nflTeam || "—"} • {p.age || "—"}
-                      </div>
-
-                      {p.injured ? (
-                        <span
-                          style={{
-                            fontSize: 11,
-                            padding: "2px 8px",
-                            borderRadius: 999,
-                            border: "1px solid var(--ddc-border)",
-                            color: "var(--ddc-danger)",
-                            background: "color-mix(in oklab, var(--ddc-danger) 10%, transparent)",
-                            fontWeight: 900,
-                            letterSpacing: "0.02em",
-                            lineHeight: 1.2,
-                            whiteSpace: "nowrap",
-                          }}
-                          title="Marked Injured"
-                        >
-                          INJ
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="ddc-col-age" style={{ width: 60, textAlign: "right" }}>
-                    <div
-                      style={{
-                        fontSize: "var(--ddc-text-xs)",
-                        color: "var(--ddc-muted)",
-                        fontWeight: "var(--ddc-weight-medium)",
-                        letterSpacing: "0.02em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Age
-                    </div>
-                    <div style={{ fontSize: "var(--ddc-text-md)", fontWeight: "var(--ddc-weight-bold)" }}>
-                      {p.age || "—"}
-                    </div>
-                  </div>
-
-                  <div className="ddc-col-team" style={{ width: 76, textAlign: "right" }}>
-                    <div
-                      style={{
-                        fontSize: "var(--ddc-text-xs)",
-                        color: "var(--ddc-muted)",
-                        fontWeight: "var(--ddc-weight-medium)",
-                        letterSpacing: "0.02em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Team
-                    </div>
-                    <div style={{ fontSize: "var(--ddc-text-md)", fontWeight: "var(--ddc-weight-bold)" }}>
-                      {p.nflTeam || "—"}
-                    </div>
-                  </div>
-
-                  <div className="ddc-col-val" style={{ width: 58, textAlign: "right" }}>
-                    <div
-                      style={{
-                        fontSize: "var(--ddc-text-xs)",
-                        color: "var(--ddc-muted)",
-                        fontWeight: "var(--ddc-weight-medium)",
-                        letterSpacing: "0.02em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      Val
-                    </div>
-                    <div style={{ fontSize: "var(--ddc-text-md)", fontWeight: "var(--ddc-weight-bold)" }}>
-                      {formatVal(val)}
+                    <div className="ddc-meta-line">
+                      {p.nflTeam || "—"} · AGE {p.age || "—"}
                     </div>
                   </div>
                 </div>
+                <div className="ddc-col-val">
+                  <span className="ddc-val-num">{formatVal(val)}</span>
+                  <ValBar value={val} maxValue={maxValue} />
+                </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })
       )}
     </div>
   );
 }
 
+/* ─── Macro view ─── */
 export function MacroRosterView({
   playersByGroup,
   valuesByPlayerId,
   picksByYear,
   settingsPills = [],
   benchStartsByGroup = {},
+  /* isDark prop preserved for compat */
+  // eslint-disable-next-line no-unused-vars
   isDark = false,
   fcParams = null,
 }) {
-    // Total Team Val (includes TAXI)
   const teamPlayers = [
     ...(playersByGroup?.QB ?? []),
     ...(playersByGroup?.RB ?? []),
@@ -460,30 +262,25 @@ export function MacroRosterView({
     ...(playersByGroup?.DEF ?? []),
     ...(playersByGroup?.TAXI ?? []),
   ];
-
   const totalTeamVal = computeGroupTotalVal(teamPlayers, valuesByPlayerId);
 
   const fcUpdatedAt = fcParams ? getFantasyCalcUpdatedAt(fcParams) : null;
-
   const fcUpdatedLabel = fcUpdatedAt
     ? new Date(fcUpdatedAt).toLocaleString([], {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
+        month: "short", day: "numeric",
+        hour: "numeric", minute: "2-digit",
       })
     : null;
-  
-  // Only show meaningful groups (keeps it clean)
-  const showDEF = (playersByGroup?.DEF?.length ?? 0) > 0;
+
+  const showDEF  = (playersByGroup?.DEF?.length ?? 0) > 0;
   const showTAXI = (playersByGroup?.TAXI?.length ?? 0) > 0;
 
-  const groups = [
+  const groupsSingle = [
     { key: "QB", title: "QB" },
     { key: "RB", title: "RB" },
     { key: "WR", title: "WR" },
     { key: "TE", title: "TE" },
-    ...(showDEF ? [{ key: "DEF", title: "DEF" }] : []),
+    ...(showDEF  ? [{ key: "DEF",  title: "DEF"  }] : []),
     ...(showTAXI ? [{ key: "TAXI", title: "TAXI" }] : []),
   ];
 
@@ -502,276 +299,109 @@ export function MacroRosterView({
   }
 
   return (
-    <div style={{ marginTop: 16 }}>
-      <div style={{ marginBottom: 12 }}>
-        {/* Line 1: Title + Copy button (left) + Total Player Val (right) */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            gap: 10,
-            flexWrap: "wrap",
-          }}
-        >
-          {/* Left cluster: Title + Copy */}
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-            <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
-              Roster Snapshot
-            </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* ─── Snapshot header ─── */}
+      <div className="ddc-macro-summary">
+        <div className="ddc-macro-title-row">
+          <h2>Roster Snapshot</h2>
 
-            <button
-              type="button"
-              onClick={onCopySummary}
-              style={{
-                padding: "4px 8px",
-                borderRadius: 8,
-                marginLeft: 2,
-                border: "1px solid var(--ddc-border)",
-                background: "var(--ddc-card-bg)",
-                color: "var(--ddc-text)",
-                fontSize: "var(--ddc-text-xs)",
-                fontWeight: "var(--ddc-weight-medium)",
-                letterSpacing: "0.01em",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                opacity: 0.8,     
-              }}
-              aria-label="Copy Roster Snapshot"
-              title="Copy Roster Snapshot"
-            >
-              {copied ? "Copied" : "Copy"}
-            </button>
-          </div>
-
-          {/* Right cluster: Total Player Val */}
-          <div
-            className="ddc-team-totalval"
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              gap: 6,
-            }}
+          <button
+            type="button"
+            onClick={onCopySummary}
+            className="ddc-btn ddc-focusable ddc-pressable"
+            aria-label="Copy Roster Snapshot"
+            title="Copy Roster Snapshot"
           >
-            <div
-              style={{
-                fontSize: "var(--ddc-text-xs)",
-                color: "var(--ddc-muted)",
-                fontWeight: "var(--ddc-weight-medium)",
-                letterSpacing: "0.02em",
-                textTransform: "uppercase",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Total Player Val
-            </div>
-            <div
-              style={{
-                fontSize: "var(--ddc-text-xs)",
-                color: "var(--ddc-text)",
-                fontWeight: "var(--ddc-weight-medium)",
-                letterSpacing: "0.01em",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {formatValTotal(totalTeamVal)}
-            </div>
+            {copied ? "COPIED" : "COPY"}
+          </button>
+        </div>
+
+        <div className="ddc-macro-actions">
+          <div className="ddc-macro-total">
+            <small>TOTAL PLAYER VAL</small>
+            <b>{formatValTotal(totalTeamVal)}</b>
           </div>
         </div>
 
-        {/* Line 2: Mode / description */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            gap: 10,
-            marginTop: 2,
-          }}
-        >
-          <div
-            style={{
-              fontSize: "var(--ddc-text-xs)",
-              color: "var(--ddc-muted)",
-              fontWeight: "var(--ddc-weight-medium)",
-            }}
-          >
-            Edit Order in Position Tabs
-          </div>
-
-          {fcUpdatedLabel ? (
-            <div
-              className="ddc-fc-updated"
-              style={{
-                fontSize: "var(--ddc-text-xs)",
-                color: "var(--ddc-muted)",
-                fontWeight: "var(--ddc-weight-medium)",
-                whiteSpace: "nowrap",
-              }}
-              title="FantasyCalc values cache timestamp"
-            >
-              Updated: {fcUpdatedLabel}
-            </div>
-          ) : null}
+        <div className="ddc-macro-sub">
+          EDIT ORDER IN POSITION TABS
         </div>
       </div>
 
-    {/* Mobile: single stack in natural order */}
-    <div className="ddc-macro-single">
-        {groups.map((g) => (
-            <GroupCard
+      {/* ─── Mobile single stack ─── */}
+      <div className="ddc-macro-single">
+        {groupsSingle.map((g) => (
+          <GroupCard
             key={g.key}
             title={g.title}
             groupKey={g.key}
             players={playersByGroup?.[g.key] ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            isDark={isDark}
-            />
+            benchStartIndex={benchStartsByGroup?.[g.key] ?? null}
+          />
         ))}
 
-        {/* Picks card */}
-        <div
-            className="ddc-macro-card"
-            style={{
-            background: "var(--ddc-card-bg)",
-            border: "1px solid var(--ddc-border)",
-            borderRadius: 16,
-            padding: 14,
-            color: "var(--ddc-text)",
-            }}
-        >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: 10,
-                marginBottom: 6,
-              }}
-            >
-              <div
-                aria-hidden="true"
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 999,
-                  background: groupTheme.PICKS.color,
-                  boxShadow: `0 0 0 3px color-mix(in oklab, ${groupTheme.PICKS.color} 18%, transparent)`,
-                  flex: "0 0 auto",
-                }}
-              />
-              <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
-                PICKS
-              </div>
+        <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
+          <div className="ddc-panel-head">
+            <span className="ddc-stamp">PK</span>
+            <span className="ddc-panel-title">Future Picks</span>
+            <div className="ddc-panel-meta">
+              <a
+                href="https://rookie-board.vercel.app/"
+                target="_blank"
+                rel="noreferrer"
+                className="ddc-rookie-link ddc-focusable"
+              >
+                ROOKIE BOARD →
+              </a>
             </div>
-
-            <div style={{ marginTop: -8 }}>
-                <PicksView picksByYear={picksByYear} isDark={isDark} />
-            </div>
+          </div>
+          <div className="ddc-macro-picks-embed">
+            <PicksView picksByYear={picksByYear} />
+          </div>
         </div>
-    </div>
+      </div>
 
-        {/* Desktop: explicit two columns with deterministic order */}
-        <div className="ddc-macro-columns">
+      {/* ─── Desktop 2-column ─── */}
+      <div className="ddc-macro-columns">
         <div className="ddc-macro-col">
-            {/* Left column: QB, WR, (DEF if any), TAXI */}
-            <GroupCard
-            title="QB"
-            groupKey="QB"
+          <GroupCard title="QB" groupKey="QB"
             players={playersByGroup?.QB ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            benchStartIndex={benchStartsByGroup?.QB ?? null}
-            isDark={isDark}
-            />
-
-            <GroupCard
-            title="WR"
-            groupKey="WR"
+            benchStartIndex={benchStartsByGroup?.QB ?? null} />
+          <GroupCard title="WR" groupKey="WR"
             players={playersByGroup?.WR ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            benchStartIndex={benchStartsByGroup?.WR ?? null}
-            isDark={isDark}
-            />
-
-            {(playersByGroup?.DEF?.length ?? 0) > 0 ? (
-            <GroupCard
-                title="DEF"
-                groupKey="DEF"
-                players={playersByGroup?.DEF ?? []}
-                valuesByPlayerId={valuesByPlayerId}
-                benchStartIndex={benchStartsByGroup?.DEF ?? null}
-                isDark={isDark}
-            />
-            ) : null}
-
-            {(playersByGroup?.TAXI?.length ?? 0) > 0 ? (
-            <GroupCard
-                title="TAXI"
-                groupKey="TAXI"
-                players={playersByGroup?.TAXI ?? []}
-                valuesByPlayerId={valuesByPlayerId}
-                benchStartIndex={benchStartsByGroup?.TAXI ?? null}
-                isDark={isDark}
-            />
-            ) : null}
+            benchStartIndex={benchStartsByGroup?.WR ?? null} />
+          {showDEF && (
+            <GroupCard title="DEF" groupKey="DEF"
+              players={playersByGroup?.DEF ?? []}
+              valuesByPlayerId={valuesByPlayerId}
+              benchStartIndex={benchStartsByGroup?.DEF ?? null} />
+          )}
+          {showTAXI && (
+            <GroupCard title="TAXI" groupKey="TAXI"
+              players={playersByGroup?.TAXI ?? []}
+              valuesByPlayerId={valuesByPlayerId}
+              benchStartIndex={benchStartsByGroup?.TAXI ?? null} />
+          )}
         </div>
 
         <div className="ddc-macro-col">
-            {/* Right column: RB, TE, Picks */}
-            <GroupCard
-            title="RB"
-            groupKey="RB"
+          <GroupCard title="RB" groupKey="RB"
             players={playersByGroup?.RB ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            benchStartIndex={benchStartsByGroup?.RB ?? null}
-            isDark={isDark}
-            />
-
-            <GroupCard
-            title="TE"
-            groupKey="TE"
+            benchStartIndex={benchStartsByGroup?.RB ?? null} />
+          <GroupCard title="TE" groupKey="TE"
             players={playersByGroup?.TE ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            benchStartIndex={benchStartsByGroup?.TE ?? null}
-            isDark={isDark}
-            />
+            benchStartIndex={benchStartsByGroup?.TE ?? null} />
 
-            {/* Picks card */}
-            <div
-            className="ddc-macro-card"
-            style={{
-                background: "var(--ddc-card-bg)",
-                border: "1px solid var(--ddc-border)",
-                borderRadius: 16,
-                padding: 14,
-                color: "var(--ddc-text)",
-            }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  justifyContent: "space-between",
-                  gap: 10,
-                  marginBottom: 6,
-                }}
-              >
-                <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-                  <div
-                    aria-hidden="true"
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 999,
-                      background: groupTheme.PICKS.color,
-                      boxShadow: `0 0 0 3px color-mix(in oklab, ${groupTheme.PICKS.color} 18%, transparent)`,
-                      flex: "0 0 auto",
-                    }}
-                  />
-                  <div style={{ fontSize: 14, fontWeight: 900, letterSpacing: "-0.01em" }}>
-                    PICKS
-                  </div>
-                </div>
-
+          <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
+            <div className="ddc-panel-head">
+              <span className="ddc-stamp">PK</span>
+              <span className="ddc-panel-title">Future Picks</span>
+              <div className="ddc-panel-meta">
                 <a
                   href="https://rookie-board.vercel.app/"
                   target="_blank"
@@ -779,88 +409,16 @@ export function MacroRosterView({
                   className="ddc-rookie-link ddc-focusable"
                   title="Open Rookie Board"
                 >
-                  Open Rookie Board →
+                  OPEN ROOKIE BOARD →
                 </a>
               </div>
-                <div style={{ marginTop: -8 }}>
-                    <PicksView picksByYear={picksByYear} isDark={isDark} />
-                </div>
             </div>
+            <div className="ddc-macro-picks-embed">
+              <PicksView picksByYear={picksByYear} />
+            </div>
+          </div>
         </div>
-    </div>
-
-      <style>{`
-            /* Shared spacing between cards */
-            .ddc-macro-card {
-                margin: 0 0 16px 0;
-                box-sizing: border-box;
-            }
-
-            /* Hide Age/Team ONLY when we are in the 2-column desktop layout */
-            .ddc-macro-columns .ddc-col-age,
-            .ddc-macro-columns .ddc-col-team {
-              display: none !important;
-            }
-
-            /* On phone portrait, still hide Age/Team (keeps macro rows compact) */
-            @media (max-width: 520px) {
-              .ddc-macro-single .ddc-col-age,
-              .ddc-macro-single .ddc-col-team {
-                display: none !important;
-              }
-            }
-
-            /* Mobile default: show single stack, hide desktop columns */
-            .ddc-macro-single {
-                display: block;
-            }
-            .ddc-macro-columns {
-                display: none;
-            }
-
-            /* Desktop: show explicit 2-column layout */
-            @media (min-width: 860px) {
-                .ddc-macro-single {
-                display: none;
-                }
-
-                .ddc-macro-columns {
-                display: flex;
-                gap: 16px;
-                align-items: flex-start;
-                }
-
-                .ddc-macro-col {
-                flex: 1;
-                min-width: 0;
-                display: flex;
-                flex-direction: column;
-                }
-            }
-            
-            /* Full Roster snapshot is read-only — disable row hover affordance */
-            .ddc-macro-single .ddc-row:hover,
-            .ddc-macro-columns .ddc-row:hover {
-                box-shadow: none !important;
-                background-color: var(--ddc-card-bg) !important;
-            }
-
-            @media (max-width: 520px) {
-                /* Full Roster: hide group Total Val on mobile portrait */
-                .ddc-macro-single .ddc-group-totalval,
-                .ddc-macro-columns .ddc-group-totalval {
-                    display: none !important;
-                }
-
-                .ddc-team-totalval {
-                  display: none !important;
-                }
-                
-                .ddc-fc-updated {
-                  display: none !important;
-                }
-            }
-        `}</style>
+      </div>
     </div>
   );
 }

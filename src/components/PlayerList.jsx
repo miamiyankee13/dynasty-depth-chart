@@ -9,377 +9,326 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { groupTheme } from "../theme";
+import { ValBar } from "./ValBar";
+
+/* Drag-handle icon — 6-dot grip, fixed pixel size for reliable rendering. */
+function GripIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden>
+      <circle cx="3" cy="3" r="1" />
+      <circle cx="9" cy="3" r="1" />
+      <circle cx="3" cy="6" r="1" />
+      <circle cx="9" cy="6" r="1" />
+      <circle cx="3" cy="9" r="1" />
+      <circle cx="9" cy="9" r="1" />
+    </svg>
+  );
+}
+
+function BenchIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden
+      focusable="false"
+      className="ddc-bench-icon"
+    >
+      <path
+        d="M4 5.5H14"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M9 5.5V13"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M6.5 10.5L9 13L11.5 10.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ageClass(age) {
+  const n = parseInt(age, 10);
+  if (!Number.isFinite(n)) return "";
+  if (n <= 23) return "young";
+  if (n >= 29) return "vet";
+  return "";
+}
 
 function BenchDivider({ label = "Bench" }) {
   return (
-    <div
-      aria-label="Bench Divider"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        margin: "10px 2px 12px",
-        opacity: 0.75,
-        userSelect: "none",
-      }}
-      className="ddc-bench-divider"
-    >
-      <div style={{ height: 1, flex: 1, background: "var(--ddc-border)" }} />
-      <div
-        style={{
-          fontSize: "var(--ddc-text-xs)",
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          color: "var(--ddc-muted)",
-          fontWeight: "var(--ddc-weight-medium)",
-        }}
-      >
-        {label}
-      </div>
-      <div style={{ height: 1, flex: 1, background: "var(--ddc-border)" }} />
+    <div className="ddc-bench-divider" aria-label="Bench Divider">
+      <div className="ddc-bench-rule" />
+      <div className="ddc-bench-label">{label.toUpperCase()}</div>
+      <div className="ddc-bench-rule" />
     </div>
   );
 }
 
-function Row({ 
+function Row({
   player,
   group,
   index,
   onToggleInjured,
   value,
+  maxValue,
   benchStartIndex,
   onSetBenchStart,
   onClearBenchStart,
-  isDark = false, 
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: player.id,
-  });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: player.id });
 
-  const base = groupTheme[group] ?? { color: "#e5e7eb", bg: "#f3f4f6" };
-  const th = isDark && base.bgDark ? { ...base, bg: base.bgDark } : base;
-  const qbAccent =
-  group === "QB" && isDark
-    ? `color-mix(in oklab, ${th.color} 78%, var(--ddc-text))`
-    : th.color;
-
-  const slotLabel = group === "TAXI" ? `TX${index + 1}` : `${group}${index + 1}`;
-
-  // RowShell: final density + polish (hover handled by CSS via .ddc-row)
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    padding: "7px 10px",
-    paddingRight: 6,
-    marginBottom: 6,
-    borderLeft: `5px solid ${qbAccent}`,
-    transformOrigin: "center",
-    willChange: "transform",
-    color: "var(--ddc-text)",
-    position: "relative",
   };
 
-  const colMuted = {
-    fontSize: "var(--ddc-text-xs)",
-    color: "var(--ddc-muted)",
-    fontWeight: "var(--ddc-weight-medium)",
-    letterSpacing: "0.02em",
-    textTransform: "uppercase",
-  };
-
-  const colValue = {
-    fontSize: "var(--ddc-text-md)",
-    fontWeight: "var(--ddc-weight-medium)",
-    color: "var(--ddc-text)",
-  };
+  const isBench = typeof benchStartIndex === "number" && index >= benchStartIndex;
+  const isBenchStart = typeof benchStartIndex === "number" && benchStartIndex === index;
+  const slotLabel = group === "TAXI" ? `TX${index + 1}` : `${group}${index + 1}`;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className="ddc-row"
+      data-pos={group}
       data-dragging={isDragging ? "true" : "false"}
-      data-bench={
-        typeof benchStartIndex === "number" && index >= benchStartIndex
-          ? "true"
-          : "false"
-      }
+      data-bench={isBench ? "true" : "false"}
     >
-      {/* Drag handle */}
-      <span
-        {...attributes}
-        {...listeners}
-        title="Drag to Reorder"
-        className="ddc-drag-handle"
-        style={{
-          cursor: isDragging ? "grabbing" : "grab",
-          userSelect: "none",
-          WebkitUserSelect: "none",
-          WebkitTouchCallout: "none",
-          touchAction: "none",
-          WebkitTapHighlightColor: "transparent",
-          fontSize: 20,
-          lineHeight: 1,
-          padding: "0",
-          width: 40,
-          height: 24,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: isDragging ? 1 : 0.55,
-          transition: "opacity 120ms ease",
-          color: "var(--ddc-text)",
-        }}
-      >
-        ☰
-      </span>
-
-      {/* Slot pill */}
-      <div
-        className="ddc-col-slot"
-        style={{
-          textAlign: "center",
-          fontSize: "var(--ddc-text-xs)",
-          fontWeight: "var(--ddc-weight-bold)",
-          padding: "5px 6px",
-          borderRadius: 999,
-          background: th.bg ?? "#f3f4f6",
-          color: qbAccent,
-          border: `1px solid color-mix(in oklab, ${qbAccent} 55%, transparent)`,
-          userSelect: "none",
-          letterSpacing: "0.02em",
-          lineHeight: 1,
-        }}
-      >
-        {slotLabel}
+      {/* DRAG HANDLE — listeners only on the button-like span */}
+      <div className="ddc-col-grip">
+        <span
+          {...attributes}
+          {...listeners}
+          role="button"
+          tabIndex={0}
+          aria-label="Drag to reorder"
+          title="Drag to reorder"
+          className="ddc-grip ddc-drag-handle"
+        >
+          <GripIcon />
+        </span>
       </div>
 
-      {/* Name (flex) */}
-      <div className="ddc-col-name" style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: "var(--ddc-text-md)",
-              fontWeight: "var(--ddc-weight-bold)",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              fontStyle: player.injured ? "italic" : "normal",
-              color: player.injured ? "var(--ddc-danger)" : "var(--ddc-text)",
-            }}
-            title={player.name}
-          >
+      <div className="ddc-col-slot">
+        <span className="ddc-slot" data-pos={group}>
+          {slotLabel}
+        </span>
+      </div>
+
+      <div className="ddc-col-name">
+        <div className="ddc-name-wrap">
+          <div className={`ddc-name${player.injured ? " injured" : ""}`} title={player.name}>
             {player.name}
           </div>
-
-          <div className="ddc-meta">
-            {player.nflTeam || "—"} • {player.age || "—"}
+          <div className="ddc-meta-line">
+            {player.nflTeam || "—"} · AGE {player.age || "—"}
           </div>
+        </div>
+      </div>
 
+      <div className="ddc-col-age">
+        <span className="ddc-cell-lbl">Age</span>
+        <span className={`ddc-cell-v ${ageClass(player.age)}`}>{player.age || "—"}</span>
+      </div>
+
+      <div className="ddc-col-team">
+        <span className="ddc-cell-lbl">Team</span>
+        <span className="ddc-cell-v">{player.nflTeam || "—"}</span>
+      </div>
+
+      <div className="ddc-col-val">
+        <span className="ddc-val-num">
+          {value != null && Number.isFinite(Number(value))
+            ? String(Math.round(Number(value)))
+            : "—"}
+        </span>
+        <ValBar value={value} maxValue={maxValue} />
+      </div>
+
+      <div className="ddc-col-inj">
+        <button
+          className={`ddc-iconbtn ddc-focusable${player.injured ? " injured" : ""}`}
+          onClick={() => onToggleInjured?.(player.id)}
+          title={player.injured ? "Mark Healthy" : "Mark Injured"}
+          aria-label={player.injured ? "Mark Healthy" : "Mark Injured"}
+          type="button"
+        >
+          ✚
+        </button>
+      </div>
+
+      {(onSetBenchStart || onClearBenchStart) ? (
+        <div className="ddc-col-bench">
           <button
-            className="ddc-injury-btn"
-            data-injured={player.injured ? "true" : "false"}
-            onClick={() => onToggleInjured?.(player.id)}
-            title={player.injured ? "Mark healthy" : "Mark injured"}
-            style={{
-              background: "transparent",
-              color: player.injured ? "var(--ddc-danger)" : "var(--ddc-muted)",
-              border: "none",
-              borderRadius: 10,
-              cursor: "pointer",
-              fontSize: "var(--ddc-text-md)",
-              lineHeight: 1,
-              opacity: player.injured ? 1 : 0.6,
-              outline: "none",
-              boxShadow: "none",
-              // KEY: make the button a consistent flex box (fixes vertical alignment)
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              // Desktop visual size (mobile will override to 44x44 in CSS)
-              width: 28,
-              height: 28,
-              padding: 0,
-              flex: "0 0 auto",
+            type="button"
+            className={`ddc-iconbtn ddc-focusable${isBenchStart ? " bench-on" : ""}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isBenchStart) onClearBenchStart?.();
+              else onSetBenchStart?.(index);
             }}
+            title={isBenchStart ? "Clear Bench Split" : "Bench Starts Here"}
+            aria-label={isBenchStart ? "Clear Bench Split" : "Bench Starts Here"}
           >
-            <span className="ddc-injury-icon" aria-hidden="true">
-              ✚
-            </span>
+            <BenchIcon />
           </button>
         </div>
-      </div>
-
-      {/* Age */}
-      <div className="ddc-col-age" style={{ width: 60, textAlign: "right" }}>
-        <div style={colMuted}>Age</div>
-        <div style={colValue}>{player.age || "—"}</div>
-      </div>
-
-      {/* NFL Team */}
-      <div className="ddc-col-team" style={{ width: 76, textAlign: "right" }}>
-        <div style={colMuted}>Team</div>
-        <div style={colValue}>{player.nflTeam || "—"}</div>
-      </div>
-
-      {/* Value (FantasyCalc scaled) */}
-      <div className="ddc-col-val" style={{ width: 58, textAlign: "right" }}>
-        <div style={colMuted}>Val</div>
-        <div style={colValue}>{value ?? "—"}</div>
-      </div>
-
-      {/* Bench split action column (only render when enabled) */}
-      {(onSetBenchStart || onClearBenchStart) && (
-        <div
-          className="ddc-col-benchaction"
-          style={{
-            width: 74,                 // wide enough for "Bench"/"Clear"
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            flex: "0 0 auto",
-          }}
-        >
-          {typeof benchStartIndex === "number" && benchStartIndex === index ? (
-            <button
-              type="button"
-              className="ddc-bench-btn"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClearBenchStart?.();
-              }}
-              title="Clear Starters/Bench Split"
-              aria-label="Clear Starters/Bench Split"
-              style={{
-                background: "transparent",
-                border: "1px solid var(--ddc-border)",
-                color: "var(--ddc-muted)",
-                borderRadius: 10,
-                padding: "4px 8px",
-                fontSize: "var(--ddc-text-md)",
-                cursor: "pointer",
-                opacity: 0, // shown on hover via CSS
-                transition: "opacity 120ms ease",
-                outline: "none",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Clear
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="ddc-bench-btn"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onSetBenchStart?.(index);
-              }}
-              title="Bench Starts Here"
-              aria-label="Bench Starts Here"
-              style={{
-                background: "transparent",
-                border: "1px solid var(--ddc-border)",
-                color: "var(--ddc-muted)",
-                borderRadius: 10,
-                padding: "4px 8px",
-                fontSize: "var(--ddc-text-md)",
-                cursor: "pointer",
-                opacity: 0, // shown on hover via CSS
-                transition: "opacity 120ms ease",
-                outline: "none",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Bench
-            </button>
-          )}
-        </div>
+      ) : (
+        <div className="ddc-col-bench" />
       )}
     </div>
   );
 }
 
-export function PlayerList({ 
-  group, 
+export function PlayerList({
+  group,
   players,
-  valuesByPlayerId, 
-  onReorder, 
+  valuesByPlayerId,
+  onReorder,
   onToggleInjured,
   benchStartIndex,
   onSetBenchStart,
   onClearBenchStart,
+  // eslint-disable-next-line no-unused-vars
   isDark = false,
 }) {
   const sensors = useSensors(
-    useSensor(MouseSensor, {
-      activationConstraint: { distance: 8 },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: { delay: 150, tolerance: 8 },
-    })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } })
   );
 
   function handleDragEnd(event) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-
     const oldIndex = players.findIndex((p) => p.id === active.id);
     const newIndex = players.findIndex((p) => p.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
     const next = arrayMove(players, oldIndex, newIndex);
     onReorder(next);
   }
-  
+
   const clampedBenchStart =
-  typeof benchStartIndex === "number"
-    ? Math.max(0, Math.min(players.length, benchStartIndex))
-    : null;
+    typeof benchStartIndex === "number"
+      ? Math.max(0, Math.min(players.length, benchStartIndex))
+      : null;
+
+  const maxValue = (() => {
+    let m = 0;
+    for (const p of players) {
+      const v = valuesByPlayerId?.get(p.id);
+      const n = Number(v);
+      if (Number.isFinite(n) && n > m) m = n;
+    }
+    return m;
+  })();
+
+  const totalValue = (() => {
+    let sum = 0;
+    let hasAny = false;
+
+    for (const p of players) {
+      const v = valuesByPlayerId?.get(p.id);
+      const n = Number(v);
+      if (!Number.isFinite(n)) continue;
+      sum += n;
+      hasAny = true;
+    }
+
+    return hasAny ? sum : null;
+  })();
+
+  const showHeader = players.length > 0;
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext items={players.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-        {players.length === 0 ? (
-        <div
-          style={{
-            padding: "14px 10px",
-            fontSize: 13,
-            opacity: 0.7,
-            fontStyle: "italic"
-          }}
-        >
-          No players in this group.
-        </div>
-      ) : (
-        players.map((p, idx) => (
-          <div key={p.id}>
-            {typeof clampedBenchStart === "number" && clampedBenchStart === idx ? (
-              <BenchDivider label="Bench" />
-            ) : null}
+    <div className="ddc-panel" data-pos={group}>
+      <div className="ddc-panel-head">
+        <span className="ddc-stamp">{group}</span>
+        <span className="ddc-panel-count">
+          {players.length} {players.length === 1 ? "PLAYER" : "PLAYERS"} ·
+        </span>
+        {totalValue != null && (
+          <span className="ddc-panel-count">
+            TOTAL VAL {Math.round(totalValue).toLocaleString()}
+          </span>
+        )}
+      </div>
 
-            <Row
-              player={p}
-              group={group}
-              index={idx}
-              value={valuesByPlayerId?.get(p.id) ?? null}
-              onToggleInjured={onToggleInjured}
-              benchStartIndex={clampedBenchStart}
-              onSetBenchStart={onSetBenchStart}
-              onClearBenchStart={onClearBenchStart}
-              isDark={isDark}
-            />
-          </div>
-        ))
+      {showHeader && (
+        <div className="ddc-row-head" aria-hidden>
+          <div />
+          <div>Slot</div>
+          <div>Player</div>
+          <div className="num">Age</div>
+          <div className="num">Team</div>
+          <div className="num">Val</div>
+          <div>Inj</div>
+          <div>Ben</div>
+        </div>
       )}
-      </SortableContext>
-    </DndContext>
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={players.map((p) => p.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {players.length === 0 ? (
+            <div
+              style={{
+                padding: "14px 16px",
+                fontSize: 12,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--ddc-dim-2)",
+                fontStyle: "italic",
+              }}
+            >
+              // NO PLAYERS IN THIS GROUP
+            </div>
+          ) : (
+            players.map((p, idx) => (
+              <div key={p.id}>
+                {typeof clampedBenchStart === "number" &&
+                clampedBenchStart === idx &&
+                clampedBenchStart > 0 ? (
+                  <BenchDivider label="Bench" />
+                ) : null}
+
+                <Row
+                  player={p}
+                  group={group}
+                  index={idx}
+                  value={valuesByPlayerId?.get(p.id) ?? null}
+                  maxValue={maxValue}
+                  onToggleInjured={onToggleInjured}
+                  benchStartIndex={clampedBenchStart}
+                  onSetBenchStart={onSetBenchStart}
+                  onClearBenchStart={onClearBenchStart}
+                />
+              </div>
+            ))
+          )}
+        </SortableContext>
+      </DndContext>
+    </div>
   );
 }

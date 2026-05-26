@@ -1,32 +1,33 @@
-import { groupTheme } from "../theme";
+import React from "react";
 
-export function Tabs({ tabs, active, onChange, isDark = false }) {
+/**
+ * Tabs — Terminal-styled sticky tab strip.
+ * API preserved: `tabs`, `active`, `onChange`, `isDark` (kept for compat, no longer
+ * used — both themes share the same Terminal palette).
+ *
+ * Optional `counts` map (e.g. { QB: 4, RB: 7, ... }) shows small per-tab numbers.
+ */
+export function Tabs({ tabs, active, onChange, counts }) {
   return (
-    <div className="ddc-tabs" style={{ display: "flex", gap: 8, flexWrap: "nowrap", overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+    <div className="ddc-tabs" role="tablist">
       {tabs.map((t) => {
-        const base = groupTheme[t] ?? { color: "#111827", bg: "#f3f4f6", label: t };
-        const th = isDark && base.bgDark ? { ...base, bg: base.bgDark } : base;
-        const qbAccent =
-          t === "QB" && isDark
-            ? `color-mix(in oklab, ${th.color} 78%, var(--ddc-text))`
-            : th.color;
-
         const isActive = active === t;
-
+        const count = counts && counts[t];
         return (
           <button
             key={t}
-            onClick={() => onChange(t)}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
             className="ddc-tab ddc-focusable ddc-pressable"
             data-active={isActive ? "true" : "false"}
-            style={{
-              border: `1px solid ${isActive ? qbAccent : "var(--ddc-border)"}`,
-              background: isActive ? th.bg : "var(--ddc-card-bg)",
-              color: isActive ? qbAccent : "var(--ddc-text)",
-              cursor: "pointer",
-            }}
+            data-pos={t}
+            onClick={() => onChange(t)}
           >
-            {th.label}
+            {t}
+            {typeof count === "number" && (
+              <span className="ddc-tab-count">{count}</span>
+            )}
           </button>
         );
       })}
