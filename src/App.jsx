@@ -517,8 +517,8 @@ export default function App() {
 
       {/* SUMMARY (sticky on mobile) */}
       <div ref={summaryRef} className="ddc-summary-sticky" style={{ padding: "14px 20px 0" }}>
-        <div className="ddc-summary">
-          {loadError ? (
+        <div className={`ddc-summary${!connectedAs ? " ddc-summary-connect" : ""}`}>
+                {loadError ? (
             <div style={{ fontSize: 12, color: "var(--ddc-rose)", fontWeight: 500, letterSpacing: ".06em" }}>
               {loadError}
             </div>
