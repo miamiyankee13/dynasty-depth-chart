@@ -54,7 +54,7 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
   return (
     <div className="ddc-kpis">
       <div className="ddc-kpi">
-        <span className="ddc-kpi-lbl">Total Team Val</span>
+        <span className="ddc-kpi-lbl">Total Player Val</span>
         <div className="ddc-kpi-v amber">{fmtTotal(data.teamVal)}</div>
         <span className="ddc-kpi-foot">FC · SCALED</span>
       </div>
