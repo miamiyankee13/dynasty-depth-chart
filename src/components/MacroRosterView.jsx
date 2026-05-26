@@ -32,6 +32,13 @@ function computeGroupTotalVal(players, valuesByPlayerId) {
   return hasAny ? sum : null;
 }
 
+function computeTotalPicks(picksByYear) {
+  return Object.values(picksByYear || {}).reduce(
+    (sum, picks) => sum + (Array.isArray(picks) ? picks.length : 0),
+    0
+  );
+}
+
 function ageClass(age) {
   const n = parseInt(age, 10);
   if (!Number.isFinite(n)) return "";
@@ -263,6 +270,7 @@ export function MacroRosterView({
     ...(playersByGroup?.TAXI ?? []),
   ];
   const totalTeamVal = computeGroupTotalVal(teamPlayers, valuesByPlayerId);
+  const totalPicks = computeTotalPicks(picksByYear);
 
   const fcUpdatedAt = fcParams ? getFantasyCalcUpdatedAt(fcParams) : null;
   const fcUpdatedLabel = fcUpdatedAt
@@ -344,7 +352,9 @@ export function MacroRosterView({
         <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
           <div className="ddc-panel-head">
             <span className="ddc-stamp">PK</span>
-            <span className="ddc-panel-title">Picks</span>
+            <span className="ddc-panel-count">
+              {totalPicks} {totalPicks === 1 ? "PICK" : "PICKS"}
+            </span>
             <div className="ddc-panel-meta">
               <a
                 href="https://rookie-board.vercel.app/"
@@ -398,9 +408,11 @@ export function MacroRosterView({
             benchStartIndex={benchStartsByGroup?.TE ?? null} />
 
           <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
-            <div className="ddc-panel-head">
-              <span className="ddc-stamp">PK</span>
-              <span className="ddc-panel-title">Picks</span>
+          <div className="ddc-panel-head">
+            <span className="ddc-stamp">PK</span>
+            <span className="ddc-panel-count">
+              {totalPicks} {totalPicks === 1 ? "PICK" : "PICKS"}
+            </span>
               <div className="ddc-panel-meta">
                 <a
                   href="https://rookie-board.vercel.app/"
