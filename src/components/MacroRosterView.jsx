@@ -344,7 +344,7 @@ export function MacroRosterView({
         <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
           <div className="ddc-panel-head">
             <span className="ddc-stamp">PK</span>
-            <span className="ddc-panel-title">Rookie Picks</span>
+            <span className="ddc-panel-title">Picks</span>
             <div className="ddc-panel-meta">
               <a
                 href="https://rookie-board.vercel.app/"
@@ -400,7 +400,7 @@ export function MacroRosterView({
           <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
             <div className="ddc-panel-head">
               <span className="ddc-stamp">PK</span>
-              <span className="ddc-panel-title">Future Picks</span>
+              <span className="ddc-panel-title">Picks</span>
               <div className="ddc-panel-meta">
                 <a
                   href="https://rookie-board.vercel.app/"

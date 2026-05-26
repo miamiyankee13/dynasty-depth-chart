@@ -198,7 +198,6 @@ export function PicksView({
           <div key={y} className="ddc-panel" data-pos="PICKS">
             <div className="ddc-panel-head">
               <span className="ddc-stamp">{y}</span>
-              <span className="ddc-panel-title">Rookie Picks</span>
               <span className="ddc-panel-count">
                 {hasAny ? `${picks.length} ${picks.length === 1 ? "PICK" : "PICKS"}` : "NONE"}
               </span>
