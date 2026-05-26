@@ -448,11 +448,14 @@ export default function App() {
 
       <div className="ddc-header">
         <div className="ddc-brand">
-          <div className="ddc-logo" aria-hidden><DepthIcon size={20} /></div>
           <div style={{ minWidth: 0 }}>
             <div className="ddc-title">
               Dynasty Depth Chart
             </div>
+          </div>
+
+          <div className="ddc-logo" aria-hidden>
+            <DepthIcon size={20} />
           </div>
         </div>
 
@@ -647,7 +650,9 @@ export default function App() {
       </div>
 
       {/* FOOTER */}
-      <div className="ddc-footer" />
+      <div className="ddc-footer">
+        <span>© 2026 Anthony D'Amico. All rights reserved.</span>
+      </div>
 
       {/* TOAST */}
       {toast && (

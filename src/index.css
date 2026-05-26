@@ -219,7 +219,7 @@ a { color: inherit; }
 .ddc-brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 .ddc-logo {
@@ -1240,11 +1240,13 @@ main.ddc-app {
   border-top: 1px solid var(--ddc-line);
   background: var(--ddc-status-bg);
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
   gap: 14px;
   font-size: 10px;
   color: var(--ddc-dim-2);
   letter-spacing: 0.14em;
+  text-align: center;
   text-transform: uppercase;
   flex-wrap: wrap;
 }
