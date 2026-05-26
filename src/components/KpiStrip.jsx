@@ -77,7 +77,7 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
       </div>
 
       <div className="ddc-kpi">
-        <span className="ddc-kpi-lbl">Future Picks</span>
+        <span className="ddc-kpi-lbl">Rookie Picks</span>
         <div className="ddc-kpi-row">
           {data.years.length === 0 ? (
             <span className="ddc-kpi-pos">—</span>
