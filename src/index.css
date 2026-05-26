@@ -843,6 +843,7 @@ main.ddc-app {
   font-style: italic !important;
 }
 .ddc-meta-line {
+  display: none;
   font-size: 11px;
   color: var(--ddc-dim);
   letter-spacing: 0.04em;
@@ -850,6 +851,11 @@ main.ddc-app {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+}
+
+/* Keep compact roster snapshot rows informative since they do not show Age/Team columns */
+.ddc-row.compact .ddc-meta-line {
+  display: block;
 }
 
 /* Age / Team / Val cells (stacked label + value) */
