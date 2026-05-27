@@ -72,7 +72,7 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
           {data.counts.DEF ? `DEF ${data.counts.DEF}` : ""}
           {data.counts.DEF && data.counts.TAXI ? " · " : ""}
           {data.counts.TAXI ? `TAXI ${data.counts.TAXI}` : ""}
-          {!data.counts.DEF && !data.counts.TAXI ? "—" : ""}
+          {!data.counts.DEF && !data.counts.TAXI ? "No Taxi" : ""}
         </span>
       </div>
 
@@ -95,7 +95,7 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
       <div className="ddc-kpi">
         <span className="ddc-kpi-lbl">Players</span>
         <div className="ddc-kpi-v amber">{data.totalPlayers}</div>
-        <span className="ddc-kpi-foot">ROSTER · TAXI</span>
+        <span className="ddc-kpi-foot">ROSTERED</span>
       </div>
     </div>
   );

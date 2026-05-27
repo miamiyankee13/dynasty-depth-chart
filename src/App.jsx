@@ -223,7 +223,10 @@ export default function App() {
     saveTheme(theme);
   }, [theme]);
 
-  const summaryRef = useRef(null);
+  const tabsAnchorRef = useRef(null);
+  const tabsWrapRef = useRef(null);
+  const [tabsPinned, setTabsPinned] = useState(false);
+  const [tabsHeight, setTabsHeight] = useState(0);
   const didHydrateRef = useRef(false);
 
   const [sleeperInput, setSleeperInput] = useState(getSleeperUsername() || "");
@@ -289,6 +292,58 @@ export default function App() {
     base.push("ROSTER");
     return base;
   }, [team, playersByGroup]);
+
+  useEffect(() => {
+  const anchor = tabsAnchorRef.current;
+  const tabs = tabsWrapRef.current;
+  if (!anchor || !tabs) return;
+
+  const mq = window.matchMedia("(max-width: 520px)");
+  let raf = 0;
+
+  function updatePinnedState() {
+    if (raf) return;
+
+    raf = window.requestAnimationFrame(() => {
+      raf = 0;
+
+      if (!mq.matches) {
+        setTabsPinned(false);
+        setTabsHeight(0);
+        return;
+      }
+
+      const nextHeight = Math.ceil(tabs.getBoundingClientRect().height || 0);
+      setTabsHeight(nextHeight);
+
+      const anchorTop = anchor.getBoundingClientRect().top;
+      setTabsPinned(anchorTop <= 0);
+    });
+  }
+
+  updatePinnedState();
+
+  window.addEventListener("scroll", updatePinnedState, { passive: true });
+  window.addEventListener("resize", updatePinnedState);
+
+  if (typeof mq.addEventListener === "function") {
+    mq.addEventListener("change", updatePinnedState);
+  } else {
+    mq.addListener(updatePinnedState);
+  }
+
+  return () => {
+    if (raf) window.cancelAnimationFrame(raf);
+    window.removeEventListener("scroll", updatePinnedState);
+    window.removeEventListener("resize", updatePinnedState);
+
+    if (typeof mq.removeEventListener === "function") {
+      mq.removeEventListener("change", updatePinnedState);
+    } else {
+      mq.removeListener(updatePinnedState);
+    }
+  };
+}, [team?.id, activeTab, visibleTabs.join("|")]);
 
   /* ───── Bootstrap Sleeper + restore UI prefs (unchanged) ───── */
   useEffect(() => {
@@ -498,8 +553,8 @@ export default function App() {
         </div>
       </div>
 
-      {/* SUMMARY (sticky on mobile) */}
-      <div ref={summaryRef} className="ddc-summary-sticky" style={{ padding: "14px 20px 0" }}>
+      {/* SUMMARY*/}
+      <div className="ddc-summary-sticky">
         <div className={`ddc-summary${!connectedAs ? " ddc-summary-connect" : ""}`}>
                 {loadError ? (
             <div style={{ fontSize: 12, color: "var(--ddc-rose)", fontWeight: 500, letterSpacing: ".06em" }}>
@@ -568,14 +623,29 @@ export default function App() {
 
       {/* TABS */}
       {visibleTabs.length > 0 && !(connectedAs && isLoadingTeams) && (
-        <div className="ddc-tabs-sticky">
-          <Tabs
-            key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
-            tabs={visibleTabs}
-            active={activeTab}
-            onChange={setActiveTab}
-          />
-        </div>
+        <>
+          <div ref={tabsAnchorRef} className="ddc-tabs-anchor" aria-hidden="true" />
+
+          <div
+            ref={tabsWrapRef}
+            className={`ddc-tabs-sticky${tabsPinned ? " is-mobile-fixed" : ""}`}
+          >
+            <Tabs
+              key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
+              tabs={visibleTabs}
+              active={activeTab}
+              onChange={setActiveTab}
+            />
+          </div>
+
+          {tabsPinned && (
+            <div
+              className="ddc-tabs-spacer"
+              style={{ height: tabsHeight }}
+              aria-hidden="true"
+            />
+          )}
+        </>
       )}
 
       {/* CONTENT */}
