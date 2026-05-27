@@ -1269,19 +1269,18 @@ main.ddc-app {
   .ddc-input { width: 100%; min-width: 0; }
   .ddc-select { width: 100%; min-width: 0; }
 
-  /* Summary sticky */
   .ddc-summary-sticky {
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    background: var(--ddc-bg);
+    position: static;
+    top: auto;
+    z-index: auto;
+    background: transparent;
     padding-top: 12px;
     padding-bottom: 10px;
   }
 
-  /* Tabs stick below the summary */
+  /* Only tabs stick on mobile */
   .ddc-tabs-sticky {
-    top: var(--ddc-summary-h, 0px);
+    top: 0;
   }
 
   /* Player row reflow: [grip] [slot] [name + meta line] [inj] */
@@ -1317,6 +1316,44 @@ main.ddc-app {
   }
   .ddc-bench-divider .ddc-bench-label { display: none; }
   .ddc-bench-divider .ddc-bench-rule:nth-child(3) { display: none; }
+
+  .ddc-header {
+  align-items: flex-start;
+}
+
+.ddc-brand {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.ddc-utility {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  justify-content: stretch;
+}
+
+.ddc-league-count {
+  grid-column: 1 / -1;
+  justify-content: center;
+  min-height: 32px;
+}
+
+.ddc-select {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+}
+
+.ddc-utility .ddc-btn:not(.ddc-theme-mobile):not(.ddc-theme-desktop) {
+  width: 100%;
+}
+
+.ddc-theme-mobile {
+  justify-content: center;
+  width: 48px;
+}
 }
 
 /* ─────────────────────────  PHONE LANDSCAPE  ───────────────────── */
