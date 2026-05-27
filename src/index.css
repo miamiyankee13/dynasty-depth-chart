@@ -1001,14 +1001,6 @@ main.ddc-app,
   border: 1px solid var(--ddc-line);
   position: relative;
 }
-.ddc-macro-summary::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 3px; height: 100%;
-  background: linear-gradient(180deg, var(--ddc-amber), transparent 70%);
-  pointer-events: none;
-}
 .ddc-macro-summary h2 {
   font-family: 'Inter Tight', sans-serif;
   font-weight: 600;
@@ -1086,11 +1078,6 @@ main.ddc-app,
     gap: 14px;
     min-width: 0;
   }
-}
-
-/* Solid left accent line for Roster Snapshot header */
-.ddc-macro-summary::before {
-  background: var(--ddc-amber);
 }
 
 /* Solid left accent line for each standalone Picks tab card */

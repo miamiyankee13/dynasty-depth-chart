@@ -60,6 +60,12 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
       </div>
 
       <div className="ddc-kpi">
+        <span className="ddc-kpi-lbl">Total Players</span>
+        <div className="ddc-kpi-v amber">{data.totalPlayers}</div>
+        <span className="ddc-kpi-foot">ROSTERED</span>
+      </div>
+
+      <div className="ddc-kpi">
         <span className="ddc-kpi-lbl">By Position</span>
         <div className="ddc-kpi-row">
           {["QB", "RB", "WR", "TE"].map((p) => (
@@ -92,11 +98,6 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
         <span className="ddc-kpi-foot">{data.totalPicks} TOTAL</span>
       </div>
 
-      <div className="ddc-kpi">
-        <span className="ddc-kpi-lbl">Players</span>
-        <div className="ddc-kpi-v amber">{data.totalPlayers}</div>
-        <span className="ddc-kpi-foot">ROSTERED</span>
-      </div>
     </div>
   );
 }
