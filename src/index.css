@@ -193,10 +193,8 @@ a { color: inherit; }
 .ddc-statusbar.offline .label { color: var(--ddc-rose); }
 @keyframes ddc-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
 .ddc-statusbar b { color: var(--ddc-text); font-weight: 500; }
-.ddc-statusbar .workspace { color: var(--ddc-dim); }
 .ddc-statusbar .clock     { color: var(--ddc-amber); letter-spacing: 0.1em; text-align: right; }
 
-@media (max-width: 720px) { .ddc-statusbar .workspace { display: none; } }
 @media (max-width: 520px) {
   .ddc-statusbar {
     grid-template-columns: auto 1fr;
@@ -241,12 +239,6 @@ a { color: inherit; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.ddc-brand-meta {
-  font-size: 10px;
-  color: var(--ddc-dim);
-  letter-spacing: 0.12em;
-  margin-top: 3px;
 }
 
 .ddc-utility {
@@ -448,16 +440,11 @@ a { color: inherit; }
   -webkit-tap-highlight-color: transparent;
   transition: color .12s;
 }
-.ddc-tab .ddc-tab-count { font-size: 10px; color: var(--ddc-dim-2); }
 .ddc-tab:hover { color: var(--ddc-text); }
 .ddc-tab[data-active="true"] {
   color: var(--ddc-tab-accent, var(--ddc-amber));
   border-bottom-color: var(--ddc-tab-accent, var(--ddc-amber));
   text-shadow: 0 0 12px var(--ddc-amber-18);
-}
-.ddc-tab[data-active="true"] .ddc-tab-count {
-  color: var(--ddc-tab-accent, var(--ddc-amber));
-  opacity: 0.8;
 }
 .ddc-tab[data-active="true"]::before {
   content: '';
@@ -994,11 +981,6 @@ main.ddc-app,
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.ddc-draft-val {
-  color: var(--ddc-amber);
-  font-size: 13px;
-  text-align: right;
-}
 
 .ddc-grade {
   display: inline-flex;
@@ -1164,7 +1146,7 @@ main.ddc-app,
   position: absolute;
   top: 0; left: 0;
   width: 3px; height: 100%;
-  background: var(--ddc-amber);;
+  background: var(--ddc-amber);
   pointer-events: none;
 }
 .ddc-connect-title {
@@ -1272,7 +1254,6 @@ main.ddc-app,
 .ddc-footer b { color: var(--ddc-amber); font-weight: 500; }
 @media (max-width: 520px) {
   .ddc-footer { padding: 10px 12px; font-size: 9px; gap: 8px; }
-  .ddc-footer .mid { display: none; }
 }
 
 /* ─────────────────────────  MOBILE (≤520px)  ───────────────────── */
@@ -1280,7 +1261,6 @@ main.ddc-app,
   /* Reduce header padding */
   .ddc-header { padding: 12px; gap: 10px; }
   .ddc-title { font-size: 14px; }
-  .ddc-brand-meta { font-size: 9px; }
   .ddc-logo { width: 28px; height: 28px; }
 
   /* Sleeper input is full-width on mobile */

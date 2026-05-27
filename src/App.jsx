@@ -216,7 +216,6 @@ export default function App() {
   const [fcValues, setFcValues] = useState(new Map());
   const [theme, setTheme] = useState(() => loadTheme());
   const [draftResultsByLeague, setDraftResultsByLeague] = useState({});
-  const isDark = theme === "dark";
 
   useEffect(() => {
     applyThemeToDom(theme);
