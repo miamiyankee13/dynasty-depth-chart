@@ -222,10 +222,6 @@ export default function App() {
     saveTheme(theme);
   }, [theme]);
 
-  const tabsAnchorRef = useRef(null);
-  const tabsWrapRef = useRef(null);
-  const [tabsPinned, setTabsPinned] = useState(false);
-  const [tabsHeight, setTabsHeight] = useState(0);
   const didHydrateRef = useRef(false);
 
   const [sleeperInput, setSleeperInput] = useState(getSleeperUsername() || "");
@@ -291,66 +287,6 @@ export default function App() {
     base.push("ROSTER");
     return base;
   }, [team, playersByGroup]);
-
-useEffect(() => {
-  const anchor = tabsAnchorRef.current;
-  const tabs = tabsWrapRef.current;
-  if (!anchor || !tabs) return;
-
-  const mq = window.matchMedia("(max-width: 520px)");
-  let raf = 0;
-
-  function getAnchorPageTop() {
-    const rect = anchor.getBoundingClientRect();
-    return rect.top + window.scrollY;
-  }
-
-  function updatePinnedState() {
-    if (raf) return;
-
-    raf = window.requestAnimationFrame(() => {
-      raf = 0;
-
-      if (!mq.matches) {
-        setTabsPinned(false);
-        setTabsHeight(0);
-        return;
-      }
-
-      const nextHeight = Math.ceil(tabs.getBoundingClientRect().height || 0);
-      const anchorPageTop = getAnchorPageTop();
-
-      setTabsHeight(nextHeight);
-      setTabsPinned(window.scrollY >= anchorPageTop);
-    });
-  }
-
-  // Wait one frame so mobile layout/header/summary have settled before measuring.
-  const initial = window.requestAnimationFrame(updatePinnedState);
-
-  window.addEventListener("scroll", updatePinnedState, { passive: true });
-  window.addEventListener("resize", updatePinnedState);
-
-  if (typeof mq.addEventListener === "function") {
-    mq.addEventListener("change", updatePinnedState);
-  } else {
-    mq.addListener(updatePinnedState);
-  }
-
-  return () => {
-    window.cancelAnimationFrame(initial);
-    if (raf) window.cancelAnimationFrame(raf);
-
-    window.removeEventListener("scroll", updatePinnedState);
-    window.removeEventListener("resize", updatePinnedState);
-
-    if (typeof mq.removeEventListener === "function") {
-      mq.removeEventListener("change", updatePinnedState);
-    } else {
-      mq.removeListener(updatePinnedState);
-    }
-  };
-}, [team?.id, activeTab, visibleTabs.join("|")]);
 
   /* ───── Bootstrap Sleeper + restore UI prefs (unchanged) ───── */
   useEffect(() => {
@@ -630,29 +566,14 @@ useEffect(() => {
 
       {/* TABS */}
       {visibleTabs.length > 0 && !(connectedAs && isLoadingTeams) && (
-        <>
-          <div ref={tabsAnchorRef} className="ddc-tabs-anchor" aria-hidden="true" />
-
-          <div
-            ref={tabsWrapRef}
-            className={`ddc-tabs-sticky${tabsPinned ? " is-mobile-fixed" : ""}`}
-          >
-            <Tabs
-              key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
-              tabs={visibleTabs}
-              active={activeTab}
-              onChange={setActiveTab}
-            />
-          </div>
-
-          {tabsPinned && (
-            <div
-              className="ddc-tabs-spacer"
-              style={{ height: tabsHeight }}
-              aria-hidden="true"
-            />
-          )}
-        </>
+        <div className="ddc-tabs-sticky">
+          <Tabs
+            key={`${team?.id || "no-team"}:${visibleTabs.join("|")}`}
+            tabs={visibleTabs}
+            active={activeTab}
+            onChange={setActiveTab}
+          />
+        </div>
       )}
 
       {/* CONTENT */}

@@ -393,20 +393,11 @@ a { color: inherit; }
 }
 
 /* ─────────────────────────  TABS  ───────────────────────── */
-.ddc-tabs-anchor {
-  height: 0;
-}
-
-.ddc-tabs-spacer {
-  display: none;
-}
-
 .ddc-tabs-sticky {
   position: sticky;
   position: -webkit-sticky;
   top: 0;
   z-index: 50;
-  width: 100%;
   background: var(--ddc-status-bg);
   border-bottom: 1px solid var(--ddc-line);
 }
@@ -1276,28 +1267,14 @@ main.ddc-app,
     padding: 12px 12px 0;
   }
 
-  /* Mobile uses a fixed fallback once the tab anchor reaches the top */
+  /* Tabs stay sticky on mobile using the same native pattern as Rookie Board */
   .ddc-tabs-sticky {
-    position: static;
-    top: auto;
-    z-index: 80;
-    width: 100%;
-    background: var(--ddc-status-bg);
-    border-top: 1px solid var(--ddc-line);
-    border-bottom: 1px solid var(--ddc-line);
-  }
-
-  .ddc-tabs-sticky.is-mobile-fixed {
-    position: fixed;
+    position: sticky;
+    position: -webkit-sticky;
     top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
-  }
-
-  .ddc-tabs-spacer {
-    display: block;
+    z-index: 80;
+    background: var(--ddc-status-bg);
+    border-bottom: 1px solid var(--ddc-line);
   }
 
   /* Player row reflow: [grip] [slot] [name + meta line] [inj] */
