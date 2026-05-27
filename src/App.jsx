@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs } from "./components/Tabs";
 import { PlayerList } from "./components/PlayerList";
 import { PicksView } from "./components/PicksView";
@@ -348,26 +348,6 @@ export default function App() {
   }, []);
 
   useEffect(() => { if (state) saveAppState(state); }, [state]);
-
-  /* ───── Summary height -> CSS var (for sticky tabs offset on mobile) ───── */
-  useLayoutEffect(() => {
-    const el = summaryRef.current;
-    if (!el) return;
-    const root = document.documentElement;
-    function setVar() {
-      const h = Math.ceil(el.getBoundingClientRect().height || 0);
-      root.style.setProperty("--ddc-summary-h", `${h}px`);
-    }
-    setVar();
-    const ro = new ResizeObserver(() => setVar());
-    ro.observe(el);
-    window.addEventListener("resize", setVar);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", setVar);
-      root.style.removeProperty("--ddc-summary-h");
-    };
-  }, [team?.id]);
 
   /* ───── FantasyCalc values fetch (unchanged) ───── */
   useEffect(() => {

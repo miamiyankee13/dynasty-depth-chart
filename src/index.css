@@ -404,7 +404,7 @@ a { color: inherit; }
 .ddc-tabs-sticky {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 50;
   background: var(--ddc-status-bg);
   border-bottom: 1px solid var(--ddc-line);
 }
@@ -479,6 +479,11 @@ main.ddc-app {
   max-width: 100%;
   margin: 0;
   color: var(--ddc-text);
+}
+main.ddc-app,
+.ddc-summary-sticky,
+.ddc-body {
+  overflow: visible;
 }
 .ddc-body {
   width: calc(100% - 40px);
@@ -1283,9 +1288,9 @@ main.ddc-app {
   .ddc-tabs-sticky {
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 80;
     background: var(--ddc-status-bg);
-  }
+}
 
   /* Player row reflow: [grip] [slot] [name + meta line] [inj] */
   .ddc-row {
