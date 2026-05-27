@@ -293,13 +293,18 @@ export default function App() {
     return base;
   }, [team, playersByGroup]);
 
-  useEffect(() => {
+useEffect(() => {
   const anchor = tabsAnchorRef.current;
   const tabs = tabsWrapRef.current;
   if (!anchor || !tabs) return;
 
   const mq = window.matchMedia("(max-width: 520px)");
   let raf = 0;
+
+  function getAnchorPageTop() {
+    const rect = anchor.getBoundingClientRect();
+    return rect.top + window.scrollY;
+  }
 
   function updatePinnedState() {
     if (raf) return;
@@ -314,14 +319,15 @@ export default function App() {
       }
 
       const nextHeight = Math.ceil(tabs.getBoundingClientRect().height || 0);
-      setTabsHeight(nextHeight);
+      const anchorPageTop = getAnchorPageTop();
 
-      const anchorTop = anchor.getBoundingClientRect().top;
-      setTabsPinned(anchorTop <= 0);
+      setTabsHeight(nextHeight);
+      setTabsPinned(window.scrollY >= anchorPageTop);
     });
   }
 
-  updatePinnedState();
+  // Wait one frame so mobile layout/header/summary have settled before measuring.
+  const initial = window.requestAnimationFrame(updatePinnedState);
 
   window.addEventListener("scroll", updatePinnedState, { passive: true });
   window.addEventListener("resize", updatePinnedState);
@@ -333,7 +339,9 @@ export default function App() {
   }
 
   return () => {
+    window.cancelAnimationFrame(initial);
     if (raf) window.cancelAnimationFrame(raf);
+
     window.removeEventListener("scroll", updatePinnedState);
     window.removeEventListener("resize", updatePinnedState);
 
