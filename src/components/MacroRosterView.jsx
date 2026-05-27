@@ -362,7 +362,7 @@ export function MacroRosterView({
                 rel="noreferrer"
                 className="ddc-rookie-link ddc-focusable"
               >
-                ROOKIE BOARD →
+                OPEN ROOKIE BOARD →
               </a>
             </div>
           </div>

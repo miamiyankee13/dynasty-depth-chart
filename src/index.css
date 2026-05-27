@@ -39,7 +39,7 @@
   --ddc-ok:          #7bc28b;
   --ddc-violet:      #a78bfa;
   --ddc-slate:       #94a3b8;
-  --ddc-picks:       #d9822b;
+  --ddc-picks:       #c97832;
 
   --ddc-danger:      var(--ddc-rose);
 
@@ -1050,7 +1050,15 @@ main.ddc-app,
   background: var(--ddc-pos-PICKS);
 }
 .ddc-macro-picks-embed {
-  padding: 0 4px;
+  padding: 0 0 0 3px;
+}
+
+.ddc-macro-picks-embed .ddc-panel-head {
+  padding-left: 17px;
+}
+
+.ddc-macro-picks-embed .ddc-picks-body {
+  padding-left: 17px;
 }
 
 .ddc-macro-picks-embed .ddc-panel::before {
