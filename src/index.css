@@ -1294,7 +1294,19 @@ main.ddc-app,
     right: 0;
     z-index: 1000;
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+    animation: ddc-tabs-pin 140ms ease-out;
   }
+
+  @keyframes ddc-tabs-pin {
+  from {
+    transform: translateY(-6px);
+    opacity: 0.92;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
 
   .ddc-tabs-spacer {
     display: block;
