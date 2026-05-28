@@ -186,6 +186,8 @@ function buildPlayerRow(player, group, order) {
     player?.last_name ||
     "Unknown";
 
+  const realPosition = toGroupFromPosition(player?.position) || group;
+
   return {
     id: `sleeper-player:${player.player_id}`,
     name,
@@ -193,6 +195,7 @@ function buildPlayerRow(player, group, order) {
     nflTeam: player?.team || "",
     group,
     position: group,
+    realPosition,
     order,
     note: "",
     injured: false,
