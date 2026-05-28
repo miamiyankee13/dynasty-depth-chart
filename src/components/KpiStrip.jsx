@@ -39,10 +39,12 @@ export function KpiStrip({
     let teamVal = 0;
     let starterVal = 0;
     let benchVal = 0;
+    let taxiVal = 0;
     let hasVal = false;
 
     let starterCount = 0;
     let benchCount = 0;
+    let taxiCount = 0;
 
     for (const g of ["QB", "RB", "WR", "TE", "DEF"]) {
       const groupPlayers = playersByGroup?.[g] ?? [];
@@ -69,15 +71,15 @@ export function KpiStrip({
       });
     }
 
-    // Taxi always counts as bench/depth.
+    // Taxi is separate from bench.
     for (const p of playersByGroup?.TAXI ?? []) {
-      benchCount += 1;
+      taxiCount += 1;
 
       const n = getPlayerValue(valuesByPlayerId, p.id);
       if (n == null) continue;
 
       teamVal += n;
-      benchVal += n;
+      taxiVal += n;
       hasVal = true;
     }
 
@@ -98,8 +100,10 @@ export function KpiStrip({
       teamVal: hasVal ? teamVal : null,
       starterVal: hasVal ? starterVal : null,
       benchVal: hasVal ? benchVal : null,
+      taxiVal: hasVal ? taxiVal : null,
       starterCount,
       benchCount,
+      taxiCount,
       years,
       totalPicks,
       totalPlayers,
@@ -117,7 +121,7 @@ export function KpiStrip({
         {showBenchSplits ? (
           <>
             <span className="ddc-kpi-foot ddc-kpi-foot-split">
-              STARTERS {fmtTotal(data.starterVal)} · BENCH {fmtTotal(data.benchVal)}
+              STARTERS {fmtTotal(data.starterVal)} · BENCH {fmtTotal(data.benchVal)} · TAXI {fmtTotal(data.taxiVal)}
             </span>
             <span className="ddc-kpi-foot ddc-kpi-foot-mobile">FC · SCALED</span>
           </>
@@ -133,7 +137,7 @@ export function KpiStrip({
         {showBenchSplits ? (
           <>
             <span className="ddc-kpi-foot ddc-kpi-foot-split">
-              STARTERS {data.starterCount} · BENCH {data.benchCount}
+              STARTERS {data.starterCount} · BENCH {data.benchCount} · TAXI {data.taxiCount}
             </span>
             <span className="ddc-kpi-foot ddc-kpi-foot-mobile">ROSTERED</span>
           </>
