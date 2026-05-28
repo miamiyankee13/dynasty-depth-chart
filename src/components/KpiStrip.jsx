@@ -7,12 +7,25 @@ function fmtTotal(v) {
   return Math.round(n).toLocaleString();
 }
 
+function getPlayerValue(valuesByPlayerId, playerId) {
+  if (!valuesByPlayerId) return null;
+  const v = valuesByPlayerId.get(playerId);
+  if (v == null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
 /**
  * KpiStrip — derived metrics for the active team.
- * Shown above the position/picks/roster body. No new inputs;
- * everything is computed from the existing team payload.
+ * Shown above the position/picks/roster body.
  */
-export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
+export function KpiStrip({
+  team,
+  playersByGroup,
+  valuesByPlayerId,
+  benchStartsByGroup = {},
+  showBenchSplits = false,
+}) {
   const data = useMemo(() => {
     if (!team) return null;
 
@@ -22,32 +35,76 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
       counts[g] = playersByGroup?.[g]?.length ?? 0;
     }
 
-    // Total team val (rosters + taxi)
+    // Total team val + starter/bench split
     let teamVal = 0;
+    let starterVal = 0;
+    let benchVal = 0;
     let hasVal = false;
-    if (valuesByPlayerId) {
-      for (const g of ["QB","RB","WR","TE","DEF","TAXI"]) {
-        for (const p of (playersByGroup?.[g] ?? [])) {
-          const v = valuesByPlayerId.get(p.id);
-          if (v == null) continue;
-          const n = Number(v);
-          if (!Number.isFinite(n)) continue;
-          teamVal += n;
-          hasVal = true;
-        }
-      }
+
+    let starterCount = 0;
+    let benchCount = 0;
+
+    for (const g of ["QB", "RB", "WR", "TE", "DEF"]) {
+      const groupPlayers = playersByGroup?.[g] ?? [];
+      const rawBenchStart = benchStartsByGroup?.[g];
+
+      const benchStart =
+        typeof rawBenchStart === "number"
+          ? Math.max(0, Math.min(groupPlayers.length, rawBenchStart))
+          : groupPlayers.length;
+
+      groupPlayers.forEach((p, idx) => {
+        const isBench = idx >= benchStart;
+
+        if (isBench) benchCount += 1;
+        else starterCount += 1;
+
+        const n = getPlayerValue(valuesByPlayerId, p.id);
+        if (n == null) return;
+
+        teamVal += n;
+        if (isBench) benchVal += n;
+        else starterVal += n;
+        hasVal = true;
+      });
+    }
+
+    // Taxi always counts as bench/depth.
+    for (const p of playersByGroup?.TAXI ?? []) {
+      benchCount += 1;
+
+      const n = getPlayerValue(valuesByPlayerId, p.id);
+      if (n == null) continue;
+
+      teamVal += n;
+      benchVal += n;
+      hasVal = true;
     }
 
     // Picks per year
     const years = Object.keys(team.picksByYear ?? {})
       .filter((y) => (team.picksByYear[y]?.length ?? 0) > 0)
       .sort();
-    const totalPicks = years.reduce((s, y) => s + (team.picksByYear[y]?.length ?? 0), 0);
+
+    const totalPicks = years.reduce(
+      (s, y) => s + (team.picksByYear[y]?.length ?? 0),
+      0
+    );
 
     const totalPlayers = Object.values(counts).reduce((sum, n) => sum + n, 0);
 
-    return { counts, teamVal: hasVal ? teamVal : null, years, totalPicks, totalPlayers };
-  }, [team, playersByGroup, valuesByPlayerId]);
+    return {
+      counts,
+      teamVal: hasVal ? teamVal : null,
+      starterVal: hasVal ? starterVal : null,
+      benchVal: hasVal ? benchVal : null,
+      starterCount,
+      benchCount,
+      years,
+      totalPicks,
+      totalPlayers,
+    };
+  }, [team, playersByGroup, valuesByPlayerId, benchStartsByGroup]);
 
   if (!data) return null;
 
@@ -56,13 +113,33 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
       <div className="ddc-kpi">
         <span className="ddc-kpi-lbl">Total Player Val</span>
         <div className="ddc-kpi-v amber">{fmtTotal(data.teamVal)}</div>
-        <span className="ddc-kpi-foot">FC · SCALED</span>
+
+        {showBenchSplits ? (
+          <>
+            <span className="ddc-kpi-foot ddc-kpi-foot-split">
+              STARTERS {fmtTotal(data.starterVal)} · BENCH {fmtTotal(data.benchVal)}
+            </span>
+            <span className="ddc-kpi-foot ddc-kpi-foot-mobile">FC · SCALED</span>
+          </>
+        ) : (
+          <span className="ddc-kpi-foot">FC · SCALED</span>
+        )}
       </div>
 
       <div className="ddc-kpi">
         <span className="ddc-kpi-lbl">Total Players</span>
         <div className="ddc-kpi-v amber">{data.totalPlayers}</div>
-        <span className="ddc-kpi-foot">ROSTERED</span>
+
+        {showBenchSplits ? (
+          <>
+            <span className="ddc-kpi-foot ddc-kpi-foot-split">
+              STARTERS {data.starterCount} · BENCH {data.benchCount}
+            </span>
+            <span className="ddc-kpi-foot ddc-kpi-foot-mobile">ROSTERED</span>
+          </>
+        ) : (
+          <span className="ddc-kpi-foot">ROSTERED</span>
+        )}
       </div>
 
       <div className="ddc-kpi">
@@ -97,7 +174,6 @@ export function KpiStrip({ team, playersByGroup, valuesByPlayerId }) {
         </div>
         <span className="ddc-kpi-foot">{data.totalPicks} TOTAL</span>
       </div>
-
     </div>
   );
 }

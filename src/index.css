@@ -605,6 +605,9 @@ main.ddc-app,
 .ddc-kpi-pos[data-p="TAXI"] { color: var(--ddc-pos-TAXI); }
 .ddc-kpi-pos.amber { color: var(--ddc-amber); }
 .ddc-kpi-foot { font-size: 10px; color: var(--ddc-dim-2); letter-spacing: 0.12em; }
+.ddc-kpi-foot-mobile {
+  display: none;
+}
 
 @media (max-width: 720px) { .ddc-kpis { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 360px) {
@@ -1309,42 +1312,50 @@ main.ddc-app,
   .ddc-bench-divider .ddc-bench-rule:nth-child(3) { display: none; }
 
   .ddc-header {
-  align-items: flex-start;
-}
+    align-items: flex-start;
+  }
 
-.ddc-brand {
-  width: 100%;
-  justify-content: flex-start;
-}
+  .ddc-brand {
+    width: 100%;
+    justify-content: flex-start;
+  }
 
-.ddc-utility {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  justify-content: stretch;
-}
+  .ddc-utility {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    justify-content: stretch;
+  }
 
-.ddc-league-count {
-  grid-column: 1 / -1;
-  justify-content: center;
-  min-height: 32px;
-}
+  .ddc-league-count {
+    grid-column: 1 / -1;
+    justify-content: center;
+    min-height: 32px;
+  }
 
-.ddc-select {
-  grid-column: 1 / -1;
-  width: 100%;
-  min-width: 0;
-}
+  .ddc-select {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+  }
 
-.ddc-utility .ddc-btn:not(.ddc-theme-mobile):not(.ddc-theme-desktop) {
-  width: 100%;
-}
+  .ddc-utility .ddc-btn:not(.ddc-theme-mobile):not(.ddc-theme-desktop) {
+    width: 100%;
+  }
 
-.ddc-theme-mobile {
-  justify-content: center;
-  width: 48px;
-}
+  .ddc-theme-mobile {
+    justify-content: center;
+    width: 48px;
+  }
+
+  .ddc-kpi-foot-split {
+    display: none;
+  }
+
+  .ddc-kpi-foot-mobile {
+    display: inline;
+  }
 }
 
 /* ─────────────────────────  PHONE LANDSCAPE  ───────────────────── */

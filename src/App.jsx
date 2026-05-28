@@ -558,6 +558,8 @@ export default function App() {
                 team={team}
                 playersByGroup={playersByGroup}
                 valuesByPlayerId={valuesByPlayerId}
+                benchStartsByGroup={benchStartsForTeam}
+                showBenchSplits={!team?.isBestBall}
               />
             </>
           )}
