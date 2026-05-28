@@ -351,7 +351,7 @@ export function MacroRosterView({
 
         <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
           <div className="ddc-panel-head">
-            <span className="ddc-stamp">PK</span>
+            <span className="ddc-stamp">PICKS</span>
             <span className="ddc-panel-count">
               {totalPicks} {totalPicks === 1 ? "PICK" : "PICKS"}
             </span>
@@ -409,7 +409,7 @@ export function MacroRosterView({
 
           <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
           <div className="ddc-panel-head">
-            <span className="ddc-stamp">PK</span>
+            <span className="ddc-stamp">PICKS</span>
             <span className="ddc-panel-count">
               {totalPicks} {totalPicks === 1 ? "PICK" : "PICKS"}
             </span>

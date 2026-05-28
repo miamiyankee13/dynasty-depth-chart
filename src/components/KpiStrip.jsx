@@ -190,9 +190,13 @@ export function KpiStrip({
             </span>
           ))}
         </div>
-        <span className="ddc-kpi-foot">
-          {data.positionCounts.DEF ? `DEF ${data.positionCounts.DEF}` : "SKILL POSITIONS"}
-        </span>
+          <span className="ddc-kpi-foot">
+            {data.positionCounts.DEF
+              ? `${data.counts.TAXI ? `DEF ${data.positionCounts.DEF} · TAXI INCLUDED` : `DEF ${data.positionCounts.DEF}`}`
+              : data.counts.TAXI
+                ? "TAXI INCLUDED"
+                : "ACTIVE ROSTER"}
+          </span>
       </div>
 
       <div className="ddc-kpi">

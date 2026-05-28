@@ -223,7 +223,7 @@ export function PicksView({
       {leagueId && rosterId ? (
         <div className="ddc-panel" data-pos="PICKS">
           <div className="ddc-panel-head">
-            <span className="ddc-stamp">DR</span>
+            <span className="ddc-stamp">DRAFT</span>
             <span className="ddc-panel-title">Last Completed Rookie Draft</span>
             <div className="ddc-panel-meta">
               {draftSeason && showDraft ? (
