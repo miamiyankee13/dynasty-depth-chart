@@ -39,7 +39,7 @@
   --ddc-ok:          #7bc28b;
   --ddc-violet:      #a78bfa;
   --ddc-slate:       #94a3b8;
-  --ddc-picks:       #c97832;
+  --ddc-orange:       #c97832;
   --ddc-roster:      #7aa2f7;
 
   --ddc-danger:      var(--ddc-rose);
@@ -47,10 +47,10 @@
   --ddc-pos-QB:      var(--ddc-rose);
   --ddc-pos-RB:      var(--ddc-ok);
   --ddc-pos-WR:      var(--ddc-cyan);
-  --ddc-pos-TE:      var(--ddc-amber);
+  --ddc-pos-TE:      var(--ddc-orange);
   --ddc-pos-DEF:     var(--ddc-slate);
   --ddc-pos-TAXI:    var(--ddc-violet);
-  --ddc-pos-PICKS:   var(--ddc-picks);
+  --ddc-pos-PICKS:   var(--ddc-amber);
   --ddc-pos-ROSTER:  var(--ddc-roster);
 
   --ddc-amber-08:    rgba(224,168,59,0.08);
@@ -117,7 +117,7 @@
   --ddc-ok:          #2f7d3f;
   --ddc-violet:      #6d4dd1;
   --ddc-slate:       #4f5a6a;
-  --ddc-picks:       #b85f12;
+  --ddc-orange:       #b85f12;
   --ddc-roster:      #3451a4;
 
   --ddc-danger:      var(--ddc-rose);
