@@ -997,11 +997,7 @@ main.ddc-app,
 
 /* ─────────────────────────  MACRO ROSTER  ───────────────────── */
 .ddc-macro-summary {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 14px;
-  align-items: baseline;
-  padding: 14px 16px 12px 20px;
+  padding: 10px 16px 10px 20px;
   background: var(--ddc-panel);
   border: 1px solid var(--ddc-line);
   position: relative;
@@ -1021,28 +1017,13 @@ main.ddc-app,
   gap: 10px;
   flex-wrap: wrap;
 }
-.ddc-macro-total {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.ddc-macro-total small {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ddc-dim);
-}
-.ddc-macro-total b {
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--ddc-amber);
-}
 .ddc-macro-sub {
-  grid-column: 1 / -1;
   font-size: 11px;
   color: var(--ddc-dim);
-  letter-spacing: 0.06em;
-  margin-top: 5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-top: 0;
 }
 
 .ddc-macro-actions {

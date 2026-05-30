@@ -269,7 +269,7 @@ export function MacroRosterView({
     ...(playersByGroup?.DEF ?? []),
     ...(playersByGroup?.TAXI ?? []),
   ];
-  const totalTeamVal = computeGroupTotalVal(teamPlayers, valuesByPlayerId);
+
   const totalPicks = computeTotalPicks(picksByYear);
 
   const fcUpdatedAt = fcParams ? getFantasyCalcUpdatedAt(fcParams) : null;
@@ -311,7 +311,9 @@ export function MacroRosterView({
       {/* ─── Snapshot header ─── */}
       <div className="ddc-macro-summary">
         <div className="ddc-macro-title-row">
-          <h2>Roster Snapshot</h2>
+          <span className="ddc-macro-sub">
+            ORDER REFLECTS POSITION TABS
+          </span>
 
           <button
             type="button"
@@ -322,17 +324,6 @@ export function MacroRosterView({
           >
             {copied ? "COPIED" : "COPY"}
           </button>
-        </div>
-
-        <div className="ddc-macro-actions">
-          <div className="ddc-macro-total">
-            <small>TOTAL PLAYER VAL</small>
-            <b>{formatValTotal(totalTeamVal)}</b>
-          </div>
-        </div>
-
-        <div className="ddc-macro-sub">
-          EDIT ORDER IN POSITION TABS
         </div>
       </div>
 
