@@ -65,6 +65,39 @@ function pprLabel(league) {
   return null;
 }
 
+function tieredPprLabel(league) {
+  const scoring = league?.scoring_settings || {};
+
+  const baseRec = num(scoring.rec);
+  if (baseRec == null) return null;
+
+  // Sleeper can represent position-specific reception scoring either as:
+  // - rec_wr / rec_te total reception values, or
+  // - bonus_rec_wr / bonus_rec_te bonuses on top of base rec.
+  const wrRec = num(scoring.rec_wr);
+  const teRec = num(scoring.rec_te);
+
+  const wrBonus = num(scoring.bonus_rec_wr);
+  const teBonus = num(scoring.bonus_rec_te);
+
+  const effectiveWrRec =
+    wrRec != null ? wrRec :
+    wrBonus != null ? baseRec + wrBonus :
+    baseRec;
+
+  const effectiveTeRec =
+    teRec != null ? teRec :
+    teBonus != null ? baseRec + teBonus :
+    baseRec;
+
+  const hasWrBonus = effectiveWrRec > baseRec;
+  const hasTeBonus = effectiveTeRec > effectiveWrRec;
+
+  if (!hasWrBonus || !hasTeBonus) return null;
+
+  return "Tiered PPR";
+}
+
 function passTdLabel(league) {
   const passTd = num(league?.scoring_settings?.pass_td);
   if (passTd === 6) return "6 PT Pass TD";
@@ -137,15 +170,20 @@ function buildSettingsPillsFromLeague(league) {
   // Best Ball
   if (isBestBall(league)) pills.push("BB");
 
-  // PPR
+// Reception scoring
+const tieredPpr = tieredPprLabel(league);
+
+if (tieredPpr) {
+  pills.push(tieredPpr);
+} else {
   const ppr = pprLabel(league);
   if (ppr) pills.push(ppr);
 
-  // TE Premium
   const tep = tePremiumAmount(league);
   if (tep != null && tep > 0) {
     pills.push(`${tep} TEP`);
   }
+}
 
   // Points per First Down (rush / rec)
   const ppfd = firstDownAmount(league);
