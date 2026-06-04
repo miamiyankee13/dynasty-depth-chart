@@ -154,6 +154,14 @@ function firstDownAmount(league) {
   };
 }
 
+function ppcLabel(league) {
+  const ppc = num(league?.scoring_settings?.rush_att);
+
+  if (ppc == null || ppc <= 0) return null;
+
+  return `${ppc} PPC`;
+}
+
 function buildSettingsPillsFromLeague(league) {
   const pills = [];
 
@@ -195,6 +203,12 @@ if (tieredPpr) {
     if (ppfd.rush) parts.push(`R ${ppfd.rush}`);
     if (ppfd.rec) parts.push(`REC ${ppfd.rec}`);
     pills.push(`PPFD (${parts.join(", ")})`);
+  }
+
+  // Points per carry / rushing attempt
+  const ppc = ppcLabel(league);
+  if (ppc) {
+    pills.push(ppc);
   }
 
   // Passing TDs (only show if non-default)
