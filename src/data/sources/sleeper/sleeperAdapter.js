@@ -340,17 +340,50 @@ function findSeasonRookieDraft(drafts, season, rookieRounds) {
   );
 }
 
+function findSeasonStartupDraft(drafts, season) {
+  const seasonDrafts = (drafts || []).filter(
+    (d) => String(d.season) === String(season)
+  );
+
+  return (
+    seasonDrafts.find((d) => String(d?.draft_type || "").toLowerCase() === "startup") ||
+    seasonDrafts.find((d) => {
+      const type = String(d?.draft_type || "").toLowerCase();
+      const rounds = Number(d?.settings?.rounds);
+
+      return (
+        type !== "rookie" &&
+        Number.isFinite(rounds) &&
+        rounds > 10
+      );
+    }) ||
+    null
+  );
+}
+
 function isDraftComplete(draft) {
   return String(draft?.status || "").toLowerCase() === "complete";
 }
 
 function getNextPickSeason({ league, drafts, rookieRounds }) {
   const leagueSeason = getLeagueSeason(league);
-  const currentSeasonDraft = findSeasonRookieDraft(drafts, leagueSeason, rookieRounds);
+  const currentSeasonRookieDraft = findSeasonRookieDraft(drafts, leagueSeason, rookieRounds);
 
   // If the league's current-season rookie draft is complete,
   // that season's picks are consumed and should disappear.
-  if (currentSeasonDraft && isDraftComplete(currentSeasonDraft)) {
+  if (currentSeasonRookieDraft && isDraftComplete(currentSeasonRookieDraft)) {
+    return leagueSeason + 1;
+  }
+
+  // If this is a brand-new startup league and the current-season startup draft
+  // is complete, current-season rookie picks should not appear.
+  const currentSeasonStartupDraft = findSeasonStartupDraft(drafts, leagueSeason);
+
+  if (
+    currentSeasonStartupDraft &&
+    isDraftComplete(currentSeasonStartupDraft) &&
+    !currentSeasonRookieDraft
+  ) {
     return leagueSeason + 1;
   }
 
