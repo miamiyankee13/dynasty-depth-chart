@@ -7,6 +7,13 @@ function fmtTotal(v) {
   return Math.round(n).toLocaleString();
 }
 
+function fmtPct(part, total) {
+  const p = Number(part);
+  const t = Number(total);
+  if (!Number.isFinite(p) || !Number.isFinite(t) || t <= 0) return "—";
+  return `${Math.round((p / t) * 100)}%`;
+}
+
 function getPlayerValue(valuesByPlayerId, playerId) {
   if (!valuesByPlayerId) return null;
   const v = valuesByPlayerId.get(playerId);
@@ -156,7 +163,7 @@ export function KpiStrip({
         {showBenchSplits ? (
           <>
             <span className="ddc-kpi-foot ddc-kpi-foot-split">
-              STARTERS {fmtTotal(data.starterVal)} · BENCH {fmtTotal(data.benchVal)} · TAXI {fmtTotal(data.taxiVal)}
+              STARTERS {fmtTotal(data.starterVal)} ({fmtPct(data.starterVal, data.teamVal)}) · BENCH {fmtTotal(data.benchVal)} ({fmtPct(data.benchVal, data.teamVal)}) · TAXI {fmtTotal(data.taxiVal)} ({fmtPct(data.taxiVal, data.teamVal)})
             </span>
             <span className="ddc-kpi-foot ddc-kpi-foot-mobile">FC · SCALED</span>
           </>

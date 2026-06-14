@@ -605,6 +605,10 @@ main.ddc-app,
 .ddc-kpi-pos[data-p="TAXI"] { color: var(--ddc-pos-TAXI); }
 .ddc-kpi-pos.amber { color: var(--ddc-amber); }
 .ddc-kpi-foot { font-size: 10px; color: var(--ddc-dim-2); letter-spacing: 0.12em; }
+.ddc-kpi-foot-split {
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
 .ddc-kpi-foot-mobile {
   display: none;
 }
