@@ -17,6 +17,13 @@ function formatValTotal(v) {
   return Math.round(n).toLocaleString();
 }
 
+function formatValPct(part, total) {
+  const p = Number(part);
+  const t = Number(total);
+  if (!Number.isFinite(p) || !Number.isFinite(t) || t <= 0) return null;
+  return `${Math.round((p / t) * 100)}%`;
+}
+
 function computeGroupTotalVal(players, valuesByPlayerId) {
   if (!valuesByPlayerId || !players?.length) return null;
   let sum = 0;
@@ -158,8 +165,9 @@ async function copyTextToClipboard(text) {
 }
 
 /* ─── Group card ─── */
-function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex }) {
+function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex, teamValue }) {
   const totalVal = computeGroupTotalVal(players, valuesByPlayerId);
+  const valuePct = formatValPct(totalVal, teamValue);
   const maxValue = (() => {
     let m = 0;
     for (const p of players) {
@@ -179,7 +187,8 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
         </span>
         {totalVal != null && (
           <span className="ddc-panel-count">
-            TOTAL VAL {formatValTotal(totalVal)}
+            VAL {formatValTotal(totalVal)}
+            {valuePct ? ` · ${valuePct}` : ""}
           </span>
         )}
       </div>
@@ -270,6 +279,8 @@ export function MacroRosterView({
     ...(playersByGroup?.TAXI ?? []),
   ];
 
+  const teamValue = computeGroupTotalVal(teamPlayers, valuesByPlayerId);
+
   const totalPicks = computeTotalPicks(picksByYear);
 
   const fcUpdatedAt = fcParams ? getFantasyCalcUpdatedAt(fcParams) : null;
@@ -337,6 +348,7 @@ export function MacroRosterView({
             players={playersByGroup?.[g.key] ?? []}
             valuesByPlayerId={valuesByPlayerId}
             benchStartIndex={benchStartsByGroup?.[g.key] ?? null}
+            teamValue={teamValue}
           />
         ))}
 
@@ -369,22 +381,26 @@ export function MacroRosterView({
           <GroupCard title="QB" groupKey="QB"
             players={playersByGroup?.QB ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            benchStartIndex={benchStartsByGroup?.QB ?? null} />
+            benchStartIndex={benchStartsByGroup?.QB ?? null} 
+            teamValue={teamValue} />
           <GroupCard title="WR" groupKey="WR"
             players={playersByGroup?.WR ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            benchStartIndex={benchStartsByGroup?.WR ?? null} />
+            benchStartIndex={benchStartsByGroup?.WR ?? null} 
+            teamValue={teamValue} />
           {showDEF && (
             <GroupCard title="DEF" groupKey="DEF"
               players={playersByGroup?.DEF ?? []}
               valuesByPlayerId={valuesByPlayerId}
-              benchStartIndex={benchStartsByGroup?.DEF ?? null} />
+              benchStartIndex={benchStartsByGroup?.DEF ?? null} 
+              teamValue={teamValue} />
           )}
           {showTAXI && (
             <GroupCard title="TAXI" groupKey="TAXI"
               players={playersByGroup?.TAXI ?? []}
               valuesByPlayerId={valuesByPlayerId}
-              benchStartIndex={benchStartsByGroup?.TAXI ?? null} />
+              benchStartIndex={benchStartsByGroup?.TAXI ?? null} 
+              teamValue={teamValue} />
           )}
         </div>
 
@@ -392,11 +408,13 @@ export function MacroRosterView({
           <GroupCard title="RB" groupKey="RB"
             players={playersByGroup?.RB ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            benchStartIndex={benchStartsByGroup?.RB ?? null} />
+            benchStartIndex={benchStartsByGroup?.RB ?? null} 
+            teamValue={teamValue} />
           <GroupCard title="TE" groupKey="TE"
             players={playersByGroup?.TE ?? []}
             valuesByPlayerId={valuesByPlayerId}
-            benchStartIndex={benchStartsByGroup?.TE ?? null} />
+            benchStartIndex={benchStartsByGroup?.TE ?? null} 
+            teamValue={teamValue} />
 
           <div className="ddc-panel ddc-macro-picks-panel" data-pos="PICKS">
           <div className="ddc-panel-head">

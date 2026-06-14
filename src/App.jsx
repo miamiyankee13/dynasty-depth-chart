@@ -273,6 +273,21 @@ export default function App() {
     return out;
   }, [team, fcValues]);
 
+  const teamValue = useMemo(() => {
+  let sum = 0;
+  let hasAny = false;
+
+  for (const p of team?.players ?? []) {
+    const v = valuesByPlayerId.get(p.id);
+    const n = Number(v);
+    if (!Number.isFinite(n)) continue;
+    sum += n;
+    hasAny = true;
+  }
+
+  return hasAny ? sum : null;
+}, [team, valuesByPlayerId]);
+
   const fcUpdatedAt = team?.external?.fantasycalc ? getFantasyCalcUpdatedAt(team.external.fantasycalc) : null;
   const fcUpdatedLabel = fcUpdatedAt
     ? new Date(fcUpdatedAt).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
@@ -607,6 +622,7 @@ export default function App() {
             group={activeTab}
             players={playersByGroup[activeTab] ?? []}
             valuesByPlayerId={valuesByPlayerId}
+            teamValue={teamValue}
             onReorder={(next) => updateGroupOrder(activeTab, next)}
             onToggleInjured={togglePlayerInjured}
             {...(benchSplitEnabled

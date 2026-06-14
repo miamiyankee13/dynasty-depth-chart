@@ -67,6 +67,13 @@ function ageClass(age) {
   return "";
 }
 
+function formatValPct(part, total) {
+  const p = Number(part);
+  const t = Number(total);
+  if (!Number.isFinite(p) || !Number.isFinite(t) || t <= 0) return null;
+  return `${Math.round((p / t) * 100)}%`;
+}
+
 function BenchDivider({ label = "Bench" }) {
   return (
     <div className="ddc-bench-divider" aria-label="Bench Divider">
@@ -200,6 +207,7 @@ export function PlayerList({
   group,
   players,
   valuesByPlayerId,
+  teamValue = null,
   onReorder,
   onToggleInjured,
   benchStartIndex,
@@ -253,6 +261,8 @@ export function PlayerList({
     return hasAny ? sum : null;
   })();
 
+  const valuePct = formatValPct(totalValue, teamValue);
+
   const showHeader = players.length > 0;
 
   return (
@@ -264,7 +274,8 @@ export function PlayerList({
         </span>
         {totalValue != null && (
           <span className="ddc-panel-count">
-            TOTAL VAL {Math.round(totalValue).toLocaleString()}
+            VAL {Math.round(totalValue).toLocaleString()}
+            {valuePct ? ` · ${valuePct}` : ""}
           </span>
         )}
       </div>
