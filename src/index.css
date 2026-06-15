@@ -560,7 +560,7 @@ main.ddc-app,
 
 .ddc-kpis {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   background: var(--ddc-line);
   border: 1px solid var(--ddc-line);
@@ -1362,6 +1362,27 @@ main.ddc-app,
 
 /* ─────────────────────────  PHONE LANDSCAPE  ───────────────────── */
 @media (max-height: 520px) and (orientation: landscape) and (max-width: 900px) {
-  .ddc-row .ddc-col-bench { display: none !important; }
-  .ddc-bench-divider .ddc-bench-label { display: none; }
+  /* Position tabs: hide the bench column entirely, not just the button */
+  .ddc-row-head,
+  .ddc-row:not(.compact) {
+    grid-template-columns: 44px 64px minmax(0, 1.6fr) 56px 70px 90px 52px;
+  }
+
+  .ddc-row-head div:last-child,
+  .ddc-row:not(.compact) .ddc-col-bench {
+    display: none !important;
+  }
+
+  .ddc-bench-divider .ddc-bench-label {
+    display: none;
+  }
+
+  /* Keep KPI strip in the same 2x2 layout as mobile portrait */
+  .ddc-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ddc-kpi {
+    min-width: 0;
+  }
 }
