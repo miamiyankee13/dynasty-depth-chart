@@ -216,6 +216,7 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
             idx === benchStartIndex;
           const slotLabel = groupKey === "TAXI" ? `TX${idx + 1}` : `${groupKey}${idx + 1}`;
           const val = valuesByPlayerId?.get(p.id) ?? null;
+          const formattedValue = formatVal(val);
 
           return (
             <div key={p.id}>
@@ -241,7 +242,12 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
                       {p.name}
                     </div>
                     <div className="ddc-meta-line">
-                      {p.nflTeam || "—"} · AGE {p.age || "—"}
+                      <span className="ddc-meta-compact-desktop">
+                        {p.nflTeam || "—"} · AGE {p.age || "—"}
+                      </span>
+                      <span className="ddc-meta-compact-mobile">
+                        {p.age || "—"} · {p.nflTeam || "—"} · VAL {formattedValue}
+                      </span>
                     </div>
                   </div>
                 </div>

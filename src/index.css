@@ -863,6 +863,10 @@ main.ddc-app,
   display: block;
 }
 
+.ddc-meta-compact-mobile {
+  display: none;
+}
+
 /* Age / Team / Val cells (stacked label + value) */
 .ddc-col-age, .ddc-col-team, .ddc-col-val {
   flex-direction: column;
@@ -1281,19 +1285,17 @@ main.ddc-app,
   .ddc-row .ddc-col-inj  { justify-content: center; padding-right: 10px; }
   .ddc-row .ddc-meta-line { display: block; } /* show under name */
 
-    /* Roster tab mobile: show desktop-style value column/bar on compact snapshot rows */
+    /* Roster tab mobile: use the same compact meta format as position tabs */
   .ddc-row.compact {
-    grid-template-columns: 60px minmax(0, 1fr) 90px;
+    grid-template-columns: 60px minmax(0, 1fr);
   }
 
-  .ddc-row.compact .ddc-col-val {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
+  .ddc-row.compact .ddc-meta-compact-desktop {
+    display: none;
   }
 
-  .ddc-row.compact .ddc-val-bar {
-    display: block;
+  .ddc-row.compact .ddc-meta-compact-mobile {
+    display: inline;
   }
 
   .ddc-grip    { width: 36px; height: 36px; padding: 6px; }
