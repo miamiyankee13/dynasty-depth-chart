@@ -1332,21 +1332,25 @@ main.ddc-app,
 
   .ddc-league-count {
     grid-column: 1 / -1;
+    order: 1;
     justify-content: center;
     min-height: 32px;
   }
 
   .ddc-select {
     grid-column: 1 / -1;
+    order: 2;
     width: 100%;
     min-width: 0;
   }
 
   .ddc-utility .ddc-btn:not(.ddc-theme-mobile):not(.ddc-theme-desktop) {
+    order: 3;
     width: 100%;
   }
 
   .ddc-theme-mobile {
+    order: 4;
     justify-content: center;
     width: 48px;
   }
