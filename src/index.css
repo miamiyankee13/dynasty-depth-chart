@@ -1281,6 +1281,21 @@ main.ddc-app,
   .ddc-row .ddc-col-inj  { justify-content: center; padding-right: 10px; }
   .ddc-row .ddc-meta-line { display: block; } /* show under name */
 
+    /* Roster tab mobile: show desktop-style value column/bar on compact snapshot rows */
+  .ddc-row.compact {
+    grid-template-columns: 60px minmax(0, 1fr) 90px;
+  }
+
+  .ddc-row.compact .ddc-col-val {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .ddc-row.compact .ddc-val-bar {
+    display: block;
+  }
+
   .ddc-grip    { width: 36px; height: 36px; padding: 6px; }
   .ddc-grip svg{ width: 18px; height: 18px; }
   .ddc-iconbtn { width: 36px; height: 36px; font-size: 14px; }

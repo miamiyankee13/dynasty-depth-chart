@@ -106,6 +106,10 @@ function Row({
   const isBench = typeof benchStartIndex === "number" && index >= benchStartIndex;
   const isBenchStart = typeof benchStartIndex === "number" && benchStartIndex === index;
   const slotLabel = group === "TAXI" ? `TX${index + 1}` : `${group}${index + 1}`;
+  const formattedValue =
+    value != null && Number.isFinite(Number(value))
+      ? Math.round(Number(value)).toLocaleString()
+      : "—";
 
   return (
     <div
@@ -143,7 +147,7 @@ function Row({
             {player.name}
           </div>
           <div className="ddc-meta-line">
-            {player.nflTeam || "—"} · AGE {player.age || "—"}
+            {player.age || "—"} · {player.nflTeam || "—"} · VAL {formattedValue}
           </div>
         </div>
       </div>
