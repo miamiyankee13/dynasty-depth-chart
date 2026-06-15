@@ -22,29 +22,6 @@ function getPlayerValue(valuesByPlayerId, playerId) {
   return Number.isFinite(n) ? n : null;
 }
 
-function getPlayerPositionForKpi(player, fallbackGroup) {
-  const candidates = [
-    player?.realPosition,
-    player?.position,
-    player?.pos,
-    player?.metadata?.position,
-    player?.fantasy_positions?.[0],
-    fallbackGroup,
-  ];
-
-  for (const raw of candidates) {
-    const pos = String(raw || "").toUpperCase();
-
-    if (pos === "QB") return "QB";
-    if (pos === "RB") return "RB";
-    if (pos === "WR") return "WR";
-    if (pos === "TE") return "TE";
-    if (pos === "DEF" || pos === "DST") return "DEF";
-  }
-
-  return null;
-}
-
 /**
  * KpiStrip — derived metrics for the active team.
  * Shown above the position/picks/roster body.
@@ -63,17 +40,6 @@ export function KpiStrip({
     const counts = { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0, TAXI: 0 };
     for (const g of Object.keys(counts)) {
       counts[g] = playersByGroup?.[g]?.length ?? 0;
-    }
-
-    const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0, DEF: 0 };
-
-    for (const g of ["QB", "RB", "WR", "TE", "DEF", "TAXI"]) {
-      for (const p of playersByGroup?.[g] ?? []) {
-        const pos = getPlayerPositionForKpi(p, g);
-        if (pos && Object.prototype.hasOwnProperty.call(positionCounts, pos)) {
-          positionCounts[pos] += 1;
-        }
-      }
     }
 
     // Total team val + starter/bench split
@@ -138,7 +104,6 @@ export function KpiStrip({
 
     return {
       counts,
-      positionCounts,
       teamVal: hasVal ? teamVal : null,
       starterVal: hasVal ? starterVal : null,
       benchVal: hasVal ? benchVal : null,
@@ -193,17 +158,16 @@ export function KpiStrip({
         <div className="ddc-kpi-row">
           {["QB", "RB", "WR", "TE"].map((p) => (
             <span key={p} className="ddc-kpi-pos" data-p={p}>
-              {p}·<b>{data.positionCounts[p]}</b>
+              {p}·<b>{data.counts[p]}</b>
             </span>
           ))}
         </div>
-          <span className="ddc-kpi-foot">
-            {data.positionCounts.DEF
-              ? `${data.counts.TAXI ? `DEF ${data.positionCounts.DEF} · TAXI INCLUDED` : `DEF ${data.positionCounts.DEF}`}`
-              : data.counts.TAXI
-                ? "TAXI INCLUDED"
-                : "ACTIVE ROSTER"}
-          </span>
+        <span className="ddc-kpi-foot">
+          {[
+            data.counts.DEF ? `DEF ${data.counts.DEF}` : null,
+            data.counts.TAXI ? `TAXI ${data.counts.TAXI}` : null,
+          ].filter(Boolean).join(" · ") || "ACTIVE ROSTER"}
+        </span>
       </div>
 
       <div className="ddc-kpi">
