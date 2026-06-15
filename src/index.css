@@ -1328,8 +1328,8 @@ main.ddc-app,
     grid-template-columns: 1fr 48px;
     grid-template-areas:
       "count count"
-      "select select"
-      "disconnect theme";
+      "disconnect theme"
+      "select select";
     gap: 10px;
     justify-content: stretch;
   }
@@ -1346,7 +1346,7 @@ main.ddc-app,
     min-width: 0;
   }
 
-  .ddc-utility .ddc-btn:not(.ddc-theme-mobile):not(.ddc-theme-desktop) {
+  .ddc-header-disconnect {
     grid-area: disconnect;
     width: 100%;
   }

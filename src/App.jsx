@@ -479,7 +479,7 @@ export default function App() {
             )}
 
             <button
-              className="ddc-btn ddc-focusable ddc-pressable"
+              className="ddc-btn ddc-header-disconnect ddc-focusable ddc-pressable"
               onClick={disconnectSleeper}
             >
               DISCONNECT
