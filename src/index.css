@@ -1325,32 +1325,34 @@ main.ddc-app,
   .ddc-utility {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr 48px;
+    grid-template-areas:
+      "count count"
+      "select select"
+      "disconnect theme";
     gap: 10px;
     justify-content: stretch;
   }
 
   .ddc-league-count {
-    grid-column: 1 / -1;
-    order: 1;
+    grid-area: count;
     justify-content: center;
     min-height: 32px;
   }
 
   .ddc-select {
-    grid-column: 1 / -1;
-    order: 2;
+    grid-area: select;
     width: 100%;
     min-width: 0;
   }
 
   .ddc-utility .ddc-btn:not(.ddc-theme-mobile):not(.ddc-theme-desktop) {
-    order: 3;
+    grid-area: disconnect;
     width: 100%;
   }
 
   .ddc-theme-mobile {
-    order: 4;
+    grid-area: theme;
     justify-content: center;
     width: 48px;
   }
