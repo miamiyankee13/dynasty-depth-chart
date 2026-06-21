@@ -1054,8 +1054,8 @@ main.ddc-app,
 
 .ddc-value-shape {
   display: grid;
-  grid-template-columns: 190px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: 1fr;
+  justify-items: center;
   align-items: center;
 }
 
@@ -1101,39 +1101,6 @@ main.ddc-app,
   letter-spacing: 0.08em;
 }
 
-.ddc-value-shape-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-}
-
-.ddc-value-shape-meta span {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  padding: 5px 8px;
-  border: 1px solid var(--ddc-line-2);
-  background: var(--ddc-panel-3);
-  color: var(--ddc-dim);
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.ddc-value-shape-meta b {
-  color: var(--ddc-text);
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.ddc-value-shape-meta span[data-p="QB"]   { color: var(--ddc-pos-QB); }
-.ddc-value-shape-meta span[data-p="RB"]   { color: var(--ddc-pos-RB); }
-.ddc-value-shape-meta span[data-p="WR"]   { color: var(--ddc-pos-WR); }
-.ddc-value-shape-meta span[data-p="TE"]   { color: var(--ddc-pos-TE); }
-.ddc-value-shape-meta span[data-p="TAXI"] { color: var(--ddc-pos-TAXI); }
 .ddc-macro-picks-panel::before {
   background: var(--ddc-pos-PICKS);
 }
@@ -1459,11 +1426,6 @@ main.ddc-app,
     display: inline;
   }
 
-  .ddc-value-shape {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
   .ddc-value-shape-viz {
     width: 170px;
     height: 170px;
@@ -1471,10 +1433,6 @@ main.ddc-app,
 
   .ddc-value-shape-panel {
     padding: 10px 12px;
-  }
-
-  .ddc-value-shape-meta {
-    gap: 6px;
   }
 }
 

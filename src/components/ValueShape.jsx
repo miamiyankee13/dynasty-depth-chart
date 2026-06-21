@@ -23,12 +23,6 @@ function pointsToString(points) {
   return points.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
 }
 
-function formatPct(share) {
-  const n = Number(share);
-  if (!Number.isFinite(n) || n <= 0) return "0%";
-  return `${Math.round(n * 100)}%`;
-}
-
 export function ValueShape({ shares = {}, showTaxi = true }) {
   const size = 190;
   const cx = size / 2;
@@ -136,14 +130,6 @@ export function ValueShape({ shares = {}, showTaxi = true }) {
               );
             })}
           </svg>
-        </div>
-
-        <div className="ddc-value-shape-meta" aria-label="Value share by position">
-          {axes.map((axis) => (
-            <span key={axis.key} data-p={axis.key}>
-              {axis.label} <b>{formatPct(axis.share)}</b>
-            </span>
-          ))}
         </div>
       </div>
     </div>
