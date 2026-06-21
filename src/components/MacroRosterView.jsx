@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PicksView } from "./PicksView";
 import { ValBar } from "./ValBar";
+import { ValueShape } from "./ValueShape";
 import { getFantasyCalcUpdatedAt } from "../data/sources/fantasycalc/fantasycalc";
 
 function formatVal(v) {
@@ -287,6 +288,22 @@ export function MacroRosterView({
 
   const teamValue = computeGroupTotalVal(teamPlayers, valuesByPlayerId);
 
+  const valueShapeShares = (() => {
+    const groups = ["QB", "RB", "WR", "TE", "TAXI"];
+    const denominator = Number(teamValue);
+
+    return groups.reduce((out, key) => {
+      const groupVal = computeGroupTotalVal(playersByGroup?.[key] ?? [], valuesByPlayerId) ?? 0;
+
+      out[key] =
+        Number.isFinite(denominator) && denominator > 0
+          ? groupVal / denominator
+          : 0;
+
+      return out;
+    }, {});
+  })();
+
   const totalPicks = computeTotalPicks(picksByYear);
 
   const fcUpdatedAt = fcParams ? getFantasyCalcUpdatedAt(fcParams) : null;
@@ -343,6 +360,13 @@ export function MacroRosterView({
           </button>
         </div>
       </div>
+        
+        {teamValue != null && (
+          <ValueShape
+            shares={valueShapeShares}
+            showTaxi={(playersByGroup?.TAXI ?? []).length > 0}
+          />
+        )}
 
       {/* ─── Mobile single stack ─── */}
       <div className="ddc-macro-single">
