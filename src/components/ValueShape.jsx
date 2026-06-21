@@ -35,10 +35,11 @@ export function ValueShape({ shares = {}, showTaxi = true }) {
 
   const angleStep = 360 / visibleAxes.length;
 
-  const maxShare = Math.max(
-    0.5,
+  const observedMaxShare = Math.max(
     ...visibleAxes.map((axis) => Number(shares?.[axis.key]) || 0)
   );
+
+  const maxShare = Math.max(0.4, observedMaxShare * 1.08);
 
   const axes = visibleAxes.map((axis, idx) => ({
     ...axis,
