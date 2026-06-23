@@ -27,7 +27,7 @@ export function ValueShape({ shares = {}, showTaxi = true }) {
   const size = 190;
   const cx = size / 2;
   const cy = size / 2;
-  const radius = 58;
+  const radius = 68;
 
   const visibleAxes = showTaxi
     ? BASE_AXES
