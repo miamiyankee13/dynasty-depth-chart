@@ -351,11 +351,8 @@ export function MacroRosterView({
       )}
       
       <div className="ddc-macro-summary">
+        
         <div className="ddc-macro-title-row">
-          <span className="ddc-macro-sub">
-            ORDER REFLECTS POSITION TABS
-          </span>
-
           <button
             type="button"
             onClick={onCopySummary}
@@ -365,6 +362,10 @@ export function MacroRosterView({
           >
             {copied ? "COPIED" : "COPY"}
           </button>
+          
+          <span className="ddc-macro-sub">
+            ORDER REFLECTS POSITION TABS
+          </span>
         </div>
       </div>
         
