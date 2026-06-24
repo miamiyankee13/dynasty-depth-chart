@@ -24,10 +24,11 @@ function pointsToString(points) {
 }
 
 export function ValueShape({ shares = {}, showTaxi = true }) {
-  const size = 190;
+  const size = 220;
   const cx = size / 2;
-  const cy = size / 2;
-  const radius = 68;
+  const cy = size / 2 + (showTaxi ? 8 : 0);
+  const radius = 74;
+  const labelRadius = radius + 28;
 
   const visibleAxes = showTaxi
     ? BASE_AXES
@@ -114,7 +115,7 @@ export function ValueShape({ shares = {}, showTaxi = true }) {
             ))}
 
             {axes.map((axis) => {
-              const labelPoint = polarPoint(cx, cy, radius + 22, axis.angle, 1);
+              const labelPoint = polarPoint(cx, cy, labelRadius, axis.angle, 1);
 
               return (
                 <text

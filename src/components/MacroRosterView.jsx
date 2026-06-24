@@ -343,6 +343,13 @@ export function MacroRosterView({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {/* ─── Snapshot header ─── */}
+      {teamValue != null && (
+        <ValueShape
+          shares={valueShapeShares}
+          showTaxi={(playersByGroup?.TAXI ?? []).length > 0}
+        />
+      )}
+      
       <div className="ddc-macro-summary">
         <div className="ddc-macro-title-row">
           <span className="ddc-macro-sub">
@@ -361,12 +368,7 @@ export function MacroRosterView({
         </div>
       </div>
         
-        {teamValue != null && (
-          <ValueShape
-            shares={valueShapeShares}
-            showTaxi={(playersByGroup?.TAXI ?? []).length > 0}
-          />
-        )}
+
 
       {/* ─── Mobile single stack ─── */}
       <div className="ddc-macro-single">
