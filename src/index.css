@@ -697,7 +697,7 @@ main.ddc-app,
 /* ─────────────────────────  PLAYER ROW GRID  ───────────────────── */
 .ddc-row-head, .ddc-row {
   display: grid;
-  grid-template-columns: 44px 64px minmax(0, 1.6fr) 56px 70px 90px 52px 52px;
+  grid-template-columns: 44px 64px minmax(0, 1.6fr) 56px 70px 78px 90px 52px 52px;
   gap: 0;
 }
 .ddc-row-head {
@@ -870,11 +870,14 @@ main.ddc-app,
   display: none;
 }
 
-/* Age / Team / Val cells (stacked label + value) */
-.ddc-col-age, .ddc-col-team, .ddc-col-val {
+.ddc-col-age, .ddc-col-team, .ddc-col-redraft, .ddc-col-val {
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
+}
+.ddc-col-redraft .ddc-cell-v {
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 .ddc-col-val { gap: 4px; }
 .ddc-cell-lbl {
@@ -1341,6 +1344,7 @@ main.ddc-app,
   .ddc-row .ddc-col-age,
   .ddc-row .ddc-col-team,
   .ddc-row .ddc-col-val,
+  .ddc-row .ddc-col-redraft,
   .ddc-row .ddc-col-bench { display: none; }
   .ddc-row .ddc-col-name { padding-left: 8px; }
   .ddc-row .ddc-col-inj  { justify-content: center; padding-right: 10px; }
@@ -1441,7 +1445,7 @@ main.ddc-app,
   /* Position tabs: hide the bench column entirely, not just the button */
   .ddc-row-head,
   .ddc-row:not(.compact) {
-    grid-template-columns: 44px 64px minmax(0, 1.6fr) 56px 70px 90px 52px;
+    grid-template-columns: 44px 64px minmax(0, 1.6fr) 56px 70px 78px 90px 52px;
   }
 
   .ddc-row-head div:last-child,

@@ -90,6 +90,7 @@ function Row({
   index,
   onToggleInjured,
   value,
+  redraftRank,
   maxValue,
   benchStartIndex,
   onSetBenchStart,
@@ -110,6 +111,8 @@ function Row({
     value != null && Number.isFinite(Number(value))
       ? Math.round(Number(value)).toLocaleString()
       : "—";
+  const redraftLabel = redraftRank?.label || null;
+  const redraftLongLabel = redraftRank?.longLabel || null;
 
   return (
     <div
@@ -147,7 +150,8 @@ function Row({
             {player.name}
           </div>
           <div className="ddc-meta-line">
-            {player.age || "—"} · {player.nflTeam || "—"} · VAL {formattedValue}
+            {player.age || "—"} · {player.nflTeam || "—"}
+            {redraftLongLabel ? ` · ${redraftLongLabel}` : ""} · VAL {formattedValue}
           </div>
         </div>
       </div>
@@ -160,6 +164,11 @@ function Row({
       <div className="ddc-col-team">
         <span className="ddc-cell-lbl">Team</span>
         <span className="ddc-cell-v">{player.nflTeam || "—"}</span>
+      </div>
+
+      <div className="ddc-col-redraft">
+        <span className="ddc-cell-lbl">Redraft</span>
+        <span className="ddc-cell-v">{redraftLabel || "—"}</span>
       </div>
 
       <div className="ddc-col-val">
@@ -211,6 +220,7 @@ export function PlayerList({
   group,
   players,
   valuesByPlayerId,
+  redraftRanksByPlayerId,
   teamValue = null,
   onReorder,
   onToggleInjured,
@@ -291,6 +301,7 @@ export function PlayerList({
           <div>Player</div>
           <div className="num">Age</div>
           <div className="num">Team</div>
+          <div className="num">Redraft</div>
           <div className="num">Val</div>
           <div>Inj</div>
           <div>Ben</div>
@@ -333,6 +344,7 @@ export function PlayerList({
                   group={group}
                   index={idx}
                   value={valuesByPlayerId?.get(p.id) ?? null}
+                  redraftRank={redraftRanksByPlayerId?.get(p.id) ?? null}
                   maxValue={maxValue}
                   onToggleInjured={onToggleInjured}
                   benchStartIndex={clampedBenchStart}

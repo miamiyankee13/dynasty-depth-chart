@@ -16,6 +16,7 @@ import {
 } from "./data/sources/sleeper/sleeperAdapter";
 import {
   getFantasyCalcValues,
+  getFantasyCalcRedraftRanks,
   scaleFantasyCalcValue,
   getFantasyCalcUpdatedAt,
 } from "./data/sources/fantasycalc/fantasycalc";
@@ -214,6 +215,7 @@ export default function App() {
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [fcValues, setFcValues] = useState(new Map());
+  const [fcRedraftRanks, setFcRedraftRanks] = useState(new Map());
   const [theme, setTheme] = useState(() => loadTheme());
   const [draftResultsByLeague, setDraftResultsByLeague] = useState({});
 
@@ -272,6 +274,22 @@ export default function App() {
     }
     return out;
   }, [team, fcValues]);
+
+  const redraftRanksByPlayerId = useMemo(() => {
+  const out = new Map();
+
+  for (const p of team?.players ?? []) {
+    const sid = String(p.id).split(":")[1];
+    if (!sid) continue;
+
+    const rank = fcRedraftRanks.get(String(sid));
+    if (!rank?.label) continue;
+
+    out.set(p.id, rank);
+  }
+
+  return out;
+}, [team, fcRedraftRanks]);
 
   const teamValue = useMemo(() => {
   let sum = 0;
@@ -362,19 +380,31 @@ export default function App() {
 
   useEffect(() => { if (state) saveAppState(state); }, [state]);
 
-  /* ───── FantasyCalc values fetch (unchanged) ───── */
-  useEffect(() => {
-    (async () => {
-      try {
-        const params = team?.external?.fantasycalc;
-        if (!params) return;
-        const { values } = await getFantasyCalcValues(params);
-        setFcValues(values);
-      } catch (e) {
-        console.warn("FantasyCalc Values Fetch Failed:", e);
-      }
-    })();
-  }, [team?.id]);
+/* ───── FantasyCalc values + redraft ranks fetch ───── */
+useEffect(() => {
+  (async () => {
+    const params = team?.external?.fantasycalc;
+
+    setFcValues(new Map());
+    setFcRedraftRanks(new Map());
+
+    if (!params) return;
+
+    try {
+      const { values } = await getFantasyCalcValues(params);
+      setFcValues(values);
+    } catch (e) {
+      console.warn("FantasyCalc Values Fetch Failed:", e);
+    }
+
+    try {
+      const { ranks } = await getFantasyCalcRedraftRanks(params);
+      setFcRedraftRanks(ranks);
+    } catch (e) {
+      console.warn("FantasyCalc Redraft Ranks Fetch Failed:", e);
+    }
+  })();
+}, [team?.id]);
 
   /* ───── Persist active tab / team ───── */
   useEffect(() => {
@@ -611,6 +641,7 @@ export default function App() {
           <MacroRosterView
             playersByGroup={playersByGroup}
             valuesByPlayerId={valuesByPlayerId}
+            redraftRanksByPlayerId={redraftRanksByPlayerId}
             picksByYear={team.picksByYear}
             settingsPills={team.settingsPills}
             benchStartsByGroup={benchStartsForTeam}
@@ -622,6 +653,7 @@ export default function App() {
             group={activeTab}
             players={playersByGroup[activeTab] ?? []}
             valuesByPlayerId={valuesByPlayerId}
+            redraftRanksByPlayerId={redraftRanksByPlayerId}
             teamValue={teamValue}
             onReorder={(next) => updateGroupOrder(activeTab, next)}
             onToggleInjured={togglePlayerInjured}

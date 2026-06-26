@@ -166,7 +166,15 @@ async function copyTextToClipboard(text) {
 }
 
 /* ─── Group card ─── */
-function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex, teamValue }) {
+function GroupCard({ 
+  title, 
+  groupKey, 
+  players, 
+  valuesByPlayerId,
+  redraftRanksByPlayerId, 
+  benchStartIndex, 
+  teamValue 
+}) {
   const totalVal = computeGroupTotalVal(players, valuesByPlayerId);
   const valuePct = formatValPct(totalVal, teamValue);
   const maxValue = (() => {
@@ -218,6 +226,8 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
           const slotLabel = groupKey === "TAXI" ? `TX${idx + 1}` : `${groupKey}${idx + 1}`;
           const val = valuesByPlayerId?.get(p.id) ?? null;
           const formattedValue = formatVal(val);
+          const redraftRank = redraftRanksByPlayerId?.get(p.id) ?? null;
+          const redraftLongLabel = redraftRank?.longLabel || null;
 
           return (
             <div key={p.id}>
@@ -244,10 +254,12 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
                     </div>
                     <div className="ddc-meta-line">
                       <span className="ddc-meta-compact-desktop">
-                        {p.nflTeam || "—"} · AGE {p.age || "—"}
+                        {p.age || "—"} · {p.nflTeam || "—"}
+                        {redraftLongLabel ? ` · ${redraftLongLabel}` : ""}
                       </span>
                       <span className="ddc-meta-compact-mobile">
-                        {p.age || "—"} · {p.nflTeam || "—"} · VAL {formattedValue}
+                        {p.age || "—"} · {p.nflTeam || "—"}
+                        {redraftLongLabel ? ` · ${redraftLongLabel}` : ""} · VAL {formattedValue}
                       </span>
                     </div>
                   </div>
@@ -269,6 +281,7 @@ function GroupCard({ title, groupKey, players, valuesByPlayerId, benchStartIndex
 export function MacroRosterView({
   playersByGroup,
   valuesByPlayerId,
+  redraftRanksByPlayerId,
   picksByYear,
   settingsPills = [],
   benchStartsByGroup = {},
@@ -380,6 +393,7 @@ export function MacroRosterView({
             groupKey={g.key}
             players={playersByGroup?.[g.key] ?? []}
             valuesByPlayerId={valuesByPlayerId}
+            redraftRanksByPlayerId={redraftRanksByPlayerId}
             benchStartIndex={benchStartsByGroup?.[g.key] ?? null}
             teamValue={teamValue}
           />
@@ -414,17 +428,20 @@ export function MacroRosterView({
           <GroupCard title="QB" groupKey="QB"
             players={playersByGroup?.QB ?? []}
             valuesByPlayerId={valuesByPlayerId}
+            redraftRanksByPlayerId={redraftRanksByPlayerId}
             benchStartIndex={benchStartsByGroup?.QB ?? null} 
             teamValue={teamValue} />
           <GroupCard title="WR" groupKey="WR"
             players={playersByGroup?.WR ?? []}
             valuesByPlayerId={valuesByPlayerId}
+            redraftRanksByPlayerId={redraftRanksByPlayerId}
             benchStartIndex={benchStartsByGroup?.WR ?? null} 
             teamValue={teamValue} />
           {showDEF && (
             <GroupCard title="DEF" groupKey="DEF"
               players={playersByGroup?.DEF ?? []}
               valuesByPlayerId={valuesByPlayerId}
+              redraftRanksByPlayerId={redraftRanksByPlayerId}
               benchStartIndex={benchStartsByGroup?.DEF ?? null} 
               teamValue={teamValue} />
           )}
@@ -432,6 +449,7 @@ export function MacroRosterView({
             <GroupCard title="TAXI" groupKey="TAXI"
               players={playersByGroup?.TAXI ?? []}
               valuesByPlayerId={valuesByPlayerId}
+              redraftRanksByPlayerId={redraftRanksByPlayerId}
               benchStartIndex={benchStartsByGroup?.TAXI ?? null} 
               teamValue={teamValue} />
           )}
@@ -441,11 +459,13 @@ export function MacroRosterView({
           <GroupCard title="RB" groupKey="RB"
             players={playersByGroup?.RB ?? []}
             valuesByPlayerId={valuesByPlayerId}
+            redraftRanksByPlayerId={redraftRanksByPlayerId}
             benchStartIndex={benchStartsByGroup?.RB ?? null} 
             teamValue={teamValue} />
           <GroupCard title="TE" groupKey="TE"
             players={playersByGroup?.TE ?? []}
             valuesByPlayerId={valuesByPlayerId}
+            redraftRanksByPlayerId={redraftRanksByPlayerId}
             benchStartIndex={benchStartsByGroup?.TE ?? null} 
             teamValue={teamValue} />
 
