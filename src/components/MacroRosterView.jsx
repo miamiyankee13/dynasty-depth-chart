@@ -227,7 +227,9 @@ function GroupCard({
           const val = valuesByPlayerId?.get(p.id) ?? null;
           const formattedValue = formatVal(val);
           const redraftRank = redraftRanksByPlayerId?.get(p.id) ?? null;
+          const redraftLabel = redraftRank?.label || null;
           const redraftLongLabel = redraftRank?.longLabel || null;
+          const redraftMobileLabel = redraftLabel ? `RDRFT ${redraftLabel}` : null;
 
           return (
             <div key={p.id}>
@@ -259,7 +261,7 @@ function GroupCard({
                       </span>
                       <span className="ddc-meta-compact-mobile">
                         {p.age || "—"} · {p.nflTeam || "—"}
-                        {redraftLongLabel ? ` · ${redraftLongLabel}` : ""} · VAL {formattedValue}
+                        {redraftMobileLabel ? ` · ${redraftMobileLabel}` : ""} · VAL {formattedValue}
                       </span>
                     </div>
                   </div>

@@ -113,6 +113,7 @@ function Row({
       : "—";
   const redraftLabel = redraftRank?.label || null;
   const redraftLongLabel = redraftRank?.longLabel || null;
+  const redraftMobileLabel = redraftLabel ? `RDRFT ${redraftLabel}` : null;
 
   return (
     <div
@@ -151,7 +152,7 @@ function Row({
           </div>
           <div className="ddc-meta-line">
             {player.age || "—"} · {player.nflTeam || "—"}
-            {redraftLongLabel ? ` · ${redraftLongLabel}` : ""} · VAL {formattedValue}
+            {redraftMobileLabel ? ` · ${redraftMobileLabel}` : ""} · VAL {formattedValue}
           </div>
         </div>
       </div>
