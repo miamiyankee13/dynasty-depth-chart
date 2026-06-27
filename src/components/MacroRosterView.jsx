@@ -192,11 +192,11 @@ function GroupCard({
       <div className="ddc-panel-head">
         <span className="ddc-stamp">{groupKey}</span>
         <span className="ddc-panel-count">
-          {players.length} {players.length === 1 ? "PLAYER" : "PLAYERS"} ·
+          {players.length} {players.length === 1 ? "PLAYER" : "PLAYERS"}
         </span>
         {totalVal != null && (
           <span className="ddc-panel-count">
-            VAL {formatValTotal(totalVal)}
+           · VALUE {formatValTotal(totalVal)}
             {valuePct ? ` · ${valuePct}` : ""}
           </span>
         )}

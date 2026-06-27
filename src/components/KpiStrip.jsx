@@ -122,7 +122,7 @@ export function KpiStrip({
   return (
     <div className="ddc-kpis">
       <div className="ddc-kpi">
-        <span className="ddc-kpi-lbl">Total Player Val</span>
+        <span className="ddc-kpi-lbl">Player Value</span>
         <div className="ddc-kpi-v amber">{fmtTotal(data.teamVal)}</div>
 
         {showBenchSplits ? (
@@ -138,7 +138,7 @@ export function KpiStrip({
       </div>
 
       <div className="ddc-kpi">
-        <span className="ddc-kpi-lbl">Total Players</span>
+        <span className="ddc-kpi-lbl">Players</span>
         <div className="ddc-kpi-v amber">{data.totalPlayers}</div>
 
         {showBenchSplits ? (

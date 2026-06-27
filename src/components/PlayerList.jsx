@@ -158,26 +158,21 @@ function Row({
       </div>
 
       <div className="ddc-col-age">
-        <span className="ddc-cell-lbl">Age</span>
-        <span className={`ddc-cell-v ${ageClass(player.age)}`}>{player.age || "—"}</span>
+        <span className={`ddc-cell-v ${ageClass(player.age)}`}>
+          {player.age || "—"}
+        </span>
       </div>
 
       <div className="ddc-col-team">
-        <span className="ddc-cell-lbl">Team</span>
         <span className="ddc-cell-v">{player.nflTeam || "—"}</span>
       </div>
 
       <div className="ddc-col-redraft">
-        <span className="ddc-cell-lbl">Redraft</span>
         <span className="ddc-cell-v">{redraftLabel || "—"}</span>
       </div>
 
       <div className="ddc-col-val">
-        <span className="ddc-val-num">
-          {value != null && Number.isFinite(Number(value))
-            ? String(Math.round(Number(value)))
-            : "—"}
-        </span>
+        <span className="ddc-val-num">{formattedValue}</span>
         <ValBar value={value} maxValue={maxValue} />
       </div>
 
@@ -285,11 +280,11 @@ export function PlayerList({
       <div className="ddc-panel-head">
         <span className="ddc-stamp">{group}</span>
         <span className="ddc-panel-count">
-          {players.length} {players.length === 1 ? "PLAYER" : "PLAYERS"} ·
+          {players.length} {players.length === 1 ? "PLAYER" : "PLAYERS"} 
         </span>
         {totalValue != null && (
           <span className="ddc-panel-count">
-            VAL {Math.round(totalValue).toLocaleString()}
+            · VALUE {Math.round(totalValue).toLocaleString()}
             {valuePct ? ` · ${valuePct}` : ""}
           </span>
         )}
@@ -303,7 +298,7 @@ export function PlayerList({
           <div className="num">Age</div>
           <div className="num">Team</div>
           <div className="num">Redraft</div>
-          <div className="num">Val</div>
+          <div className="num">Value</div>
           <div>Inj</div>
           <div>Ben</div>
         </div>
